@@ -5886,7 +5886,7 @@
       btnModeDoc.style.color = mode === 'DOC' ? 'var(--gw-accent)' : 'var(--gw-ink)';
     }
     if (btnShowKey) {
-      btnShowKey.textContent = showKey ? '🔑 เฉลย: แสดง' : '🔑 เฉลย: ซ่อน';
+      btnShowKey.textContent = showKey ? 'เฉลย: แสดง' : 'เฉลย: ซ่อน';
       btnShowKey.classList.toggle('hidden', mode !== 'ITEMS');
     }
 
