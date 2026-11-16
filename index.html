@@ -340,6 +340,7 @@
     .gw-font-pill {
       display: inline-flex;
       align-items: center;
+      min-height: 44px;
       gap: 2px;
       border-radius: 13px;
       padding: 3px 5px;
@@ -353,10 +354,12 @@
       color: var(--gw-ink);
       font-size: 0.8rem;
       font-weight: 700;
+      min-height: 36px;
+      min-width: 36px;
       padding: 4px 8px;
       border-radius: 9px;
       cursor: pointer;
-      transition: background 0.15s;
+      transition: background-color 0.15s ease, color 0.15s ease;
     }
 
     .gw-font-pill button:hover {
@@ -376,16 +379,17 @@
     .gw-adjust {
       display: inline-flex;
       align-items: center;
+      min-height: 44px;
       gap: 7px;
       border-radius: 13px;
-      padding: 7px 13px;
+      padding: 7px 14px;
       font-size: 0.84rem;
       font-weight: 700;
       border: 1px solid var(--gw-line);
       background: var(--gw-subcard-bg);
       color: var(--gw-ink);
       cursor: pointer;
-      transition: background 0.2s, transform 0.15s;
+      transition: background-color 0.2s ease, transform 0.15s ease;
     }
 
     .gw-adjust:hover {
@@ -497,7 +501,7 @@
 
     .gw-subcard {
       background: var(--gw-subcard-bg);
-      border: 1px solid var(--gw-line);
+      border: 0;
       border-radius: 16px;
       padding: 14px 16px;
     }
@@ -534,7 +538,7 @@
       padding: 0.55rem 0.35rem;
       border-radius: 14px;
       background: var(--gw-subcard-bg);
-      border: 1px solid var(--gw-line);
+      border: 0;
       text-align: center;
       overflow: hidden;
     }
@@ -558,7 +562,6 @@
 
     .gw-cd-box.is-sec {
       background: var(--gw-accent-soft);
-      border-color: color-mix(in srgb, var(--gw-accent) 42%, transparent);
     }
 
     .gw-cd-box.is-sec .gw-cd-num,
@@ -708,6 +711,7 @@
     .gw-name-chip {
       display: inline-flex;
       align-items: center;
+      min-height: 38px;
       gap: 6px;
       padding: 6px 12px;
       border-radius: 999px;
@@ -717,7 +721,7 @@
       font-size: 0.82rem;
       font-weight: 700;
       cursor: pointer;
-      transition: all 0.15s;
+      transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
     }
 
     .gw-name-chip:hover {
@@ -733,11 +737,12 @@
     .gw-role-feature {
       display: flex;
       align-items: flex-start;
-      gap: 10px;
-      padding: 12px 14px;
-      border-radius: 16px;
-      border: 1px solid var(--gw-line);
-      background: var(--gw-subcard-bg);
+      gap: 12px;
+      padding: 12px 0;
+      border: 0;
+      border-top: 1px solid var(--gw-line);
+      border-radius: 0;
+      background: transparent;
     }
 
     .gw-role-num {
@@ -765,6 +770,7 @@
     }
 
     .gw-segment button {
+      min-height: 40px;
       padding: 0.52rem 0.98rem;
       border-radius: 12px;
       border: 0;
@@ -776,7 +782,7 @@
       display: inline-flex;
       align-items: center;
       gap: 6px;
-      transition: all 0.2s;
+      transition: background-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
     }
 
     .gw-segment button.is-active {
@@ -823,7 +829,7 @@
       align-items: center;
       justify-content: center;
       gap: 5px;
-      min-height: 40px;
+      min-height: 44px;
       border-radius: 999px;
       border: 0;
       background: transparent;
@@ -832,7 +838,7 @@
       font-size: clamp(0.76rem, 0.92vw, 0.88rem);
       font-weight: 700;
       cursor: pointer;
-      transition: background 0.22s, color 0.22s, transform 0.15s;
+      transition: background-color 0.22s ease, color 0.22s ease, transform 0.15s ease;
     }
 
     .gw-dock button[aria-current="page"] {
@@ -939,11 +945,12 @@
       background: var(--gw-subcard-bg);
       color: var(--gw-ink);
       border-radius: 10px;
-      padding: 6px 6px;
+      min-height: 38px;
+      padding: 6px 8px;
       font-size: 0.78rem;
       font-weight: 700;
       cursor: pointer;
-      transition: all 0.15s;
+      transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
     }
 
     .gw-presets button.is-fav {
@@ -1052,7 +1059,7 @@
       font-size: 0.95rem;
       font-variant-numeric: tabular-nums;
       cursor: pointer;
-      transition: all 0.16s ease;
+      transition: background-color 0.16s ease, border-color 0.16s ease, color 0.16s ease, transform 0.14s ease, box-shadow 0.16s ease;
       background: var(--gw-input-bg);
       color: var(--gw-ink);
     }
@@ -1360,9 +1367,9 @@
   }
 
   .ioc-shared-passage {
-    border-left: 3px solid var(--gw-accent);
+    border: 1px solid var(--gw-line-strong);
     background: var(--gw-accent-soft);
-    border-radius: 8px;
+    border-radius: 10px;
     padding: 8px 10px;
     font-size: 0.78rem;
     line-height: 1.55;
@@ -1464,7 +1471,7 @@
       <header class="gw-topbar gw-glass">
         <a class="gw-brand" href="#" onclick="event.preventDefault(); switchMainTab('STUDENT');">
           <span class="gw-brand-icon">
-            <i data-lucide="layers" class="w-4 h-4"></i>
+            <i data-lucide="layers" aria-hidden="true" class="w-4 h-4"></i>
           </span>
           <div class="gw-brand-text">
             <strong class="gw-brand-title">
@@ -1492,17 +1499,17 @@
           </div>
 
           <button type="button" class="gw-adjust" id="btnToggleGlassPanel" onclick="toggleGlassPanel()">
-            <i data-lucide="sliders-horizontal" class="w-4 h-4"></i>
+            <i data-lucide="sliders-horizontal" aria-hidden="true" class="w-4 h-4"></i>
             <span>ปรับแต่งกระจก</span>
           </button>
 
           <button type="button" class="gw-icon-button" aria-label="สลับโหมดสว่าง/มืด" title="สลับโหมดสว่าง / มืด" onclick="toggleWorkspaceTheme()">
-            <i data-lucide="sun" class="w-4 h-4 gw-sun"></i>
-            <i data-lucide="moon" class="w-4 h-4 gw-moon"></i>
+            <i data-lucide="sun" aria-hidden="true" class="w-4 h-4 gw-sun"></i>
+            <i data-lucide="moon" aria-hidden="true" class="w-4 h-4 gw-moon"></i>
           </button>
 
           <button type="button" class="gw-icon-button" aria-label="การแจ้งเตือน" title="กำหนดการและสถานะระบบ" onclick="toggleNotificationsPanel()">
-            <i data-lucide="bell" class="w-4 h-4"></i>
+            <i data-lucide="bell" aria-hidden="true" class="w-4 h-4"></i>
             <span class="gw-bell-dot"></span>
           </button>
         </div>
@@ -1524,13 +1531,13 @@
             </div>
             <div class="flex items-center gap-2 flex-wrap">
               <span id="gwCountdownBadge" class="gw-subcard text-xs font-bold inline-flex items-center gap-1.5 py-2 px-3.5">
-                <i data-lucide="sparkles" class="w-4 h-4" style="color: var(--gw-accent);"></i>
+                <i data-lucide="sparkles" aria-hidden="true" class="w-4 h-4" style="color: var(--gw-accent);"></i>
                 <span id="gwCountdownLabel">ครบ 4 วิชา | 108 ตัวชี้วัด สทศ. 2569</span>
               </span>
               <button type="button" id="btnDeveloperAbout" onclick="openDeveloperAboutModal()"
                       class="gw-subcard text-xs font-bold inline-flex items-center gap-1.5 py-2 px-3.5 cursor-pointer transition hover:opacity-90"
                       title="ข้อมูลผู้พัฒนาระบบและช่องทางติดต่อแจ้งปัญหา">
-                <i data-lucide="user-check" class="w-4 h-4" style="color: var(--gw-accent);"></i>
+                <i data-lucide="user-check" aria-hidden="true" class="w-4 h-4" style="color: var(--gw-accent);"></i>
                 <span>ผู้พัฒนาระบบ / เกี่ยวกับระบบ</span>
               </button>
             </div>
@@ -1571,7 +1578,7 @@
                       <span class="gw-live-dot" aria-hidden="true"></span>
                       <span>นับถอยหลังวันสอบ O-NET ป.6</span>
                     </span>
-                    <i data-lucide="timer" class="w-4 h-4" style="color: var(--gw-accent);"></i>
+                    <i data-lucide="timer" aria-hidden="true" class="w-4 h-4" style="color: var(--gw-accent);"></i>
                   </div>
 
                   <!-- 6-Unit Live Scoreboard: เดือน | อาทิตย์ | วัน | ชั่วโมง | นาที | วินาที -->
@@ -1736,7 +1743,7 @@
                   </div>
                 </div>
                 <button type="button" id="btnStudentLoginSubmit" onclick="submitStudentLogin()" class="gw-btn-primary w-full py-3 mt-4">
-                  <i data-lucide="rocket" class="w-4 h-4"></i>
+                  <i data-lucide="rocket" aria-hidden="true" class="w-4 h-4"></i>
                   <span>เข้าสู่ห้องติว O-NET ปีการศึกษา 2569</span>
                 </button>
               </div>
@@ -1755,7 +1762,7 @@
                   </div>
                 </div>
                 <div class="w-full h-3.5 rounded-full overflow-hidden" style="background: var(--gw-line);">
-                  <div id="stuProgressBar" class="h-full transition-all duration-500 rounded-full" style="width: 0%; background: var(--gw-accent);"></div>
+                  <div id="stuProgressBar" class="h-full gw-progress-fill rounded-full" style="width: 0%; background: var(--gw-accent);"></div>
                 </div>
 
                 <!-- Student Pre/Post Score Summary -->
@@ -1909,27 +1916,27 @@
                     </div>
 
                     <button type="submit" id="btnCommLoginSubmit" class="gw-btn-primary w-full py-3">
-                      <i data-lucide="log-in" class="w-4 h-4"></i>
+                      <i data-lucide="log-in" aria-hidden="true" class="w-4 h-4"></i>
                       <span>เข้าสู่ระบบคณะกรรมการจัดทำเอกสาร</span>
                     </button>
                   </form>
 
                   <!-- Committee Register Mode -->
                   <div id="commRegForm" class="hidden space-y-3.5">
-                    <div class="gw-subcard space-y-2 border" style="border-color: var(--gw-line-strong);">
+                    <div class="gw-subcard space-y-2" style="border-color: var(--gw-line-strong);">
                       <div class="text-xs font-bold" style="color: var(--gw-accent);">
                         บทบาทที่รับผิดชอบ (ติ๊กเลือกควบได้หลายบทบาท — ล็อกอินครั้งเดียวสลับเข้าเมนู 2, 3, 4 ได้ทันที)
                       </div>
                       <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs">
-                        <label class="inline-flex items-center gap-2 font-semibold cursor-pointer select-none p-2 rounded-xl border" style="border-color: var(--gw-line); background: var(--gw-surface);">
+                        <label class="inline-flex items-center gap-2 font-semibold cursor-pointer select-none py-2 px-2.5 rounded-lg" style="background: var(--gw-accent-soft);">
                           <input type="checkbox" name="regRoles_COMMITTEE" value="COMMITTEE_TEACHER" checked class="w-4 h-4 rounded cursor-pointer" style="accent-color: var(--gw-accent);">
                           <span>2. กรรมการจัดทำเอกสาร</span>
                         </label>
-                        <label class="inline-flex items-center gap-2 font-semibold cursor-pointer select-none p-2 rounded-xl border" style="border-color: var(--gw-line); background: var(--gw-surface);">
+                        <label class="inline-flex items-center gap-2 font-semibold cursor-pointer select-none py-2 px-2.5 rounded-lg" style="background: var(--gw-accent-soft);">
                           <input type="checkbox" name="regRoles_COMMITTEE" value="SUBJECT_TEACHER" class="w-4 h-4 rounded cursor-pointer" style="accent-color: var(--gw-accent);">
                           <span>3. ครูผู้สอน ป.6</span>
                         </label>
-                        <label class="inline-flex items-center gap-2 font-semibold cursor-pointer select-none p-2 rounded-xl border" style="border-color: var(--gw-line); background: var(--gw-surface);">
+                        <label class="inline-flex items-center gap-2 font-semibold cursor-pointer select-none py-2 px-2.5 rounded-lg" style="background: var(--gw-accent-soft);">
                           <input type="checkbox" name="regRoles_COMMITTEE" value="SCHOOL_ACADEMIC" class="w-4 h-4 rounded cursor-pointer" style="accent-color: var(--gw-accent);">
                           <span>4. ครูวิชาการโรงเรียน</span>
                         </label>
@@ -1963,7 +1970,7 @@
                       * ลงทะเบียนครั้งเดียว ชื่อของท่านจะขึ้นในทุกเมนูที่ติ๊กเลือก และเมื่ออนุมัติแล้วล็อกอินครั้งเดียวสลับเข้าได้ครบทุกบทบาทครับ
                     </p>
                     <button type="button" id="btnCommRegSubmit" onclick="submitRoleRegister('COMMITTEE')" class="gw-btn-primary w-full py-3">
-                      <i data-lucide="user-plus" class="w-4 h-4"></i>
+                      <i data-lucide="user-plus" aria-hidden="true" class="w-4 h-4"></i>
                       <span>ส่งลงทะเบียนชื่อครู (รอครูเกียรติศักดิ์อนุมัติ)</span>
                     </button>
                   </div>
@@ -2076,27 +2083,27 @@
                     </div>
 
                     <button type="submit" id="btnInstLoginSubmit" class="gw-btn-primary w-full py-3">
-                      <i data-lucide="book-open-check" class="w-4 h-4"></i>
+                      <i data-lucide="book-open-check" aria-hidden="true" class="w-4 h-4"></i>
                       <span>เข้าสู่ระบบครูผู้สอน ป.6 (โหลดเอกสารติว & ดูผลนักเรียน)</span>
                     </button>
                   </form>
 
                   <!-- Instructor Register Mode -->
                   <div id="instRegForm" class="hidden space-y-3.5">
-                    <div class="gw-subcard space-y-2 border" style="border-color: var(--gw-line-strong);">
+                    <div class="gw-subcard space-y-2" style="border-color: var(--gw-line-strong);">
                       <div class="text-xs font-bold" style="color: var(--gw-accent);">
                         บทบาทที่รับผิดชอบ (ติ๊กเลือกควบได้หลายบทบาท — ล็อกอินครั้งเดียวสลับเข้าเมนู 2, 3, 4 ได้ทันที)
                       </div>
                       <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs">
-                        <label class="inline-flex items-center gap-2 font-semibold cursor-pointer select-none p-2 rounded-xl border" style="border-color: var(--gw-line); background: var(--gw-surface);">
+                        <label class="inline-flex items-center gap-2 font-semibold cursor-pointer select-none py-2 px-2.5 rounded-lg" style="background: var(--gw-accent-soft);">
                           <input type="checkbox" name="regRoles_INSTRUCTOR" value="COMMITTEE_TEACHER" class="w-4 h-4 rounded cursor-pointer" style="accent-color: var(--gw-accent);">
                           <span>2. กรรมการจัดทำเอกสาร</span>
                         </label>
-                        <label class="inline-flex items-center gap-2 font-semibold cursor-pointer select-none p-2 rounded-xl border" style="border-color: var(--gw-line); background: var(--gw-surface);">
+                        <label class="inline-flex items-center gap-2 font-semibold cursor-pointer select-none py-2 px-2.5 rounded-lg" style="background: var(--gw-accent-soft);">
                           <input type="checkbox" name="regRoles_INSTRUCTOR" value="SUBJECT_TEACHER" checked class="w-4 h-4 rounded cursor-pointer" style="accent-color: var(--gw-accent);">
                           <span>3. ครูผู้สอน ป.6</span>
                         </label>
-                        <label class="inline-flex items-center gap-2 font-semibold cursor-pointer select-none p-2 rounded-xl border" style="border-color: var(--gw-line); background: var(--gw-surface);">
+                        <label class="inline-flex items-center gap-2 font-semibold cursor-pointer select-none py-2 px-2.5 rounded-lg" style="background: var(--gw-accent-soft);">
                           <input type="checkbox" name="regRoles_INSTRUCTOR" value="SCHOOL_ACADEMIC" class="w-4 h-4 rounded cursor-pointer" style="accent-color: var(--gw-accent);">
                           <span>4. ครูวิชาการโรงเรียน</span>
                         </label>
@@ -2130,7 +2137,7 @@
                       * ลงทะเบียนครั้งเดียว ชื่อของท่านจะขึ้นในทุกเมนูที่ติ๊กเลือก และเมื่ออนุมัติแล้วล็อกอินครั้งเดียวสลับเข้าได้ครบทุกบทบาทครับ
                     </p>
                     <button type="button" id="btnInstRegSubmit" onclick="submitRoleRegister('INSTRUCTOR')" class="gw-btn-primary w-full py-3">
-                      <i data-lucide="user-plus" class="w-4 h-4"></i>
+                      <i data-lucide="user-plus" aria-hidden="true" class="w-4 h-4"></i>
                       <span>ส่งลงทะเบียนชื่อครู (รอครูเกียรติศักดิ์อนุมัติ)</span>
                     </button>
                   </div>
@@ -2243,27 +2250,27 @@
                     </div>
 
                     <button type="submit" id="btnAcadLoginSubmit" class="gw-btn-primary w-full py-3">
-                      <i data-lucide="clipboard-check" class="w-4 h-4"></i>
+                      <i data-lucide="clipboard-check" aria-hidden="true" class="w-4 h-4"></i>
                       <span>เข้าสู่ระบบครูวิชาการ (จัดการรายชื่อ & กรอกข้อมูล)</span>
                     </button>
                   </form>
 
                   <!-- Academic Register Mode -->
                   <div id="acadRegForm" class="hidden space-y-3.5">
-                    <div class="gw-subcard space-y-2 border" style="border-color: var(--gw-line-strong);">
+                    <div class="gw-subcard space-y-2" style="border-color: var(--gw-line-strong);">
                       <div class="text-xs font-bold" style="color: var(--gw-accent);">
                         บทบาทที่รับผิดชอบ (ติ๊กเลือกควบได้หลายบทบาท — ล็อกอินครั้งเดียวสลับเข้าเมนู 2, 3, 4 ได้ทันที)
                       </div>
                       <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs">
-                        <label class="inline-flex items-center gap-2 font-semibold cursor-pointer select-none p-2 rounded-xl border" style="border-color: var(--gw-line); background: var(--gw-surface);">
+                        <label class="inline-flex items-center gap-2 font-semibold cursor-pointer select-none py-2 px-2.5 rounded-lg" style="background: var(--gw-accent-soft);">
                           <input type="checkbox" name="regRoles_ACADEMIC" value="COMMITTEE_TEACHER" class="w-4 h-4 rounded cursor-pointer" style="accent-color: var(--gw-accent);">
                           <span>2. กรรมการจัดทำเอกสาร</span>
                         </label>
-                        <label class="inline-flex items-center gap-2 font-semibold cursor-pointer select-none p-2 rounded-xl border" style="border-color: var(--gw-line); background: var(--gw-surface);">
+                        <label class="inline-flex items-center gap-2 font-semibold cursor-pointer select-none py-2 px-2.5 rounded-lg" style="background: var(--gw-accent-soft);">
                           <input type="checkbox" name="regRoles_ACADEMIC" value="SUBJECT_TEACHER" class="w-4 h-4 rounded cursor-pointer" style="accent-color: var(--gw-accent);">
                           <span>3. ครูผู้สอน ป.6</span>
                         </label>
-                        <label class="inline-flex items-center gap-2 font-semibold cursor-pointer select-none p-2 rounded-xl border" style="border-color: var(--gw-line); background: var(--gw-surface);">
+                        <label class="inline-flex items-center gap-2 font-semibold cursor-pointer select-none py-2 px-2.5 rounded-lg" style="background: var(--gw-accent-soft);">
                           <input type="checkbox" name="regRoles_ACADEMIC" value="SCHOOL_ACADEMIC" checked class="w-4 h-4 rounded cursor-pointer" style="accent-color: var(--gw-accent);">
                           <span>4. ครูวิชาการโรงเรียน</span>
                         </label>
@@ -2297,7 +2304,7 @@
                       * ลงทะเบียนครั้งเดียว ชื่อของท่านจะขึ้นในทุกเมนูที่ติ๊กเลือก และเมื่ออนุมัติแล้วล็อกอินครั้งเดียวสลับเข้าได้ครบทุกบทบาทครับ
                     </p>
                     <button type="button" id="btnAcadRegSubmit" onclick="submitRoleRegister('ACADEMIC')" class="gw-btn-primary w-full py-3">
-                      <i data-lucide="user-plus" class="w-4 h-4"></i>
+                      <i data-lucide="user-plus" aria-hidden="true" class="w-4 h-4"></i>
                       <span>ส่งลงทะเบียนชื่อครู (รอครูเกียรติศักดิ์อนุมัติ)</span>
                     </button>
                   </div>
@@ -2328,7 +2335,7 @@
                 <button type="button" id="btnAdminProfileCard" onclick="selectAdminProfile(true)" class="gw-profile-card is-selected">
                   <div class="flex items-center gap-3.5">
                     <span class="gw-profile-avatar">
-                      <i data-lucide="shield-check" class="w-5 h-5"></i>
+                      <i data-lucide="shield-check" aria-hidden="true" class="w-5 h-5"></i>
                     </span>
                     <div>
                       <div class="text-sm sm:text-base font-bold">นายเกียรติศักดิ์ กรุณา</div>
@@ -2370,7 +2377,7 @@
                 </div>
 
                 <button type="submit" id="btnAdminLoginSubmit" class="gw-btn-primary w-full py-3">
-                  <i data-lucide="shield-check" class="w-4 h-4"></i>
+                  <i data-lucide="shield-check" aria-hidden="true" class="w-4 h-4"></i>
                   <span>เข้าสู่แดชบอร์ดผู้ดูแลระบบกลุ่มฯ</span>
                 </button>
               </div>
@@ -2407,13 +2414,13 @@
                 </div>
 
                 <!-- Category & Exam Settings -->
-                <div class="gw-subcard space-y-3 border" style="border-color: var(--gw-line-strong);">
+                <div class="gw-subcard space-y-3" style="border-color: var(--gw-line-strong);">
                   <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 items-end">
                     <div class="sm:col-span-1">
                       <label for="upDocCategory" class="gw-label">ประเภทงานที่จัดทำส่ง</label>
                       <select id="upDocCategory" onchange="onUploadCategoryChange()" class="gw-input font-bold">
-                        <option value="TUTORING_STRAND">📚 เอกสารยกระดับตามสาระฯ</option>
-                        <option value="PREPOST_EXAM">📝 ข้อสอบคู่ขนาน Pre-Post O-NET</option>
+                        <option value="TUTORING_STRAND">เอกสารยกระดับตามสาระฯ</option>
+                        <option value="PREPOST_EXAM">ข้อสอบคู่ขนาน Pre-Post O-NET</option>
                       </select>
                     </div>
                     <div id="upExamRoundWrap" class="hidden">
@@ -2432,7 +2439,7 @@
                       </select>
                     </div>
                   </div>
-                  <div id="upPrePostGuideNote" class="hidden text-xs rounded-xl px-3 py-2 border" style="background: var(--gw-accent-soft); border-color: var(--gw-line); color: var(--gw-accent);">
+                  <div id="upPrePostGuideNote" class="hidden text-xs pt-2" style="color: var(--gw-accent);">
                     <strong>แนวทางปฏิบัติตามผัง สทศ.:</strong> 1) ส่งข้อสอบ <strong>Pre-Test</strong> เป็นต้นแบบก่อน (ระบบล็อกเลขข้อตามสาระ/ตัวชี้วัดให้อัตโนมัติ) 2) ออกแบบ <strong>Post-Test</strong> คู่ขนาน 3) กรรมการทุกท่านร่วมตรวจลงคะแนน <strong>IOC (+1 / 0 / -1)</strong> แบบ 2 หน้าจอคู่ขนานที่เมนูย่อย 3 ก่อนแอดมินอนุมัติรวมเล่ม
                   </div>
                 </div>
@@ -2460,48 +2467,48 @@
                 <div id="expectedIndicatorsBox" class="gw-subcard text-xs space-y-1.5"></div>
 
                 <!-- Anti-Layout-Shift Word Template Box (Complete 4 Editions + 1-Click ZIP) -->
-                <div class="gw-subcard space-y-3 border-2" style="border-color: var(--gw-accent-soft);">
+                <div class="gw-subcard space-y-3" style="border-color: var(--gw-accent-soft);">
                   <div class="flex flex-wrap items-start justify-between gap-2 text-xs">
                     <div>
-                      <div class="font-bold text-sm" style="color: var(--gw-accent);">🛡️ ดาวน์โหลดชุดแม่แบบมาตรฐานครบ 4 ฉบับ (A4 TH SarabunPSK + ล็อกเลขข้อตามผัง สทศ. 2569)</div>
+                      <div class="font-bold text-sm" style="color: var(--gw-accent);">ดาวน์โหลดชุดแม่แบบมาตรฐานครบ 4 ฉบับ (A4 TH SarabunPSK + ล็อกเลขข้อตามผัง สทศ. 2569)</div>
                       <div style="color: var(--gw-muted);">เลือกวิชา สาระ และวิธีแบ่งงานด้านบน แล้วกดดาวน์โหลดครบทั้ง 4 ฉบับรวดเดียว (.zip) หรือเลือกโหลดเฉพาะฉบับที่ต้องการได้เลยครับ</div>
                     </div>
                     <button type="button" id="btnDownload4PackZip" onclick="downloadAll4StrandTemplatesZip()" class="gw-btn-primary text-xs !py-2 !px-3.5 !font-bold shrink-0">
-                      <i data-lucide="package-check" class="w-4 h-4"></i>
-                      <span>📦 โหลดครบทั้ง 4 ฉบับรวดเดียว (.zip)</span>
+                      <i data-lucide="package-check" aria-hidden="true" class="w-4 h-4"></i>
+                      <span>โหลดครบทั้ง 4 ฉบับรวดเดียว (.zip)</span>
                     </button>
                   </div>
                   <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
                     <button type="button" onclick="downloadSpecificTemplateEdition('PREPOST_EXAM', 'STUDENT')" class="gw-btn-soft text-xs !py-2 !px-3 !font-bold justify-start border text-left" style="border-color: var(--gw-accent);">
-                      <i data-lucide="file-down" class="w-4 h-4 shrink-0"></i>
-                      <span>1️⃣ ฉบับที่ 1: ข้อสอบ Pre/Post — ฉบับนักเรียน (.docx)</span>
+                      <i data-lucide="file-down" aria-hidden="true" class="w-4 h-4 shrink-0"></i>
+                      <span>ฉบับที่ 1: ข้อสอบ Pre/Post — ฉบับนักเรียน (.docx)</span>
                     </button>
                     <button type="button" onclick="downloadSpecificTemplateEdition('PREPOST_EXAM', 'TEACHER')" class="gw-btn-soft text-xs !py-2 !px-3 !font-bold justify-start border text-left" style="border-color: var(--gw-danger-bd); color: var(--gw-danger-ink);">
-                      <i data-lucide="file-down" class="w-4 h-4 shrink-0"></i>
-                      <span>2️⃣ ฉบับที่ 2: ข้อสอบ Pre/Post — ฉบับครู+เฉลย (.docx)</span>
+                      <i data-lucide="file-down" aria-hidden="true" class="w-4 h-4 shrink-0"></i>
+                      <span>ฉบับที่ 2: ข้อสอบ Pre/Post — ฉบับครู+เฉลย (.docx)</span>
                     </button>
                     <button type="button" onclick="downloadSpecificTemplateEdition('TUTORING_STRAND', 'STUDENT')" class="gw-btn-soft text-xs !py-2 !px-3 !font-bold justify-start border text-left" style="border-color: var(--gw-accent);">
-                      <i data-lucide="file-down" class="w-4 h-4 shrink-0"></i>
-                      <span>3️⃣ ฉบับที่ 3: เอกสารยกระดับฯ — ฉบับนักเรียน (.docx)</span>
+                      <i data-lucide="file-down" aria-hidden="true" class="w-4 h-4 shrink-0"></i>
+                      <span>ฉบับที่ 3: เอกสารยกระดับฯ — ฉบับนักเรียน (.docx)</span>
                     </button>
                     <button type="button" onclick="downloadSpecificTemplateEdition('TUTORING_STRAND', 'TEACHER')" class="gw-btn-soft text-xs !py-2 !px-3 !font-bold justify-start border text-left" style="border-color: var(--gw-danger-bd); color: var(--gw-danger-ink);">
-                      <i data-lucide="file-down" class="w-4 h-4 shrink-0"></i>
-                      <span>4️⃣ ฉบับที่ 4: เอกสารยกระดับฯ — ฉบับครู+เฉลย (.docx)</span>
+                      <i data-lucide="file-down" aria-hidden="true" class="w-4 h-4 shrink-0"></i>
+                      <span>ฉบับที่ 4: เอกสารยกระดับฯ — ฉบับครู+เฉลย (.docx)</span>
                     </button>
                   </div>
-                  <div class="rounded-lg px-3 py-2 text-[11px] leading-relaxed border" style="background: var(--gw-input-bg); border-color: var(--gw-line); color: var(--gw-muted);">
+                  <div class="pt-2 text-[11px] leading-relaxed" style="border-top: 1px solid var(--gw-line); color: var(--gw-muted);">
                     <strong style="color: var(--gw-ink);">วิธีอัปโหลดส่งคืนทั้ง 4 ฉบับ (ส่งทีละคู่ 2 ช่องด้านล่าง):</strong>
-                    ① เลือกประเภทงาน <strong>"📚 เอกสารยกระดับตามสาระฯ"</strong> → แนบ <strong>ฉบับที่ 3</strong> (ช่องซ้าย) คู่กับ <strong>ฉบับที่ 4</strong> (ช่องขวา) กดอัปโหลด (ระบบดึงเข้าคลังฝึกออนไลน์อัตโนมัติ) &nbsp;|&nbsp;
-                    ② เปลี่ยนประเภทงานเป็น <strong>"📝 ข้อสอบคู่ขนาน Pre-Post"</strong> (เลือกรอบ Pre หรือ Post) → แนบ <strong>ฉบับที่ 1</strong> (ช่องซ้าย) คู่กับ <strong>ฉบับที่ 2</strong> (ช่องขวา) กดอัปโหลด (ส่งเข้าหน้าตรวจ IOC 2 หน้าจออัตโนมัติ)
+                    ① เลือกประเภทงาน <strong>“เอกสารยกระดับตามสาระฯ”</strong> → แนบ <strong>ฉบับที่ 3</strong> (ช่องซ้าย) คู่กับ <strong>ฉบับที่ 4</strong> (ช่องขวา) กดอัปโหลด (ระบบดึงเข้าคลังฝึกออนไลน์อัตโนมัติ) &nbsp;|&nbsp;
+                    ② เปลี่ยนประเภทงานเป็น <strong>“ข้อสอบคู่ขนาน Pre-Post”</strong> (เลือกรอบ Pre หรือ Post) → แนบ <strong>ฉบับที่ 1</strong> (ช่องซ้าย) คู่กับ <strong>ฉบับที่ 2</strong> (ช่องขวา) กดอัปโหลด (ส่งเข้าหน้าตรวจ IOC 2 หน้าจออัตโนมัติ)
                   </div>
                 </div>
 
                 <!-- Paired Upload Slots: Student Edition & Teacher Edition -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                   <!-- Slot 1: Student Edition -->
-                  <div class="gw-subcard space-y-2.5 border" style="border-color: var(--gw-accent);">
+                  <div class="gw-subcard space-y-2.5" style="border-color: var(--gw-accent);">
                     <div class="flex items-center justify-between gap-2">
-                      <span class="font-bold text-xs" style="color: var(--gw-accent);">📘 1. ไฟล์ฉบับนักเรียน (ห้ามมีเฉลย)</span>
+                      <span class="font-bold text-xs" style="color: var(--gw-accent);">1. ไฟล์ฉบับนักเรียน (ห้ามมีเฉลย)</span>
                       <span class="px-2 py-0.5 rounded-full text-[10px] font-bold" style="background: var(--gw-accent-soft); color: var(--gw-accent);">บล็อกเฉลยอัตโนมัติ</span>
                     </div>
                     <div>
@@ -2519,9 +2526,9 @@
                   </div>
 
                   <!-- Slot 2: Teacher Edition -->
-                  <div class="gw-subcard space-y-2.5 border" style="border-color: var(--gw-danger-bd);">
+                  <div class="gw-subcard space-y-2.5" style="border-color: var(--gw-danger-bd);">
                     <div class="flex items-center justify-between gap-2">
-                      <span class="font-bold text-xs" style="color: var(--gw-danger-ink);">📕 2. ไฟล์ฉบับครู (มีเฉลยและวิธีคิด)</span>
+                      <span class="font-bold text-xs" style="color: var(--gw-danger-ink);">2. ไฟล์ฉบับครู (มีเฉลยและวิธีคิด)</span>
                       <span class="px-2 py-0.5 rounded-full text-[10px] font-bold gw-badge-danger">ต้องมีเฉลย+วิธีคิด</span>
                     </div>
                     <div>
@@ -2539,10 +2546,10 @@
                   </div>
                 </div>
 
-                <div id="autoSyncPracticeToggleBox" class="rounded-xl border px-3 py-2.5 text-xs space-y-1" style="background: var(--gw-accent-soft); border-color: var(--gw-line);">
+                <div id="autoSyncPracticeToggleBox" class="gw-subcard text-xs space-y-1">
                   <label class="flex items-start gap-2 cursor-pointer font-bold" style="color: var(--gw-accent);">
                     <input type="checkbox" id="chkAutoSyncPracticeOnUpload" checked class="mt-0.5 rounded">
-                    <span>⚡ ให้ระบบดึงสรุปความรู้และโจทย์แบบฝึก 4 ตัวเลือกจากไฟล์ที่ส่ง เข้า "คลังฝึกออนไลน์นักเรียน (เมนูย่อย 2)" ให้อัตโนมัติ</span>
+                    <span>ให้ระบบดึงสรุปความรู้และโจทย์แบบฝึก 4 ตัวเลือกจากไฟล์ที่ส่ง เข้า "คลังฝึกออนไลน์นักเรียน (เมนูย่อย 2)" ให้อัตโนมัติ</span>
                   </label>
                   <div class="pl-5 text-[11px]" style="color: var(--gw-muted);">
                     เมื่อแนบไฟล์เอกสารยกระดับฯ (ฉบับครู หรือคู่ฉบับนักเรียน+ฉบับครู) ระบบจะสกัดสรุปความรู้ ส่วนที่ 1, โจทย์ตัวเลือก ส่วนที่ 2 และเฉลยวิธีคิด ส่วนที่ 3 เข้าห้องติวนักเรียนให้อัตโนมัติโดยไม่ต้องพิมพ์ซ้ำ
@@ -2554,7 +2561,7 @@
                 </p>
 
                 <button type="button" id="btnUploadManuscript" onclick="submitCommitteeUpload()" class="gw-btn-primary w-full py-3">
-                  <i data-lucide="cloud-upload" class="w-4 h-4"></i>
+                  <i data-lucide="cloud-upload" aria-hidden="true" class="w-4 h-4"></i>
                   <span>อัปโหลดไฟล์ที่เลือกเข้า Google Drive (wkha@saraburi2.go.th)</span>
                 </button>
               </div>
@@ -2597,17 +2604,17 @@
                       <option value="63">เฉพาะภาษาอังกฤษ (63)</option>
                     </select>
                     <button type="button" id="btnSyncPracticeFromSubmitted" onclick="syncPracticeBankFromSubmittedDocs()" class="gw-btn-primary !py-2 !px-3.5 text-xs font-bold">
-                      <i data-lucide="sparkles" class="w-4 h-4"></i>
+                      <i data-lucide="sparkles" aria-hidden="true" class="w-4 h-4"></i>
                       <span>ดึงโจทย์จากไฟล์ที่ครูส่งแล้วอัตโนมัติ</span>
                     </button>
-                    <input type="file" id="pbQuickImportDocxInput" accept=".docx,application/vnd.openxmlformats-officedocument.wordprocessingml.document" multiple class="hidden" onchange="importPracticeFromLocalDocxFiles(this)">
+                    <input type="file" id="pbQuickImportDocxInput" aria-label="เลือกไฟล์ Word (.docx) เพื่อดึงโจทย์เข้าคลัง" accept=".docx,application/vnd.openxmlformats-officedocument.wordprocessingml.document" multiple class="hidden" onchange="importPracticeFromLocalDocxFiles(this)">
                     <button type="button" id="btnPbLocalDocxImport" onclick="document.getElementById('pbQuickImportDocxInput').click()" class="gw-btn-soft !py-2 !px-3 text-xs font-bold">
-                      <i data-lucide="file-up" class="w-4 h-4"></i>
+                      <i data-lucide="file-up" aria-hidden="true" class="w-4 h-4"></i>
                       <span>เลือกไฟล์ .docx จากเครื่อง</span>
                     </button>
                   </div>
                 </div>
-                <div id="pbAutoSyncResultBox" class="hidden rounded-xl border px-3 py-2 text-xs" style="background: var(--gw-input-bg); border-color: var(--gw-line);"></div>
+                <div id="pbAutoSyncResultBox" class="hidden gw-subcard text-xs"></div>
               </div>
 
               <div class="lg:col-span-6 gw-panel gw-reveal space-y-3">
@@ -2646,11 +2653,11 @@
                 </div>
                 <div>
                   <label for="pbSummaryText" class="gw-label">เนื้อหาสรุปสั้นก่อนทำโจทย์</label>
-                  <textarea id="pbSummaryText" rows="2" placeholder="สรุปหลักการสำคัญสั้น ๆ ให้นักเรียนทบทวนก่อนตอบ..." class="gw-input text-xs"></textarea>
+                  <textarea id="pbSummaryText" rows="2" placeholder="สรุปหลักการสำคัญสั้น ๆ ให้นักเรียนทบทวนก่อนตอบ…" class="gw-input text-xs"></textarea>
                 </div>
                 <div>
                   <label for="pbQuestionText" class="gw-label">โจทย์คำถาม</label>
-                  <textarea id="pbQuestionText" rows="3" placeholder="พิมพ์โจทย์คำถามให้นักเรียนเลือกตอบ..." class="gw-input text-xs"></textarea>
+                  <textarea id="pbQuestionText" rows="3" placeholder="พิมพ์โจทย์คำถามให้นักเรียนเลือกตอบ…" class="gw-input text-xs"></textarea>
                 </div>
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
                   <div>
@@ -2682,11 +2689,11 @@
                   </div>
                   <div class="sm:col-span-2">
                     <label for="pbExplanation" class="gw-label">คำอธิบายเฉลยละเอียด</label>
-                    <textarea id="pbExplanation" rows="2" placeholder="อธิบายวิธีคิดเมื่อนักเรียนตอบเสร็จ..." class="gw-input text-xs"></textarea>
+                    <textarea id="pbExplanation" rows="2" placeholder="อธิบายวิธีคิดเมื่อนักเรียนตอบเสร็จ…" class="gw-input text-xs"></textarea>
                   </div>
                 </div>
                 <button type="button" id="btnPbSave" onclick="savePracticeBankItem()" class="gw-btn-primary w-full py-2.5 text-xs">
-                  <i data-lucide="save" class="w-4 h-4"></i>
+                  <i data-lucide="save" aria-hidden="true" class="w-4 h-4"></i>
                   <span>บันทึกข้อสอบเข้าคลังฝึกออนไลน์</span>
                 </button>
               </div>
@@ -2734,19 +2741,19 @@
                 </div>
 
                 <!-- Quorum & IOC Summary Banner -->
-                <div id="iocQuorumSummaryBox" class="rounded-xl border px-3 py-2 space-y-1.5 text-xs" style="background: var(--gw-input-bg); border-color: var(--gw-line);"></div>
+                <div id="iocQuorumSummaryBox" class="gw-subcard space-y-1.5 text-xs"></div>
 
                 <!-- Quick Toolbar -->
                 <div class="flex flex-wrap items-center justify-between gap-2">
                   <div class="flex flex-wrap gap-2">
                     <button type="button" id="btnIocMarkAllPlusOne" onclick="markAllIocPlusOne()" class="gw-btn-soft text-xs !py-2 !px-3 font-bold border" style="border-color: var(--gw-accent); color: var(--gw-accent);">
-                      ⚡ ให้ +1 (สอดคล้อง) ทุกข้อตั้งต้น
+                      <i data-lucide="zap" aria-hidden="true" class="w-3.5 h-3.5"></i><span>ให้ +1 (สอดคล้อง) ทุกข้อตั้งต้น</span>
                     </button>
                     <button type="button" onclick="previewAndPrintIocA4Report('COMM')" class="gw-btn-soft text-xs !py-2 !px-3 font-bold">
-                      🖨️ พิมพ์สรุปผล IOC (A4)
+                      <i data-lucide="printer" aria-hidden="true" class="w-3.5 h-3.5"></i><span>พิมพ์สรุปผล IOC (A4)</span>
                     </button>
                     <button type="button" onclick="exportOfficialIocDocx('COMM')" class="gw-btn-soft text-xs !py-2 !px-3 font-bold">
-                      📄 ดาวน์โหลดรายงาน IOC (.docx)
+                      <i data-lucide="file-down" aria-hidden="true" class="w-3.5 h-3.5"></i><span>ดาวน์โหลดรายงาน IOC (.docx)</span>
                     </button>
                   </div>
                   <div id="iocReadOnlyBadge" class="hidden text-xs font-bold px-3 py-1 rounded-full gw-badge-warn whitespace-nowrap">
@@ -2768,7 +2775,7 @@
                 <div id="iocSplitLeftCol" class="lg:col-span-6 gw-panel space-y-3">
                   <div class="flex flex-wrap items-center justify-between gap-2 pb-2 border-b" style="border-color: var(--gw-line);">
                     <div>
-                      <h3 class="text-sm sm:text-base font-bold">📝 ฝั่งซ้าย: ประเมิน IOC รายข้อ (+1 / 0 / -1)</h3>
+                      <h3 class="text-sm sm:text-base font-bold">ฝั่งซ้าย: ประเมิน IOC รายข้อ (+1 / 0 / -1)</h3>
                       <p class="text-[11px]" style="color: var(--gw-muted);">คลิกที่ข้อใดก็ได้เพื่อซิงค์เลื่อนดูโจทย์ฝั่งขวาทันที</p>
                     </div>
                     <div class="flex items-center gap-1.5 flex-wrap">
@@ -2787,11 +2794,11 @@
                   <div class="space-y-2 pt-2.5 border-t" style="border-color: var(--gw-line);">
                     <div>
                       <label for="iocSummaryNote" class="gw-label">ความเห็นภาพรวมของกรรมการต่อข้อสอบชุดนี้ (ถ้ามี)</label>
-                      <input type="text" id="iocSummaryNote" placeholder="เช่น ข้อสอบตรงตัวชี้วัด เหมาะสมกับระดับชั้น ป.6 พร้อมนำไปใช้สอบจริง..." class="gw-input text-xs">
+                      <input type="text" id="iocSummaryNote" placeholder="เช่น ข้อสอบตรงตัวชี้วัด เหมาะสมกับระดับชั้น ป.6 พร้อมนำไปใช้สอบจริง…" class="gw-input text-xs">
                     </div>
                     <button type="button" id="btnSaveMyIoc" onclick="saveCommitteeIocReview()" class="gw-btn-primary w-full py-2.5 text-xs">
-                      <i data-lucide="check-circle-2" class="w-4 h-4"></i>
-                      <span>💾 บันทึกผลประเมิน IOC ของฉัน</span>
+                      <i data-lucide="check-circle-2" aria-hidden="true" class="w-4 h-4"></i>
+                      <span>บันทึกผลประเมิน IOC ของฉัน</span>
                     </button>
                   </div>
                 </div>
@@ -2801,20 +2808,20 @@
                   <div class="flex flex-wrap items-center justify-between gap-2 pb-2 border-b" style="border-color: var(--gw-line);">
                     <div class="min-w-0">
                       <div class="flex flex-wrap items-center gap-1.5">
-                        <h3 class="text-sm sm:text-base font-bold">📖 ฝั่งขวา: ข้อสอบรายข้อ</h3>
-                        <span id="iocRightSourceBadge" class="px-2 py-0.5 rounded-full text-[10px] font-bold whitespace-nowrap" style="background: var(--gw-accent-soft); color: var(--gw-accent);">กำลังโหลด...</span>
+                        <h3 class="text-sm sm:text-base font-bold">ฝั่งขวา: ข้อสอบรายข้อ</h3>
+                        <span id="iocRightSourceBadge" class="px-2 py-0.5 rounded-full text-[10px] font-bold whitespace-nowrap" style="background: var(--gw-accent-soft); color: var(--gw-accent);">กำลังโหลด…</span>
                       </div>
                       <p class="text-[11px]" style="color: var(--gw-muted);">แสดงตัวโจทย์ ตัวเลือก ภาพประกอบ ตาราง และเฉลยวิธีคิดรายข้อ</p>
                     </div>
                     <div class="flex flex-wrap items-center gap-1.5">
                       <button type="button" id="btnIocRightModeItems" onclick="setIocRightViewMode('ITEMS')" class="gw-btn-soft !py-1 !px-2.5 text-[11px] font-bold border" style="border-color: var(--gw-accent); color: var(--gw-accent);">
-                        📋 รายข้อ
+                        <i data-lucide="list-checks" aria-hidden="true" class="w-3.5 h-3.5"></i><span>รายข้อ</span>
                       </button>
                       <button type="button" id="btnIocRightModeDoc" onclick="setIocRightViewMode('DOC')" class="gw-btn-soft !py-1 !px-2.5 text-[11px] font-bold">
-                        📄 ไฟล์ต้นฉบับ
+                        <i data-lucide="file-text" aria-hidden="true" class="w-3.5 h-3.5"></i><span>ไฟล์ต้นฉบับ</span>
                       </button>
                       <button type="button" id="btnToggleIocShowKey" onclick="toggleIocRightShowKey()" class="gw-btn-soft !py-1 !px-2.5 text-[11px] font-bold">
-                        🔑 เฉลย: แสดง
+                        เฉลย: แสดง
                       </button>
                     </div>
                   </div>
@@ -2825,7 +2832,7 @@
                   <!-- Mode 2: Original Uploaded PDF / Docx Preview + Links -->
                   <div id="iocRawDocPreviewBox" class="hidden space-y-2.5">
                     <div id="iocRefDocsBox" class="space-y-1.5 text-xs"></div>
-                    <div id="iocRawDocIframeWrap" class="rounded-xl border overflow-hidden" style="border-color: var(--gw-line); min-height: 520px; background: var(--gw-input-bg);"></div>
+                    <div id="iocRawDocIframeWrap" class="p-3 rounded-xl overflow-hidden" style="border-color: var(--gw-line); min-height: 520px; background: var(--gw-input-bg);"></div>
                   </div>
                 </div>
               </div>
@@ -2858,7 +2865,7 @@
                     <p class="text-xs" style="color: var(--gw-muted);">ดาวน์โหลดไฟล์ PDF ล็อกหน้าพร้อมพิมพ์แจกนักเรียน หรือไฟล์ Word (.docx) ที่ผ่านการตรวจแล้วไปใช้สอนเสริมได้ทันที</p>
                   </div>
                   <button type="button" onclick="loadInstructorMaterials()" class="gw-btn-soft text-xs !font-bold">
-                    <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i>
+                    <i data-lucide="refresh-cw" aria-hidden="true" class="w-3.5 h-3.5"></i>
                     <span>อัปเดตรายการไฟล์ล่าสุด</span>
                   </button>
                 </div>
@@ -2873,9 +2880,9 @@
 
                 <div class="flex flex-wrap gap-2 text-xs" role="group" aria-label="กรองประเภทเอกสารครูผู้สอน">
                   <button type="button" id="instMatCat_ALL" onclick="filterInstructorMaterialCategory('ALL')" class="gw-btn-primary !py-1.5 !px-3 text-xs">ทุกประเภท</button>
-                  <button type="button" id="instMatCat_MERGED_BOOK" onclick="filterInstructorMaterialCategory('MERGED_BOOK')" class="gw-btn-soft !py-1.5 !px-3 text-xs">📚 เล่มรวมสมบูรณ์</button>
-                  <button type="button" id="instMatCat_PREPOST_EXAM" onclick="filterInstructorMaterialCategory('PREPOST_EXAM')" class="gw-btn-soft !py-1.5 !px-3 text-xs">📝 ข้อสอบ Pre-Post</button>
-                  <button type="button" id="instMatCat_TUTORING_STRAND" onclick="filterInstructorMaterialCategory('TUTORING_STRAND')" class="gw-btn-soft !py-1.5 !px-3 text-xs">📄 เอกสารตามสาระฯ</button>
+                  <button type="button" id="instMatCat_MERGED_BOOK" onclick="filterInstructorMaterialCategory('MERGED_BOOK')" class="gw-btn-soft !py-1.5 !px-3 text-xs">เล่มรวมสมบูรณ์</button>
+                  <button type="button" id="instMatCat_PREPOST_EXAM" onclick="filterInstructorMaterialCategory('PREPOST_EXAM')" class="gw-btn-soft !py-1.5 !px-3 text-xs">ข้อสอบ Pre-Post</button>
+                  <button type="button" id="instMatCat_TUTORING_STRAND" onclick="filterInstructorMaterialCategory('TUTORING_STRAND')" class="gw-btn-soft !py-1.5 !px-3 text-xs">เอกสารตามสาระฯ</button>
                 </div>
 
                 <div id="instFeaturedMaterials" class="hidden space-y-2"></div>
@@ -2904,7 +2911,7 @@
                     </div>
                   </div>
                   <button type="button" onclick="loadInstructorWeaknessView()" class="gw-btn-soft text-xs !font-bold">
-                    <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i>
+                    <i data-lucide="refresh-cw" aria-hidden="true" class="w-3.5 h-3.5"></i>
                     <span>รีเฟรชผลวิเคราะห์</span>
                   </button>
                 </div>
@@ -2961,7 +2968,7 @@
                     </div>
                   </div>
                   <button type="button" onclick="loadInstructorPracticeTracking()" class="gw-btn-soft text-xs !font-bold">
-                    <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i>
+                    <i data-lucide="refresh-cw" aria-hidden="true" class="w-3.5 h-3.5"></i>
                     <span>อัปเดตความก้าวหน้าล่าสุด</span>
                   </button>
                 </div>
@@ -3034,7 +3041,7 @@
                   <span id="gradeExistingBadge" class="hidden px-2.5 py-1 rounded-full font-bold gw-badge-success"></span>
                 </div>
                 <div style="color: var(--gw-muted);">
-                  ⌨️ <b>คีย์ลัดตรวจไว:</b> พิมพ์เลข <b>1–4</b> เลือกและข้ามข้ออัตโนมัติ | <b>↑↓</b> เลื่อนข้อ | <b>Backspace</b> ล้างข้อ | <b>Ctrl+Enter</b> บันทึกและไปคนถัดไป
+                  <b>คีย์ลัดตรวจไว:</b> พิมพ์เลข <b>1–4</b> เลือกและข้ามข้ออัตโนมัติ | <b>↑↓</b> เลื่อนข้อ | <b>Backspace</b> ล้างข้อ | <b>Ctrl+Enter</b> บันทึกและไปคนถัดไป
                 </div>
               </div>
 
@@ -3045,12 +3052,12 @@
                 <div id="lastGradedScoreBanner" class="text-sm font-bold gw-tabular" style="color: var(--gw-accent);"></div>
                 <div class="flex flex-wrap gap-2">
                   <button type="button" onclick="submitAnswerSheet(false)" class="gw-btn-soft px-4 py-3 text-xs !font-bold">
-                    <i data-lucide="check-circle-2" class="w-4 h-4"></i>
+                    <i data-lucide="check-circle-2" aria-hidden="true" class="w-4 h-4"></i>
                     <span>ตรวจคำตอบและบันทึกคะแนน</span>
                   </button>
                   <button type="button" id="btnSaveAndNextStudent" onclick="submitAnswerSheet(true)" class="gw-btn-primary px-5 py-3 text-xs">
-                    <i data-lucide="fast-forward" class="w-4 h-4"></i>
-                    <span>บันทึกและไปคนถัดไป ➔</span>
+                    <i data-lucide="fast-forward" aria-hidden="true" class="w-4 h-4"></i>
+                    <span>บันทึกและไปคนถัดไป</span><i data-lucide="arrow-right" aria-hidden="true" class="w-4 h-4"></i>
                   </button>
                 </div>
               </div>
@@ -3077,11 +3084,11 @@
                   </div>
                   <div class="flex flex-wrap gap-2">
                     <button type="button" id="btnExportAnalyticsDocx" onclick="exportOfficialAnalyticsDocx()" class="gw-btn-soft text-xs !font-bold">
-                      <i data-lucide="file-text" class="w-4 h-4"></i>
+                      <i data-lucide="file-text" aria-hidden="true" class="w-4 h-4"></i>
                       <span>ส่งออกไฟล์ Word มาตรฐาน (.docx)</span>
                     </button>
                     <button type="button" onclick="triggerPrintA4Report()" class="gw-btn-primary text-xs">
-                      <i data-lucide="printer" class="w-4 h-4"></i>
+                      <i data-lucide="printer" aria-hidden="true" class="w-4 h-4"></i>
                       <span>สั่งพิมพ์รายงานวิเคราะห์ผลขนาด A4 (TH SarabunPSK)</span>
                     </button>
                   </div>
@@ -3110,7 +3117,7 @@
                     <p class="text-xs" style="color: var(--gw-muted);">จัดระเบียบคำนำหน้า ชื่อ นามสกุล และห้องให้ตรงกันทั้ง 8 โรงเรียนอัตโนมัติ</p>
                   </div>
                   <button type="button" onclick="downloadStandardRosterExcelTemplate()" class="gw-btn-soft text-xs !font-bold">
-                    <i data-lucide="download" class="w-3.5 h-3.5"></i>
+                    <i data-lucide="download" aria-hidden="true" class="w-3.5 h-3.5"></i>
                     <span>ดาวน์โหลดแม่แบบ Excel (.xlsx)</span>
                   </button>
                 </div>
@@ -3153,7 +3160,7 @@
                 </label>
 
                 <button type="button" onclick="submitBulkStudents()" class="gw-btn-primary w-full">
-                  <i data-lucide="users" class="w-4 h-4"></i>
+                  <i data-lucide="users" aria-hidden="true" class="w-4 h-4"></i>
                   <span>+ ยืนยันบันทึกรายชื่อนักเรียนเข้าโรงเรียน</span>
                 </button>
               </div>
@@ -3165,7 +3172,7 @@
                 </div>
                 <div>
                   <input type="search" id="acadRosterSearch" aria-label="ค้นหาชื่อ-นามสกุล เลขที่ หรือห้องเรียน" oninput="filterAcademicRosterTable()"
-                         placeholder="ค้นหาชื่อ-นามสกุล เลขที่ หรือห้องเรียน..." class="gw-input !py-1.5 text-xs">
+                         placeholder="ค้นหาชื่อ-นามสกุล เลขที่ หรือห้องเรียน…" class="gw-input !py-1.5 text-xs">
                 </div>
                 <div id="rosterTableContainer" class="overflow-x-auto max-h-[480px]"></div>
               </div>
@@ -3180,7 +3187,7 @@
                     <p class="text-xs" style="color: var(--gw-muted);">เห็นครบทั้งไฟล์ฉบับนักเรียน (สำหรับพิมพ์/แจกนักเรียน) และไฟล์ฉบับครูมีเฉลย (สำหรับครูผู้สอนในโรงเรียน) พร้อมฉบับรวมเล่มสมบูรณ์</p>
                   </div>
                   <button type="button" onclick="loadAcademicMaterials()" class="gw-btn-soft text-xs !font-bold">
-                    <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i>
+                    <i data-lucide="refresh-cw" aria-hidden="true" class="w-3.5 h-3.5"></i>
                     <span>รีเฟรชรายการไฟล์</span>
                   </button>
                 </div>
@@ -3195,9 +3202,9 @@
 
                 <div class="flex flex-wrap gap-2 text-xs" role="group" aria-label="กรองประเภทเอกสารครูวิชาการ">
                   <button type="button" id="acadMatCat_ALL" onclick="filterAcademicMaterialCategory('ALL')" class="gw-btn-primary !py-1.5 !px-3 text-xs">ทุกประเภท</button>
-                  <button type="button" id="acadMatCat_MERGED_BOOK" onclick="filterAcademicMaterialCategory('MERGED_BOOK')" class="gw-btn-soft !py-1.5 !px-3 text-xs">📚 เล่มรวมสมบูรณ์</button>
-                  <button type="button" id="acadMatCat_PREPOST_EXAM" onclick="filterAcademicMaterialCategory('PREPOST_EXAM')" class="gw-btn-soft !py-1.5 !px-3 text-xs">📝 ข้อสอบ Pre-Post</button>
-                  <button type="button" id="acadMatCat_TUTORING_STRAND" onclick="filterAcademicMaterialCategory('TUTORING_STRAND')" class="gw-btn-soft !py-1.5 !px-3 text-xs">📄 เอกสารตามสาระฯ</button>
+                  <button type="button" id="acadMatCat_MERGED_BOOK" onclick="filterAcademicMaterialCategory('MERGED_BOOK')" class="gw-btn-soft !py-1.5 !px-3 text-xs">เล่มรวมสมบูรณ์</button>
+                  <button type="button" id="acadMatCat_PREPOST_EXAM" onclick="filterAcademicMaterialCategory('PREPOST_EXAM')" class="gw-btn-soft !py-1.5 !px-3 text-xs">ข้อสอบ Pre-Post</button>
+                  <button type="button" id="acadMatCat_TUTORING_STRAND" onclick="filterAcademicMaterialCategory('TUTORING_STRAND')" class="gw-btn-soft !py-1.5 !px-3 text-xs">เอกสารตามสาระฯ</button>
                 </div>
 
                 <div id="acadMaterialsSummaryBar" class="text-xs font-bold" style="color: var(--gw-accent);"></div>
@@ -3218,7 +3225,7 @@
                   <p class="text-xs" style="color: var(--gw-muted);">เชื่อมต่อโฟลเดอร์รับงานในไดรฟ์โรงเรียนวัดคลองห้า พร้อมสร้างแยก 4 โฟลเดอร์รายวิชาอัตโนมัติ (จัดทำและส่งงานภายในวันปฏิบัติการทันที)</p>
                 </div>
                 <button type="button" onclick="refreshSuperAdminDashboard()" class="gw-btn-soft">
-                  <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i>
+                  <i data-lucide="refresh-cw" aria-hidden="true" class="w-3.5 h-3.5"></i>
                   <span>รีเฟรชข้อมูลล่าสุด</span>
                 </button>
               </div>
@@ -3226,7 +3233,7 @@
               <div>
                 <label for="adminDriveFolderInput" class="gw-label">ลิงก์โฟลเดอร์ หรือ Folder ID ของไดรฟ์ wkha@saraburi2.go.th</label>
                 <div class="flex flex-wrap sm:flex-nowrap gap-2">
-                  <input type="text" id="adminDriveFolderInput" placeholder="วางลิงก์ https://drive.google.com/drive/folders/... หรือรหัสโฟลเดอร์"
+                  <input type="text" id="adminDriveFolderInput" placeholder="วางลิงก์ https://drive.google.com/drive/folders/… หรือรหัสโฟลเดอร์"
                     class="gw-input flex-1">
                   <button type="button" onclick="connectDriveFolders()" class="gw-btn-primary whitespace-nowrap text-xs">
                     เชื่อมไดรฟ์ & สร้าง 4 โฟลเดอร์วิชา
@@ -3294,12 +3301,12 @@
             <div id="adminAutoMergeStudio" class="gw-panel gw-reveal space-y-3.5 border-2" style="border-color: var(--gw-accent-soft);">
               <div class="flex flex-wrap items-center justify-between gap-2 pb-2 border-b" style="border-color: var(--gw-line);">
                 <div>
-                  <h3 class="text-base font-bold">📚 สตูดิโอรวมเล่มเอกสาร (.docx) อัตโนมัติ (หน้าปก สทศ. + สารบัญ + เรียงเลขข้อ/สาระ)</h3>
+                  <h3 class="text-base font-bold">สตูดิโอรวมเล่มเอกสาร (.docx) อัตโนมัติ (หน้าปก สทศ. + สารบัญ + เรียงเลขข้อ/สาระ)</h3>
                   <p class="text-xs" style="color: var(--gw-muted);">นำไฟล์ Word ที่ผ่านการอนุมัติแล้วมารวมเป็นเล่มเดียวอัตโนมัติ พร้อมปกข้อสอบ สทศ. (สำหรับ Pre-Post), เรียงลำดับข้อ 1..N ข้ามสาระ และล็อกรูปภาพ 8306 DXA</p>
                 </div>
                 <button type="button" id="btnMergeDemoPreview" onclick="runSampleDemoAutoMergeDocx()" class="gw-btn-soft text-xs !font-bold border" style="border-color: var(--gw-accent);">
-                  <i data-lucide="flask-conical" class="w-3.5 h-3.5"></i>
-                  <span>🧪 ทดลองสร้างไฟล์ตัวอย่าง & รวมเล่มจำลอง</span>
+                  <i data-lucide="flask-conical" aria-hidden="true" class="w-3.5 h-3.5"></i>
+                  <span>ทดลองสร้างไฟล์ตัวอย่าง & รวมเล่มจำลอง</span>
                 </button>
               </div>
 
@@ -3331,8 +3338,8 @@
                 <div>
                   <label for="mergeTargetAudience" class="gw-label">4. เลือกฉบับที่จะรวมเล่ม</label>
                   <select id="mergeTargetAudience" onchange="refreshAdminMergeReadiness()" class="gw-input font-bold">
-                    <option value="STUDENT">📘 ฉบับนักเรียน (พร้อมแจกนักเรียน)</option>
-                    <option value="TEACHER">📕 ฉบับครู (รวมเฉลย+วิธีคิดละเอียด)</option>
+                    <option value="STUDENT">ฉบับนักเรียน (พร้อมแจกนักเรียน)</option>
+                    <option value="TEACHER">ฉบับครู (รวมเฉลย+วิธีคิดละเอียด)</option>
                   </select>
                 </div>
               </div>
@@ -3341,11 +3348,11 @@
 
               <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <button type="button" id="btnMergeDownloadLocal" onclick="runAdminAutoMergeDocx(false)" class="gw-btn-soft w-full py-2.5 text-xs !font-bold border" style="border-color: var(--gw-accent);">
-                  <i data-lucide="file-down" class="w-4 h-4"></i>
+                  <i data-lucide="file-down" aria-hidden="true" class="w-4 h-4"></i>
                   <span>รวมเล่มและดาวน์โหลด Word (.docx) ลงเครื่อง</span>
                 </button>
                 <button type="button" id="btnMergePublishDrive" onclick="runAdminAutoMergeDocx(true)" class="gw-btn-primary w-full py-2.5 text-xs">
-                  <i data-lucide="cloud-upload" class="w-4 h-4"></i>
+                  <i data-lucide="cloud-upload" aria-hidden="true" class="w-4 h-4"></i>
                   <span>รวมเล่ม + บันทึกขึ้น Google Drive เผยแพร่ทันที</span>
                 </button>
               </div>
@@ -3356,7 +3363,7 @@
             <div id="adminIocDashboardPanel" class="gw-panel gw-reveal space-y-3 border" style="border-color: var(--gw-line-strong);">
               <div class="flex flex-wrap items-center justify-between gap-2 pb-2 border-b" style="border-color: var(--gw-line);">
                 <div>
-                  <h3 class="text-base font-bold">🎯 กระดานติดตามผลตรวจประเมินข้อสอบ (IOC: +1 / 0 / -1) ทั้ง Pre & Post</h3>
+                  <h3 class="text-base font-bold">กระดานติดตามผลตรวจประเมินข้อสอบ (IOC: +1 / 0 / -1) ทั้ง Pre & Post</h3>
                   <p class="text-xs" style="color: var(--gw-muted);">ตรวจสอบองค์ประชุมคณะกรรมการ ค่า IOC รายข้อ (เกณฑ์ผ่าน >= 0.50) ข้อเสนอแนะ และกดอนุมัติชุดข้อสอบเข้าพร้อมรวมเล่ม</p>
                 </div>
                 <div class="flex flex-wrap gap-2">
@@ -3393,7 +3400,7 @@
                     <option value="63">ภาษาอังกฤษ (32 ข้อ)</option>
                   </select>
                   <button type="button" id="btnImportKeysFromTeacherDocx" onclick="importAnswerKeysFromTeacherDocx()" class="gw-btn-soft text-xs py-2 px-3 font-bold border" style="border-color: var(--gw-accent);">
-                    📥 ดึงเฉลยอัตโนมัติจากไฟล์ฉบับครู (.docx)
+                    <i data-lucide="download" aria-hidden="true" class="w-3.5 h-3.5"></i><span>ดึงเฉลยอัตโนมัติจากไฟล์ฉบับครู (.docx)</span>
                   </button>
                   <button type="button" onclick="saveAdminExamKeys()" class="gw-btn-primary text-xs py-2 px-4">
                     บันทึกเฉลยชุดนี้
@@ -3430,23 +3437,23 @@
       <div class="gw-desktop-dock">
         <nav class="gw-dock" aria-label="เมนูหลักของระบบ">
           <button type="button" id="tabBtn_STUDENT" aria-current="page" onclick="switchMainTab('STUDENT')">
-            <i data-lucide="graduation-cap" class="w-4 h-4"></i>
+            <i data-lucide="graduation-cap" aria-hidden="true" class="w-4 h-4"></i>
             <span>1. นักเรียน (8 โรงเรียน)</span>
           </button>
           <button type="button" id="tabBtn_COMMITTEE" onclick="switchMainTab('COMMITTEE')">
-            <i data-lucide="file-check-2" class="w-4 h-4"></i>
+            <i data-lucide="file-check-2" aria-hidden="true" class="w-4 h-4"></i>
             <span>2. คณะกรรมการจัดทำเอกสาร</span>
           </button>
           <button type="button" id="tabBtn_INSTRUCTOR" onclick="switchMainTab('INSTRUCTOR')">
-            <i data-lucide="book-open-check" class="w-4 h-4"></i>
+            <i data-lucide="book-open-check" aria-hidden="true" class="w-4 h-4"></i>
             <span>3. ครูผู้สอน ป.6</span>
           </button>
           <button type="button" id="tabBtn_ACADEMIC" onclick="switchMainTab('ACADEMIC')">
-            <i data-lucide="clipboard-check" class="w-4 h-4"></i>
+            <i data-lucide="clipboard-check" aria-hidden="true" class="w-4 h-4"></i>
             <span>4. ครูวิชาการ</span>
           </button>
           <button type="button" id="tabBtn_ADMIN" onclick="switchMainTab('ADMIN')">
-            <i data-lucide="shield-check" class="w-4 h-4"></i>
+            <i data-lucide="shield-check" aria-hidden="true" class="w-4 h-4"></i>
             <span>5. ผู้ดูแลกลุ่มฯ</span>
           </button>
         </nav>
@@ -3458,11 +3465,11 @@
       <aside id="gwMaterialPanel" class="gw-material hidden" aria-label="ตั้งค่ากระจกใส">
         <div class="flex items-center justify-between">
           <div class="flex items-center gap-2">
-            <i data-lucide="sparkles" class="w-4 h-4" style="color: var(--gw-accent);"></i>
+            <i data-lucide="sparkles" aria-hidden="true" class="w-4 h-4" style="color: var(--gw-accent);"></i>
             <h2 class="text-base font-bold">ปรับแต่งกระจกใส (Glass UI)</h2>
           </div>
           <button type="button" class="gw-icon-button" aria-label="ปิดหน้าต่างปรับแต่งกระจกใส" title="ปิดหน้าต่างปรับแต่งกระจกใส" onclick="toggleGlassPanel(false)">
-            <i data-lucide="x" class="w-4 h-4"></i>
+            <i data-lucide="x" aria-hidden="true" class="w-4 h-4"></i>
           </button>
         </div>
         <p class="text-xs mt-1" style="color: var(--gw-muted);">ปรับได้อิสระเฉพาะเครื่องของคุณครู/นักเรียนแต่ละเครื่อง แล้วกดบันทึกสไตล์ที่ชอบไว้ใช้ตลอดได้เลยครับ</p>
@@ -3477,7 +3484,7 @@
             <span style="background: #c2410c; color: #ffffff;">ป.6</span>
           </div>
           <div class="gw-sample-pane">
-            <i data-lucide="layers" class="w-4 h-4"></i>
+            <i data-lucide="layers" aria-hidden="true" class="w-4 h-4"></i>
             <span>ตัวอย่างเนื้อกระจกใสแบบสด</span>
           </div>
         </div>
@@ -3533,7 +3540,7 @@
 
         <div class="mt-4 space-y-2">
           <button type="button" onclick="saveMyFavoriteGlass()" class="gw-btn-primary w-full py-2.5 text-xs">
-            <i data-lucide="bookmark-check" class="w-4 h-4"></i>
+            <i data-lucide="bookmark-check" aria-hidden="true" class="w-4 h-4"></i>
             <span>บันทึกเป็นสไตล์ที่ชอบประจำเครื่องนี้</span>
           </button>
           <p id="favSavedStatus" class="text-[11px] text-center font-bold hidden" style="color: var(--gw-accent);"></p>
@@ -3550,7 +3557,7 @@
         <div class="flex items-center justify-between mb-2">
           <h2 class="text-sm font-bold">กำหนดการสำคัญและสถานะระบบ O-NET 2569</h2>
           <button type="button" class="gw-icon-button" aria-label="ปิดหน้าต่างกำหนดการ" title="ปิดหน้าต่างกำหนดการ" onclick="toggleNotificationsPanel(false)">
-            <i data-lucide="x" class="w-4 h-4"></i>
+            <i data-lucide="x" aria-hidden="true" class="w-4 h-4"></i>
           </button>
         </div>
         <div id="gwNotificationsList" class="space-y-2 text-xs">
