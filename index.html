@@ -1916,35 +1916,55 @@
 
                   <!-- Committee Register Mode -->
                   <div id="commRegForm" class="hidden space-y-3.5">
+                    <div class="gw-subcard space-y-2 border" style="border-color: var(--gw-line-strong);">
+                      <div class="text-xs font-bold" style="color: var(--gw-accent);">
+                        บทบาทที่รับผิดชอบ (ติ๊กเลือกควบได้หลายบทบาท — ล็อกอินครั้งเดียวสลับเข้าเมนู 2, 3, 4 ได้ทันที)
+                      </div>
+                      <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs">
+                        <label class="inline-flex items-center gap-2 font-semibold cursor-pointer select-none p-2 rounded-xl border" style="border-color: var(--gw-line); background: var(--gw-surface);">
+                          <input type="checkbox" name="regRoles_COMMITTEE" value="COMMITTEE_TEACHER" checked class="w-4 h-4 rounded cursor-pointer" style="accent-color: var(--gw-accent);">
+                          <span>2. กรรมการจัดทำเอกสาร</span>
+                        </label>
+                        <label class="inline-flex items-center gap-2 font-semibold cursor-pointer select-none p-2 rounded-xl border" style="border-color: var(--gw-line); background: var(--gw-surface);">
+                          <input type="checkbox" name="regRoles_COMMITTEE" value="SUBJECT_TEACHER" class="w-4 h-4 rounded cursor-pointer" style="accent-color: var(--gw-accent);">
+                          <span>3. ครูผู้สอน ป.6</span>
+                        </label>
+                        <label class="inline-flex items-center gap-2 font-semibold cursor-pointer select-none p-2 rounded-xl border" style="border-color: var(--gw-line); background: var(--gw-surface);">
+                          <input type="checkbox" name="regRoles_COMMITTEE" value="SCHOOL_ACADEMIC" class="w-4 h-4 rounded cursor-pointer" style="accent-color: var(--gw-accent);">
+                          <span>4. ครูวิชาการโรงเรียน</span>
+                        </label>
+                      </div>
+                    </div>
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 items-end">
                       <div>
                         <label for="commRegSchool" class="gw-label">1. โรงเรียนสังกัด (8 โรงเรียน)</label>
                         <select id="commRegSchool" class="gw-input"></select>
                       </div>
                       <div>
-                        <label for="commRegSubject" class="gw-label">2. กลุ่มสาระวิชาที่ได้รับมอบหมาย</label>
+                        <label for="commRegSubject" class="gw-label">2. กลุ่มสาระวิชาที่ได้รับมอบหมาย / สอน</label>
                         <select id="commRegSubject" class="gw-input">
                           <option value="61">ภาษาไทย (61)</option>
                           <option value="64">คณิตศาสตร์ (64)</option>
                           <option value="65">วิทยาศาสตร์และเทคโนโลยี (65)</option>
                           <option value="63">ภาษาอังกฤษ (63)</option>
+                          <option value="ALL">ครบทั้ง 4 วิชา (ดูแล/สอนทุกวิชา)</option>
                         </select>
                       </div>
                       <div>
-                        <label for="commRegName" class="gw-label">3. ชื่อ-นามสกุลกรรมการจัดทำเอกสาร</label>
+                        <label for="commRegName" class="gw-label">3. ชื่อ-นามสกุลครู</label>
                         <input type="text" id="commRegName" autocomplete="name" placeholder="เช่น นางสาวสมศรี ดีงาม" class="gw-input">
                       </div>
                       <div>
                         <label for="commRegPass" class="gw-label">4. ตั้งรหัสผ่าน (อย่างน้อย 4 ตัว)</label>
-                        <input type="password" id="commRegPass" autocomplete="new-password" placeholder="ตั้งรหัสผ่านสำหรับเข้าครั้งต่อไป" class="gw-input">
+                        <input type="password" id="commRegPass" autocomplete="new-password" placeholder="ตั้งรหัสผ่านสำหรับเข้าทุกบทบาทที่ติ๊ก" class="gw-input">
                       </div>
                     </div>
                     <p class="text-xs" style="color: var(--gw-muted);">
-                      * เมื่อบันทึกแล้ว ชื่อของท่านจะขึ้นในช่องเลือกเข้าสู่ระบบทันที และรอครูเกียรติศักดิ์กดอนุมัติสิทธิ์ก่อนเข้าใช้งานครับ
+                      * ลงทะเบียนครั้งเดียว ชื่อของท่านจะขึ้นในทุกเมนูที่ติ๊กเลือก และเมื่ออนุมัติแล้วล็อกอินครั้งเดียวสลับเข้าได้ครบทุกบทบาทครับ
                     </p>
                     <button type="button" id="btnCommRegSubmit" onclick="submitRoleRegister('COMMITTEE')" class="gw-btn-primary w-full py-3">
                       <i data-lucide="user-plus" class="w-4 h-4"></i>
-                      <span>ส่งลงทะเบียนกรรมการจัดทำเอกสาร (รอครูเกียรติศักดิ์อนุมัติ)</span>
+                      <span>ส่งลงทะเบียนชื่อครู (รอครูเกียรติศักดิ์อนุมัติ)</span>
                     </button>
                   </div>
                 </div>
@@ -2063,13 +2083,32 @@
 
                   <!-- Instructor Register Mode -->
                   <div id="instRegForm" class="hidden space-y-3.5">
+                    <div class="gw-subcard space-y-2 border" style="border-color: var(--gw-line-strong);">
+                      <div class="text-xs font-bold" style="color: var(--gw-accent);">
+                        บทบาทที่รับผิดชอบ (ติ๊กเลือกควบได้หลายบทบาท — ล็อกอินครั้งเดียวสลับเข้าเมนู 2, 3, 4 ได้ทันที)
+                      </div>
+                      <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs">
+                        <label class="inline-flex items-center gap-2 font-semibold cursor-pointer select-none p-2 rounded-xl border" style="border-color: var(--gw-line); background: var(--gw-surface);">
+                          <input type="checkbox" name="regRoles_INSTRUCTOR" value="COMMITTEE_TEACHER" class="w-4 h-4 rounded cursor-pointer" style="accent-color: var(--gw-accent);">
+                          <span>2. กรรมการจัดทำเอกสาร</span>
+                        </label>
+                        <label class="inline-flex items-center gap-2 font-semibold cursor-pointer select-none p-2 rounded-xl border" style="border-color: var(--gw-line); background: var(--gw-surface);">
+                          <input type="checkbox" name="regRoles_INSTRUCTOR" value="SUBJECT_TEACHER" checked class="w-4 h-4 rounded cursor-pointer" style="accent-color: var(--gw-accent);">
+                          <span>3. ครูผู้สอน ป.6</span>
+                        </label>
+                        <label class="inline-flex items-center gap-2 font-semibold cursor-pointer select-none p-2 rounded-xl border" style="border-color: var(--gw-line); background: var(--gw-surface);">
+                          <input type="checkbox" name="regRoles_INSTRUCTOR" value="SCHOOL_ACADEMIC" class="w-4 h-4 rounded cursor-pointer" style="accent-color: var(--gw-accent);">
+                          <span>4. ครูวิชาการโรงเรียน</span>
+                        </label>
+                      </div>
+                    </div>
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 items-end">
                       <div>
                         <label for="instRegSchool" class="gw-label">1. โรงเรียนสังกัด (8 โรงเรียน)</label>
                         <select id="instRegSchool" class="gw-input"></select>
                       </div>
                       <div>
-                        <label for="instRegSubject" class="gw-label">2. รายวิชาที่สอนชั้น ป.6</label>
+                        <label for="instRegSubject" class="gw-label">2. รายวิชาที่สอนชั้น ป.6 / ออกข้อสอบ</label>
                         <select id="instRegSubject" class="gw-input">
                           <option value="ALL">สอนครบทั้ง 4 วิชา (ครูประจำชั้น ป.6)</option>
                           <option value="61">ภาษาไทย (61)</option>
@@ -2079,20 +2118,20 @@
                         </select>
                       </div>
                       <div>
-                        <label for="instRegName" class="gw-label">3. ชื่อ-นามสกุลครูผู้สอน ป.6</label>
+                        <label for="instRegName" class="gw-label">3. ชื่อ-นามสกุลครู</label>
                         <input type="text" id="instRegName" autocomplete="name" placeholder="เช่น นายสมชาย ใจดี" class="gw-input">
                       </div>
                       <div>
                         <label for="instRegPass" class="gw-label">4. ตั้งรหัสผ่าน (อย่างน้อย 4 ตัว)</label>
-                        <input type="password" id="instRegPass" autocomplete="new-password" placeholder="ตั้งรหัสผ่านสำหรับเข้าครั้งต่อไป" class="gw-input">
+                        <input type="password" id="instRegPass" autocomplete="new-password" placeholder="ตั้งรหัสผ่านสำหรับเข้าทุกบทบาทที่ติ๊ก" class="gw-input">
                       </div>
                     </div>
                     <p class="text-xs" style="color: var(--gw-muted);">
-                      * เมื่อบันทึกแล้ว ชื่อของท่านจะขึ้นในช่องเลือกเข้าสู่ระบบทันที และรอครูเกียรติศักดิ์กดอนุมัติสิทธิ์ก่อนเข้าใช้งานครับ
+                      * ลงทะเบียนครั้งเดียว ชื่อของท่านจะขึ้นในทุกเมนูที่ติ๊กเลือก และเมื่ออนุมัติแล้วล็อกอินครั้งเดียวสลับเข้าได้ครบทุกบทบาทครับ
                     </p>
                     <button type="button" id="btnInstRegSubmit" onclick="submitRoleRegister('INSTRUCTOR')" class="gw-btn-primary w-full py-3">
                       <i data-lucide="user-plus" class="w-4 h-4"></i>
-                      <span>ส่งลงทะเบียนครูผู้สอน ป.6 (รอครูเกียรติศักดิ์อนุมัติ)</span>
+                      <span>ส่งลงทะเบียนชื่อครู (รอครูเกียรติศักดิ์อนุมัติ)</span>
                     </button>
                   </div>
                 </div>
@@ -2211,26 +2250,55 @@
 
                   <!-- Academic Register Mode -->
                   <div id="acadRegForm" class="hidden space-y-3.5">
+                    <div class="gw-subcard space-y-2 border" style="border-color: var(--gw-line-strong);">
+                      <div class="text-xs font-bold" style="color: var(--gw-accent);">
+                        บทบาทที่รับผิดชอบ (ติ๊กเลือกควบได้หลายบทบาท — ล็อกอินครั้งเดียวสลับเข้าเมนู 2, 3, 4 ได้ทันที)
+                      </div>
+                      <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs">
+                        <label class="inline-flex items-center gap-2 font-semibold cursor-pointer select-none p-2 rounded-xl border" style="border-color: var(--gw-line); background: var(--gw-surface);">
+                          <input type="checkbox" name="regRoles_ACADEMIC" value="COMMITTEE_TEACHER" class="w-4 h-4 rounded cursor-pointer" style="accent-color: var(--gw-accent);">
+                          <span>2. กรรมการจัดทำเอกสาร</span>
+                        </label>
+                        <label class="inline-flex items-center gap-2 font-semibold cursor-pointer select-none p-2 rounded-xl border" style="border-color: var(--gw-line); background: var(--gw-surface);">
+                          <input type="checkbox" name="regRoles_ACADEMIC" value="SUBJECT_TEACHER" class="w-4 h-4 rounded cursor-pointer" style="accent-color: var(--gw-accent);">
+                          <span>3. ครูผู้สอน ป.6</span>
+                        </label>
+                        <label class="inline-flex items-center gap-2 font-semibold cursor-pointer select-none p-2 rounded-xl border" style="border-color: var(--gw-line); background: var(--gw-surface);">
+                          <input type="checkbox" name="regRoles_ACADEMIC" value="SCHOOL_ACADEMIC" checked class="w-4 h-4 rounded cursor-pointer" style="accent-color: var(--gw-accent);">
+                          <span>4. ครูวิชาการโรงเรียน</span>
+                        </label>
+                      </div>
+                    </div>
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 items-end">
                       <div>
                         <label for="acadRegSchool" class="gw-label">1. โรงเรียนสังกัด (8 โรงเรียน)</label>
                         <select id="acadRegSchool" class="gw-input"></select>
                       </div>
                       <div>
-                        <label for="acadRegName" class="gw-label">2. ชื่อ-นามสกุลครูวิชาการ</label>
+                        <label for="acadRegSubject" class="gw-label">2. รายวิชาที่สอน / ออกข้อสอบ (กรณีควบตำแหน่ง)</label>
+                        <select id="acadRegSubject" class="gw-input">
+                          <option value="ALL">ครบทั้ง 4 วิชา (ดูแล/สอนทุกวิชา)</option>
+                          <option value="61">ภาษาไทย (61)</option>
+                          <option value="64">คณิตศาสตร์ (64)</option>
+                          <option value="65">วิทยาศาสตร์และเทคโนโลยี (65)</option>
+                          <option value="63">ภาษาอังกฤษ (63)</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label for="acadRegName" class="gw-label">3. ชื่อ-นามสกุลครู</label>
                         <input type="text" id="acadRegName" autocomplete="name" placeholder="เช่น นางสาววิชาการ ดีเยี่ยม" class="gw-input">
                       </div>
-                    </div>
-                    <div>
-                      <label for="acadRegPass" class="gw-label">3. ตั้งรหัสผ่านเข้าใช้งาน (อย่างน้อย 4 ตัวอักษร/ตัวเลข)</label>
-                      <input type="password" id="acadRegPass" autocomplete="new-password" placeholder="ตั้งรหัสผ่านสำหรับเข้าจัดการข้อมูลโรงเรียน" class="gw-input">
+                      <div>
+                        <label for="acadRegPass" class="gw-label">4. ตั้งรหัสผ่าน (อย่างน้อย 4 ตัว)</label>
+                        <input type="password" id="acadRegPass" autocomplete="new-password" placeholder="ตั้งรหัสผ่านสำหรับเข้าทุกบทบาทที่ติ๊ก" class="gw-input">
+                      </div>
                     </div>
                     <p class="text-xs" style="color: var(--gw-muted);">
-                      * เมื่อบันทึกแล้ว ชื่อของท่านจะขึ้นในช่องเลือกเข้าสู่ระบบทันที และรอครูเกียรติศักดิ์กดอนุมัติสิทธิ์ก่อนเข้าใช้งานครับ
+                      * ลงทะเบียนครั้งเดียว ชื่อของท่านจะขึ้นในทุกเมนูที่ติ๊กเลือก และเมื่ออนุมัติแล้วล็อกอินครั้งเดียวสลับเข้าได้ครบทุกบทบาทครับ
                     </p>
                     <button type="button" id="btnAcadRegSubmit" onclick="submitRoleRegister('ACADEMIC')" class="gw-btn-primary w-full py-3">
                       <i data-lucide="user-plus" class="w-4 h-4"></i>
-                      <span>ส่งลงทะเบียนชื่อครูวิชาการ (รอครูเกียรติศักดิ์อนุมัติ)</span>
+                      <span>ส่งลงทะเบียนชื่อครู (รอครูเกียรติศักดิ์อนุมัติ)</span>
                     </button>
                   </div>
                 </div>
