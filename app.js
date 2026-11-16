@@ -869,31 +869,31 @@
     } else {
       if (targetAudience === 'STUDENT') {
         if (!/สรุปความรู้|สรุปเนื้อหา|ใบความรู้/.test(plainText)) {
-          missingSections.push('ส่วนที่ 1: สรุปความรู้ตรงจุดออกสอบ');
+          missingSections.push('1. สรุปความรู้รายตัวชี้วัด (พร้อมพื้นที่ใส่รูป/อินโฟกราฟิก)');
         }
         if (!/ข้อสอบ|แบบฝึก|ใบงาน/.test(plainText)) {
-          missingSections.push('ส่วนที่ 2: แบบฝึกทักษะ/ใบงานนักเรียน');
+          missingSections.push('2. แบบฝึกย่อยรายตัวชี้วัด (2–5 ข้อ)');
         }
       } else if (targetAudience === 'TEACHER') {
-        if (!/ฉบับครู|สำหรับครู|จุดเน้นการสอน|คู่มือครู|แนวการสอน/.test(plainText)) {
-          missingSections.push('ป้ายระบุฉบับครู / จุดเน้นการสอน');
+        if (!/ฉบับครู|สำหรับครู|จุดเน้นการสอน|คู่มือครู|แนวการสอน|ติวต่อ/.test(plainText)) {
+          missingSections.push('ป้ายระบุฉบับครูผู้สอน');
         }
         if (!/สรุปความรู้|สรุปเนื้อหา|ใบความรู้/.test(plainText)) {
-          missingSections.push('ส่วนที่ 1: สรุปความรู้และจุดเน้นการสอน');
+          missingSections.push('1. สรุปความรู้รายตัวชี้วัด (พร้อมพื้นที่ใส่รูป/อินโฟกราฟิก)');
         }
         if (!/ข้อสอบ|แบบฝึก|ใบงาน/.test(plainText)) {
-          missingSections.push('ส่วนที่ 2: แบบฝึกทักษะ/ข้อสอบประจำตัวชี้วัด');
+          missingSections.push('2. แบบฝึกย่อยรายตัวชี้วัด (2–5 ข้อ)');
         }
         if (!/เฉลย/.test(plainText)) {
-          missingSections.push('ส่วนที่ 3: เฉลยและวิธีคิดละเอียด');
+          missingSections.push('เฉลยรายข้อใต้แบบฝึกย่อย');
         }
         if (!/วิธีคิด|คำอธิบาย|เหตุผล|แนวคิด/.test(plainText)) {
-          missingSections.push('คำอธิบายวิธีคิดละเอียดรายข้อ');
+          missingSections.push('วิธีคิดและคำอธิบายอย่างละเอียดเพื่อให้ครูผู้สอนนำไปติวต่อ');
         }
       } else {
-        if (!/สรุปความรู้|สรุปเนื้อหา/.test(plainText)) missingSections.push('ส่วนที่ 1: สรุปความรู้ตรงจุดออกสอบ');
-        if (!/ข้อสอบ|แบบฝึก/.test(plainText)) missingSections.push('ส่วนที่ 2: แบบฝึกทักษะ/ข้อสอบประจำตัวชี้วัด');
-        if (!/เฉลย/.test(plainText)) missingSections.push('ส่วนที่ 3: เฉลยและวิธีคิดละเอียด');
+        if (!/สรุปความรู้|สรุปเนื้อหา/.test(plainText)) missingSections.push('1. สรุปความรู้รายตัวชี้วัด');
+        if (!/ข้อสอบ|แบบฝึก/.test(plainText)) missingSections.push('2. แบบฝึกย่อยรายตัวชี้วัด');
+        if (!/เฉลย/.test(plainText)) missingSections.push('เฉลยและวิธีคิดละเอียดรายข้อ');
       }
     }
 
@@ -1305,7 +1305,8 @@
     const tblBorders = `<w:tblBorders><w:top w:val="single" w:sz="${borderSz}" w:space="0" w:color="${borderColor}"/><w:left w:val="single" w:sz="${borderSz}" w:space="0" w:color="${borderColor}"/><w:bottom w:val="single" w:sz="${borderSz}" w:space="0" w:color="${borderColor}"/><w:right w:val="single" w:sz="${borderSz}" w:space="0" w:color="${borderColor}"/><w:insideH w:val="single" w:sz="${Math.max(4, borderSz - 2)}" w:space="0" w:color="${borderColor}"/><w:insideV w:val="single" w:sz="${Math.max(4, borderSz - 2)}" w:space="0" w:color="${borderColor}"/></w:tblBorders>`;
     const tblGrid = `<w:tblGrid>${colWidths.map((w) => `<w:gridCol w:w="${w}"/>`).join('')}</w:tblGrid>`;
     const trsXml = rows.map((row) => {
-      const trPr = `<w:trPr>${row.isHeader ? '<w:tblHeader/>' : ''}<w:cantSplit/></w:trPr>`;
+      const splitXml = (opts.allowRowSplit || row.allowRowSplit) ? '' : '<w:cantSplit/>';
+      const trPr = `<w:trPr>${row.isHeader ? '<w:tblHeader/>' : ''}${splitXml}</w:trPr>`;
       const cellsXml = row.cells.map((cell, cIdx) => {
         const w = colWidths[cIdx] || Math.floor(totalWidth / Math.max(1, colWidths.length));
         const shd = cell.fill ? `<w:shd w:val="clear" w:color="auto" w:fill="${escapeDocxXmlText(cell.fill)}"/>` : '';
@@ -1863,131 +1864,95 @@
         blocks.push(...buildExamTemplateItemBlocks_(it, true, subjectCode));
       });
     } else if (!isExam && !isTeacher) {
-      const summarySubBlocks = [];
-      if (expectedIndicators.length <= 10) {
-        expectedIndicators.forEach((ind, idx) => {
-          const desc = indDescMap[ind] ? ` — ${indDescMap[ind]}` : '';
-          summarySubBlocks.push(
-            buildSarabunPara_(`1.${idx + 1} สรุปเนื้อหาตัวชี้วัด ${ind}${desc}`, { sz: 32, bold: true, color: '1B4332', jc: 'left', before: 80, after: 20, keepNext: true }),
-            buildSarabunPara_('• สรุปหลักการสำคัญ นิยาม สูตร หรือเทคนิคการสังเกตโจทย์ O-NET ที่นักเรียนต้องรู้: ....................................................................................', { sz: 30, firstLine: 720, before: 10, after: 40 })
-          );
-        });
-      } else {
-        const stdGroups = new Map();
-        expectedIndicators.forEach((ind) => {
-          const m = /^([ก-ฮ]\s*\d+\.\d+)/.exec(ind);
-          const stdKey = m ? m[1] : 'มาตรฐานประจำสาระ';
-          if (!stdGroups.has(stdKey)) stdGroups.set(stdKey, []);
-          stdGroups.get(stdKey).push(ind);
-        });
-        let gIdx = 1;
-        Array.from(stdGroups.entries()).forEach(([stdKey, inds]) => {
-          summarySubBlocks.push(
-            buildSarabunPara_(`1.${gIdx++} สรุปเนื้อหากลุ่ม${stdKey} (${inds.length} ตัวชี้วัด: ${inds.join(', ')})`, { sz: 32, bold: true, color: '1B4332', jc: 'left', before: 80, after: 20, keepNext: true }),
-            buildSarabunPara_('• สรุปมโนทัศน์หลัก แผนผังความคิด และตัวอย่างสถานการณ์ตรงจุดออกสอบ O-NET: ....................................................................................', { sz: 30, firstLine: 720, before: 10, after: 40 })
-          );
-        });
-      }
-
-      const starterCount = Math.min(Math.max(expectedIndicators.length, 2), 5);
-      const practiceStudentBlocks = [];
-      for (let k = 1; k <= starterCount; k++) {
-        practiceStudentBlocks.push(
-          buildSarabunPara_(`ข้อ ${k}. [พิมพ์โจทย์แบบฝึกทักษะข้อที่ ${k} ให้ตรงกับชุดของครูผู้สอน — สามารถเพิ่มจำนวนข้อได้ตามต้องการ]`, { sz: 32, bold: true, jc: 'left', before: 50, after: 20, keepNext: true }),
-          buildSarabunPara_('    1. ........................................    2. ........................................', { sz: 30, jc: 'left', before: 10, after: 10 }),
-          buildSarabunPara_('    3. ........................................    4. ........................................', { sz: 30, jc: 'left', before: 10, after: 40 })
+      const indicatorModules = [];
+      expectedIndicators.forEach((ind, idx) => {
+        const indNo = idx + 1;
+        const desc = indDescMap[ind] ? ` — ${indDescMap[ind]}` : '';
+        if (idx > 0) {
+          indicatorModules.push(buildSarabunPara_('', { sz: 20, before: 100, after: 40 }));
+        }
+        indicatorModules.push(
+          buildFixedTable_([{ cells: [{ fill: 'ECFDF5', paras: [
+            buildSarabunPara_(`ตัวชี้วัดที่ ${indNo}: ${ind}${desc}`, { sz: 32, bold: true, color: '1B4332', jc: 'left', before: 30, after: 30, keepNext: true })
+          ] }] }], [8306], { borderColor: '1B4332', borderSz: 6 }),
+          buildSarabunPara_(`1. สรุปความรู้ตัวชี้วัดที่ ${indNo} (${ind})`, { sz: 32, bold: true, color: '1B4332', jc: 'left', before: 100, after: 30, keepNext: true }),
+          buildFixedTable_([{ cells: [{ fill: 'FFFFFF', paras: [
+            buildSarabunPara_(`[พื้นที่ใส่สรุปความรู้ รูปภาพ แผนผัง หรืออินโฟกราฟิก — ตัวชี้วัดที่ ${indNo} (${ind})]`, { sz: 30, bold: true, color: '1B4332', jc: 'left', before: 40, after: 20 }),
+            buildSarabunPara_('• พิมพ์สรุปเนื้อหาสำคัญ สูตร หรือเทคนิคจำง่ายของตัวชี้วัดนี้: ....................................................................................', { sz: 30, jc: 'left', before: 10, after: 20 }),
+            buildSarabunPara_('• แทรกรูปภาพประกอบหรืออินโฟกราฟิกในกรอบนี้ได้เลย (ตั้งค่ารูปภาพเป็น In Line with Text เพื่อล็อกหน้า A4 ไม่ให้เคลื่อน)', { sz: 28, italic: true, color: '64748B', jc: 'left', before: 10, after: 140 })
+          ] }] }], [8306], { borderColor: '94A3B8', borderSz: 6, allowRowSplit: true }),
+          buildSarabunPara_(`2. แบบฝึกย่อยตัวชี้วัดที่ ${indNo} (${ind}) (จำนวน 2–5 ข้อ)`, { sz: 32, bold: true, color: '1B4332', jc: 'left', before: 100, after: 20, keepNext: true }),
+          buildSarabunPara_('คำสั่ง: เลือกตัวเลือกที่ถูกต้องที่สุดเพียงข้อเดียว (ครูผู้จัดทำใส่ข้อสอบ 2–5 ข้อต่อตัวชี้วัด หากใช้ไม่ถึง 5 ข้อ ลบข้อที่เกินออกได้)', { sz: 28, italic: true, color: '475569', jc: 'left', before: 0, after: 30 })
         );
-      }
+        for (let k = 1; k <= 5; k++) {
+          indicatorModules.push(
+            buildSarabunPara_(`ข้อ ${k}. [พิมพ์โจทย์ข้อที่ ${k} ของตัวชี้วัดที่ ${indNo} (${ind})]`, { sz: 32, bold: true, jc: 'left', before: 50, after: 16, keepNext: true }),
+            buildSarabunPara_('    1) ..................................................    2) ..................................................', { sz: 30, jc: 'left', before: 8, after: 8 }),
+            buildSarabunPara_('    3) ..................................................    4) ..................................................', { sz: 30, jc: 'left', before: 8, after: 36 })
+          );
+        }
+      });
 
       blocks.push(
         buildFixedTable_([{ cells: [{ fill: bannerFill, paras: [
           buildSarabunPara_('โครงการยกระดับผลสัมฤทธิ์ผลการทดสอบทางการศึกษาระดับชาติขั้นพื้นฐาน (O-NET)', { sz: 34, bold: true, color: bannerColor, jc: 'center', before: 40, after: 20 }),
-          buildSarabunPara_('ฉบับที่ 3: เอกสารยกระดับตามสาระและตัวชี้วัด — ฉบับนักเรียน (สรุปความรู้และแบบฝึกทักษะ ป.6)', { sz: 30, bold: true, color: '0F172A', jc: 'center', before: 0, after: 40 })
+          buildSarabunPara_('ฉบับที่ 3: เอกสารยกระดับตามสาระและตัวชี้วัด — ฉบับนักเรียน (สรุปความรู้และแบบฝึกย่อยรายตัวชี้วัด)', { sz: 30, bold: true, color: '0F172A', jc: 'center', before: 0, after: 40 })
         ] }] }], [8306], { borderColor: bannerBorder, borderSz: 8 }),
         buildSarabunPara_('', { sz: 16, before: 20, after: 20 }),
         buildFixedTable_([
           { cells: [{ text: `รายวิชา: ${subjectDisplay}`, sz: 30, bold: true, fill: 'F8FAFC' }, { text: `${strandDisplay} | ขอบเขต: ${subStandard}`, sz: 30, bold: true, fill: 'F8FAFC' }] },
-          { cells: [{ text: `ตัวชี้วัดที่มุ่งพัฒนา (${expectedIndicators.length} ตัวชี้วัด):`, sz: 30, bold: true }, { text: indListText, sz: 28 }] },
+          { cells: [{ text: `ตัวชี้วัดในเอกสารชุดนี้ (${expectedIndicators.length} ตัวชี้วัด):`, sz: 30, bold: true }, { text: indListText, sz: 28 }] },
           { cells: [{ text: 'ชื่อ-สกุลนักเรียน: ................................................', sz: 30 }, { text: 'โรงเรียน: ........................................ เลขที่: ........', sz: 30 }] }
         ], [3000, 5306], { borderColor: '94A3B8', borderSz: 6 }),
-        buildSarabunPara_('ส่วนที่ 1: สรุปความรู้ตรงจุดออกสอบ (Knowledge Summary)', { sz: 34, bold: true, color: '1B4332', jc: 'left', before: 140, after: 40, keepNext: true }),
-        buildSarabunPara_('คำชี้แจง: ให้นักเรียนศึกษาสรุปหลักการสำคัญ สูตร และเทคนิคจำง่ายในแต่ละตัวชี้วัด แล้วฝึกทำโจทย์ในส่วนที่ 2 ด้วยตนเอง (เอกสารชุดนี้สำหรับนักเรียนฝึกคิด ไม่มีคำตอบแสดงไว้)', { sz: 30, firstLine: 720, before: 20, after: 50 }),
-        ...summarySubBlocks,
-        buildLockedImageFrameBox_('[กรอบวางแผนภาพสรุปความรู้ / Mind Map / กราฟประกอบ — วางรูปแบบ In Line with Text]'),
-        buildSarabunPara_('ส่วนที่ 2: แบบฝึกทักษะและข้อสอบฝึกคิดสำหรับนักเรียน (Skill Practice)', { sz: 34, bold: true, color: '1B4332', jc: 'left', before: 140, after: 40, keepNext: true }),
-        ...practiceStudentBlocks,
-        buildFixedTable_([{ cells: [{ text: 'พื้นที่ให้นักเรียนฝึกทดเลข / บันทึกเหตุผลการเลือกคำตอบ:\n................................................................................................................................................', sz: 30, fill: 'FAFAFA', before: 120, after: 120 }] }], [8306], { borderColor: 'CBD5E1', borderSz: 4 })
+        buildSarabunPara_('คำชี้แจง: เอกสารชุดนี้จัดเรียงเนื้อหาแยกเป็นรายตัวชี้วัด ในแต่ละตัวชี้วัดประกอบด้วย (1) สรุปความรู้ รูปภาพ หรืออินโฟกราฟิก และ (2) แบบฝึกย่อย 2–5 ข้อ ให้นักเรียนศึกษาสรุปความรู้แล้วฝึกทำแบบฝึกย่อยของตัวชี้วัดนั้นด้วยตนเอง (ไม่มีคำตอบแสดงไว้)', { sz: 30, firstLine: 720, before: 80, after: 80 }),
+        ...indicatorModules
       );
     } else {
-      const starterCount = Math.min(Math.max(expectedIndicators.length, 2), 5);
-      const summaryTeacherBlocks = [];
-      if (expectedIndicators.length <= 10) {
-        expectedIndicators.forEach((ind, idx) => {
-          const desc = indDescMap[ind] ? ` — ${indDescMap[ind]}` : '';
-          summaryTeacherBlocks.push(
-            buildSarabunPara_(`1.${idx + 1} จุดเน้นการสอนตัวชี้วัด ${ind}${desc}`, { sz: 32, bold: true, color: '991B1B', jc: 'left', before: 80, after: 20, keepNext: true }),
-            buildSarabunPara_('• แนวทางจัดกิจกรรมติว / จุดที่นักเรียนมักเข้าใจคลาดเคลื่อน (Misconceptions) และเทคนิคตัดตัวลวง: ....................................................', { sz: 30, firstLine: 720, before: 10, after: 40 })
-          );
-        });
-      } else {
-        const stdGroups = new Map();
-        expectedIndicators.forEach((ind) => {
-          const m = /^([ก-ฮ]\s*\d+\.\d+)/.exec(ind);
-          const stdKey = m ? m[1] : 'มาตรฐานประจำสาระ';
-          if (!stdGroups.has(stdKey)) stdGroups.set(stdKey, []);
-          stdGroups.get(stdKey).push(ind);
-        });
-        let gIdx = 1;
-        Array.from(stdGroups.entries()).forEach(([stdKey, inds]) => {
-          summaryTeacherBlocks.push(
-            buildSarabunPara_(`1.${gIdx++} จุดเน้นการสอนกลุ่ม${stdKey} (${inds.length} ตัวชี้วัด: ${inds.join(', ')})`, { sz: 32, bold: true, color: '991B1B', jc: 'left', before: 80, after: 20, keepNext: true }),
-            buildSarabunPara_('• แนวทางจัดกิจกรรมติว / จุดที่นักเรียนมักเข้าใจคลาดเคลื่อน (Misconceptions) และสื่อการสอน: ....................................................', { sz: 30, firstLine: 720, before: 10, after: 40 })
-          );
-        });
-      }
-
-      const practiceTeacherBlocks = [];
-      const keyRows = [{ isHeader: true, cells: [
-        { text: 'ข้อที่', sz: 30, bold: true, fill: 'FEF2F2', color: '991B1B', jc: 'center' },
-        { text: 'รหัสตัวชี้วัด', sz: 30, bold: true, fill: 'FEF2F2', color: '991B1B', jc: 'center' },
-        { text: 'คำตอบที่ถูก', sz: 30, bold: true, fill: 'FEF2F2', color: '991B1B', jc: 'center' },
-        { text: 'วิธีคิด จุดสังเกต และวิเคราะห์ตัวลวง', sz: 30, bold: true, fill: 'FEF2F2', color: '991B1B', jc: 'center' }
-      ] }];
-      for (let k = 1; k <= starterCount; k++) {
-        const ind = expectedIndicators[(k - 1) % expectedIndicators.length];
-        practiceTeacherBlocks.push(
-          buildSarabunPara_(`ข้อ ${k}. [${ind}] พิมพ์โจทย์แบบฝึกและตัวเลือกข้อที่ ${k} ให้ตรงกับฉบับนักเรียนที่นี่`, { sz: 32, bold: true, jc: 'left', before: 50, after: 20, keepNext: true }),
-          buildSarabunPara_('    1. ........................................    2. ........................................', { sz: 30, jc: 'left', before: 10, after: 10 }),
-          buildSarabunPara_('    3. ........................................    4. ........................................', { sz: 30, jc: 'left', before: 10, after: 20 }),
-          buildSarabunPara_(`เฉลย ข้อ ${k}: ตอบ 1 | วิธีคิด: [อธิบายเหตุผลของคำตอบที่ถูก เพื่อให้ระบบสกัดเข้าคลังฝึกออนไลน์ให้นักเรียนอ่านหลังทำข้อสอบอัตโนมัติ]`, { sz: 30, color: '991B1B', firstLine: 720, before: 10, after: 50 })
+      const teacherModules = [];
+      expectedIndicators.forEach((ind, idx) => {
+        const indNo = idx + 1;
+        const desc = indDescMap[ind] ? ` — ${indDescMap[ind]}` : '';
+        if (idx > 0) {
+          teacherModules.push(buildSarabunPara_('', { sz: 20, before: 100, after: 40 }));
+        }
+        teacherModules.push(
+          buildFixedTable_([{ cells: [{ fill: 'FEF2F2', paras: [
+            buildSarabunPara_(`ตัวชี้วัดที่ ${indNo}: ${ind}${desc} (ฉบับครูผู้สอน)`, { sz: 32, bold: true, color: '991B1B', jc: 'left', before: 30, after: 30, keepNext: true })
+          ] }] }], [8306], { borderColor: '991B1B', borderSz: 6 }),
+          buildSarabunPara_(`1. สรุปความรู้ตัวชี้วัดที่ ${indNo} (${ind})`, { sz: 32, bold: true, color: '991B1B', jc: 'left', before: 100, after: 30, keepNext: true }),
+          buildFixedTable_([{ cells: [{ fill: 'FFFFFF', paras: [
+            buildSarabunPara_(`[พื้นที่ใส่สรุปความรู้ รูปภาพ แผนผัง หรืออินโฟกราฟิก — ตัวชี้วัดที่ ${indNo} (${ind}) ให้ตรงกับฉบับนักเรียน]`, { sz: 30, bold: true, color: '991B1B', jc: 'left', before: 40, after: 20 }),
+            buildSarabunPara_('• พิมพ์สรุปเนื้อหาสำคัญ สูตร หรือเทคนิคจำง่ายของตัวชี้วัดนี้: ....................................................................................', { sz: 30, jc: 'left', before: 10, after: 20 }),
+            buildSarabunPara_('• แทรกรูปภาพประกอบหรืออินโฟกราฟิกในกรอบนี้ได้เลย (ตั้งค่ารูปภาพเป็น In Line with Text เพื่อล็อกหน้า A4 ไม่ให้เคลื่อน)', { sz: 28, italic: true, color: '64748B', jc: 'left', before: 10, after: 20 }),
+            buildSarabunPara_('• จุดเน้นการสอนเพิ่มเติมสำหรับครูผู้สอนนำไปติวต่อ (จุดที่นักเรียนมักเข้าใจผิด / เทคนิคตัดตัวลวง): ....................................................', { sz: 28, color: '991B1B', jc: 'left', before: 10, after: 120 })
+          ] }] }], [8306], { borderColor: 'DC2626', borderSz: 6, allowRowSplit: true }),
+          buildSarabunPara_(`2. แบบฝึกย่อยตัวชี้วัดที่ ${indNo} (${ind}) (จำนวน 2–5 ข้อ พร้อมตัวเลือกและเฉลยละเอียดรายข้อ)`, { sz: 32, bold: true, color: '991B1B', jc: 'left', before: 100, after: 20, keepNext: true }),
+          buildSarabunPara_('คำแนะนำ: ใส่ข้อสอบ 2–5 ข้อ พร้อมตัวเลือกให้ตรงกับฉบับนักเรียน และเขียนเฉลยข้อนั้น ๆ อย่างละเอียดเพื่อให้ครูผู้สอนนำไปติวต่อได้ทันที (หากใช้ไม่ถึง 5 ข้อ ลบข้อที่เกินออกได้)', { sz: 28, italic: true, color: '991B1B', jc: 'left', before: 0, after: 30 })
         );
-        keyRows.push({ cells: [
-          { text: `ข้อ ${k}`, sz: 30, jc: 'center' },
-          { text: ind, sz: 30, jc: 'left' },
-          { text: '1', sz: 30, bold: true, color: '991B1B', jc: 'center' },
-          { text: 'อธิบายเหตุผลของคำตอบที่ถูกต้อง และจุดที่นักเรียนมักเข้าใจผิด', sz: 28, jc: 'left' }
-        ] });
-      }
+        for (let k = 1; k <= 5; k++) {
+          teacherModules.push(
+            buildSarabunPara_(`ข้อ ${k}. [${ind}] [พิมพ์โจทย์ข้อที่ ${k} ของตัวชี้วัดที่ ${indNo} (${ind}) ให้ตรงกับฉบับนักเรียน]`, { sz: 32, bold: true, jc: 'left', before: 50, after: 16, keepNext: true }),
+            buildSarabunPara_('    1) ..................................................    2) ..................................................', { sz: 30, jc: 'left', before: 8, after: 8 }),
+            buildSarabunPara_('    3) ..................................................    4) ..................................................', { sz: 30, jc: 'left', before: 8, after: 16 }),
+            buildSarabunPara_(`เฉลยข้อที่ ${k}: ตอบตัวเลือก 1`, { sz: 30, bold: true, color: '991B1B', jc: 'left', firstLine: 360, before: 8, after: 6, keepNext: true }),
+            buildSarabunPara_('วิธีคิดและคำอธิบายอย่างละเอียด (เพื่อให้ครูผู้สอนนำไปติวต่อได้): ....................................................................................', { sz: 30, color: '7F1D1D', jc: 'left', firstLine: 360, before: 4, after: 44 })
+          );
+        }
+      });
 
       blocks.push(
         buildFixedTable_([{ cells: [{ fill: bannerFill, paras: [
-          buildSarabunPara_('[ฉบับที่ 4: ฉบับครูผู้สอน — มีจุดเน้นการสอนและเฉลยละเอียด] โครงการยกระดับผลสัมฤทธิ์ผลการทดสอบทางการศึกษาระดับชาติขั้นพื้นฐาน (O-NET)', { sz: 30, bold: true, color: bannerColor, jc: 'center', before: 40, after: 20 }),
-          buildSarabunPara_('ชั้นประถมศึกษาปีที่ 6 ปีการศึกษา 2569 — กลุ่มโรงเรียนศรีเสาวภาค (ระบบดึงโจทย์และเฉลยเข้าคลังฝึกออนไลน์อัตโนมัติ)', { sz: 28, bold: true, color: '0F172A', jc: 'center', before: 0, after: 40 })
+          buildSarabunPara_('[ฉบับที่ 4: ฉบับครูผู้สอน — สรุปความรู้และแบบฝึกย่อยพร้อมเฉลยละเอียดรายข้อ]', { sz: 32, bold: true, color: bannerColor, jc: 'center', before: 40, after: 20 }),
+          buildSarabunPara_('โครงการยกระดับผลสัมฤทธิ์ O-NET ชั้นประถมศึกษาปีที่ 6 ปีการศึกษา 2569 (สำหรับครูผู้สอนนำไปติวต่อ และระบบดึงเข้าคลังฝึกออนไลน์อัตโนมัติ)', { sz: 28, bold: true, color: '0F172A', jc: 'center', before: 0, after: 40 })
         ] }] }], [8306], { borderColor: bannerBorder, borderSz: 8 }),
         buildSarabunPara_('', { sz: 16, before: 20, after: 20 }),
         buildFixedTable_([
           { cells: [{ text: `รายวิชา: ${subjectDisplay}`, sz: 30, bold: true, fill: 'F8FAFC' }, { text: `${strandDisplay} | ขอบเขต: ${subStandard}`, sz: 30, bold: true, fill: 'F8FAFC' }] },
           { cells: [{ text: `ตัวชี้วัดที่รับผิดชอบ (${expectedIndicators.length} ตัวชี้วัด):`, sz: 30, bold: true }, { text: indListText, sz: 28 }] },
-          { cells: [{ text: 'แนวทางแบ่งงานกรณีมีครูหลายท่านในสาระ:', sz: 28, bold: true, fill: 'FEF2F2', color: '991B1B' }, { text: 'ทำร่วมกันเป็น 1 ชุดประจำสาระ หรือเลือกแบ่งตามมาตรฐาน/รายตัวชี้วัดในระบบแล้วอัปโหลดแยกชุด (ระบบรวมเล่มตามลำดับให้อัตโนมัติ)', sz: 26, fill: 'FEF2F2' }] }
+          { cells: [{ text: 'โครงสร้างคู่ขนานฉบับนักเรียน:', sz: 28, bold: true, fill: 'FEF2F2', color: '991B1B' }, { text: 'วนทีละตัวชี้วัด (1. สรุปความรู้/รูปภาพ/อินโฟกราฟิก + 2. แบบฝึกย่อย 2–5 ข้อ พร้อมตัวเลือกและเฉลยละเอียดใต้ข้อนั้น ๆ)', sz: 26, fill: 'FEF2F2' }] }
         ], [3000, 5306], { borderColor: '94A3B8', borderSz: 6 }),
-        buildSarabunPara_('ส่วนที่ 1: สรุปความรู้ตรงจุดออกสอบ และจุดเน้นการสอนสำหรับครูผู้สอน', { sz: 34, bold: true, color: '991B1B', jc: 'left', before: 140, after: 40, keepNext: true }),
-        buildSarabunPara_('แนวทางการสอนของครู: ระบุเทคนิคการอธิบายมโนทัศน์หลัก ความเข้าใจคลาดเคลื่อนที่พบบ่อย (Misconceptions) และสื่อประกอบการสอน', { sz: 30, firstLine: 720, before: 20, after: 50 }),
-        ...summaryTeacherBlocks,
-        buildLockedImageFrameBox_('[กรอบวางแผนภาพประกอบการสอนของครู — วางรูปแบบ In Line with Text เพื่อล็อกตำแหน่ง 8306 DXA]'),
-        buildSarabunPara_('ส่วนที่ 2: แบบฝึกทักษะ/ข้อสอบประจำตัวชี้วัด (พร้อมระบุรหัสตัวชี้วัดกำกับรายข้อ — ระบบดึงเข้าคลังฝึกออนไลน์อัตโนมัติ)', { sz: 34, bold: true, color: '991B1B', jc: 'left', before: 140, after: 40, keepNext: true }),
-        ...practiceTeacherBlocks,
-        buildSarabunPara_('ส่วนที่ 3: ตารางสรุปเฉลยและวิธีคิดละเอียดสำหรับครูผู้สอน', { sz: 34, bold: true, color: '991B1B', jc: 'left', before: 120, after: 60, keepNext: true }),
-        buildFixedTable_(keyRows, [950, 2100, 1250, 4006], { borderColor: 'DC2626', borderSz: 6 })
+        buildSarabunPara_('แนวทางสำหรับครูผู้จัดทำและครูผู้สอน: เอกสารฉบับครูชุดนี้จัดเรียงโครงสร้างตรงกับฉบับนักเรียนทุกตัวชี้วัด เพื่อให้ครูผู้สอนใช้เปิดติวควบคู่กับเอกสารนักเรียนได้ทันทีข้อต่อข้อ และเมื่ออัปโหลดส่งเข้าระบบ ระบบจะดึงสรุปความรู้ โจทย์ ตัวเลือก และเฉลยละเอียดเข้าคลังฝึกออนไลน์ให้นักเรียนอัตโนมัติ', { sz: 30, firstLine: 720, before: 80, after: 80 }),
+        ...teacherModules
       );
     }
 
@@ -2722,9 +2687,39 @@
     const s = String(txt || '').replace(/\s+/g, ' ').trim();
     if (!s) return true;
     if (/\.{5,}|…{3,}/.test(s)) return true;
-    if (/พิมพ์คำถามแบบฝึกทักษะ|พิมพ์โจทย์แบบฝึกและตัวเลือก|\[พิมพ์โจทย์|อธิบายเหตุผลของคำตอบที่ถูกต้อง และจุดที่นักเรียนมักเข้าใจผิด|\[อธิบายเหตุผล|\[อธิบายวิธีคิด|ข้อ\s*\.\.\./i.test(s)) {
+    if (/พิมพ์คำถามแบบฝึกทักษะ|พิมพ์โจทย์(?:แบบฝึก|ข้อที่)|\[พิมพ์โจทย์|อธิบายเหตุผลของคำตอบที่ถูกต้อง และจุดที่นักเรียนมักเข้าใจผิด|\[อธิบายเหตุผล|\[อธิบายวิธีคิด|ข้อ\s*\.\.\./i.test(s)) {
       return true;
     }
+    return false;
+  }
+
+  function extractIndicatorCodeFromText_(txt) {
+    const norm = normalizeThaiDigits(String(txt || '')).replace(/\s+/g, ' ').trim();
+    const m = /([ทควต]\s*\d+\.\d+\s*ป\.\s*\d+\/\d+)/i.exec(norm);
+    if (!m) return '';
+    return m[1]
+      .replace(/^([ทควต])\s*(\d)/i, '$1 $2')
+      .replace(/\s*ป\.\s*/i, ' ป.')
+      .replace(/\s+/g, ' ')
+      .trim();
+  }
+
+  function cleanTutoringSummaryLine_(rawLine) {
+    return String(rawLine || '')
+      .replace(/^•\s*พิมพ์สรุปเนื้อหาสำคัญ[^:]*:\s*/i, '')
+      .replace(/^•\s*จุดเน้นการสอนเพิ่มเติมสำหรับครูผู้สอน[^:]*:\s*/i, '')
+      .replace(/^•\s*สรุปหลักการสำคัญ[^:]*:\s*/i, '')
+      .trim();
+  }
+
+  function isTutoringBoilerplateLine_(txt) {
+    const s = String(txt || '').replace(/\s+/g, ' ').trim();
+    if (!s) return true;
+    if (isUneditedPlaceholderText_(s)) return true;
+    if (/^\[พื้นที่(?:ใส่สรุปความรู้|สำหรับครูใส่สรุปความรู้|สำหรับใส่ภาพ|สำหรับภาพประกอบ)/i.test(s)) return true;
+    if (/^•?\s*แทรกรูปภาพ(?:หรืออินโฟกราฟิก|ประกอบ)/i.test(s)) return true;
+    if (/^คำชี้แจง\s*:|^คำชี้แจงสำหรับคณะกรรมการ|^คำแนะนำ(?:\s*สำหรับ|\s*:)|^คำสั่ง\s*:\s*เลือกตัวเลือกที่ถูกต้องที่สุด|^แนวทางสำหรับครูผู้จัดทำ|^แนวทางการสอนของครู\s*:/i.test(s)) return true;
+    if (/^\[กรอบวางแผนภาพ|^พื้นที่ให้นักเรียนฝึก(?:แสดงวิธีทำ|ทดเลข)/i.test(s)) return true;
     return false;
   }
 
@@ -2767,6 +2762,7 @@
   function extractTutoringItemsFromSingleXml_(documentXml = '') {
     const out = {
       summaryLines: [],
+      unitsMap: new Map(),
       itemsMap: new Map(),
       keyMetaMap: new Map()
     };
@@ -2777,22 +2773,87 @@
     const blocks = extractWordTopLevelBlocks_(bodyXml);
 
     let sectionMode = 'HEADER';
+    let currentUnitIdx = 0;
+    let autoUnitCounter = 0;
     let currentItemNo = null;
+    let currentItemKey = null;
+    let inExplanationKey = null;
 
-    function ensureItem(no) {
-      const n = Number(no);
-      if (!out.itemsMap.has(n)) {
-        out.itemsMap.set(n, { itemNo: n, indicatorCode: '', stemLines: [], choices: {} });
-      }
-      return out.itemsMap.get(n);
+    function makeItemKey(uIdx, no) {
+      return `${Number(uIdx || 0)}::${Number(no)}`;
     }
 
-    function ensureKeyMeta(no) {
-      const n = Number(no);
-      if (!out.keyMetaMap.has(n)) {
-        out.keyMetaMap.set(n, { itemNo: n, indicatorCode: '', correctChoice: '', explanation: '' });
+    function activateUnit(explicitNo, indCode, rawHeading) {
+      let uIdx = explicitNo && Number(explicitNo) > 0 ? Number(explicitNo) : 0;
+      if (!uIdx && indCode) {
+        for (const [k, u] of out.unitsMap.entries()) {
+          if (u.indicatorCode === indCode) {
+            uIdx = k;
+            break;
+          }
+        }
       }
-      return out.keyMetaMap.get(n);
+      if (!uIdx) {
+        uIdx = currentUnitIdx > 0 ? currentUnitIdx : (++autoUnitCounter);
+      }
+      if (uIdx > autoUnitCounter) autoUnitCounter = uIdx;
+      if (!out.unitsMap.has(uIdx)) {
+        out.unitsMap.set(uIdx, {
+          unitIdx: uIdx,
+          indicatorCode: indCode || '',
+          title: String(rawHeading || '').replace(/\s*\(ฉบับครูผู้สอน\)\s*$/i, '').trim(),
+          summaryLines: []
+        });
+      } else {
+        const existing = out.unitsMap.get(uIdx);
+        if (!existing.indicatorCode && indCode) existing.indicatorCode = indCode;
+        if (!existing.title && rawHeading) existing.title = String(rawHeading).replace(/\s*\(ฉบับครูผู้สอน\)\s*$/i, '').trim();
+      }
+      currentUnitIdx = uIdx;
+      return out.unitsMap.get(uIdx);
+    }
+
+    function ensureItem(uIdx, no) {
+      const n = Number(no);
+      const key = makeItemKey(uIdx, n);
+      if (!out.itemsMap.has(key)) {
+        const unitObj = uIdx > 0 ? out.unitsMap.get(uIdx) : null;
+        out.itemsMap.set(key, {
+          key,
+          unitIdx: Number(uIdx || 0),
+          itemNo: n,
+          indicatorCode: (unitObj && unitObj.indicatorCode) || '',
+          stemLines: [],
+          choices: {}
+        });
+      }
+      return out.itemsMap.get(key);
+    }
+
+    function ensureKeyMeta(uIdx, no) {
+      const n = Number(no);
+      const key = makeItemKey(uIdx, n);
+      if (!out.keyMetaMap.has(key)) {
+        const unitObj = uIdx > 0 ? out.unitsMap.get(uIdx) : null;
+        out.keyMetaMap.set(key, {
+          key,
+          unitIdx: Number(uIdx || 0),
+          itemNo: n,
+          indicatorCode: (unitObj && unitObj.indicatorCode) || '',
+          correctChoice: '',
+          explanation: ''
+        });
+      }
+      return out.keyMetaMap.get(key);
+    }
+
+    function appendSummaryLine(rawLine) {
+      const cleaned = cleanTutoringSummaryLine_(rawLine);
+      if (!cleaned || isTutoringBoilerplateLine_(cleaned)) return;
+      out.summaryLines.push(cleaned);
+      if (currentUnitIdx > 0 && out.unitsMap.has(currentUnitIdx)) {
+        out.unitsMap.get(currentUnitIdx).summaryLines.push(cleaned);
+      }
     }
 
     blocks.forEach((blk) => {
@@ -2801,19 +2862,36 @@
       const flat = normText.replace(/\s+/g, ' ').trim();
       if (!flat) return;
 
-      if (/^ส่วนที่\s*1\s*[:\-]?\s*สรุปความรู้/i.test(flat)) {
+      const unitBannerM = /^(?:หน่วยย่อย|ตัวชี้วัด)ที่\s*(\d{1,3})\s*[:\-—]?\s*(.*)$/i.exec(flat);
+      if (unitBannerM && !/^ตัวชี้วัด(?:ในเอกสารชุดนี้|ที่รับผิดชอบ|ที่มุ่งพัฒนา)/i.test(flat)) {
+        activateUnit(Number(unitBannerM[1]), extractIndicatorCodeFromText_(flat), flat);
         sectionMode = 'SUMMARY';
         currentItemNo = null;
+        currentItemKey = null;
+        inExplanationKey = null;
+        return;
+      }
+
+      if (/^ส่วนที่\s*1\s*[:\-]?\s*สรุปความรู้/i.test(flat)) {
+        currentUnitIdx = 0;
+        sectionMode = 'SUMMARY';
+        currentItemNo = null;
+        currentItemKey = null;
+        inExplanationKey = null;
         return;
       }
       if (/^ส่วนที่\s*2\s*[:\-]?\s*(?:แบบฝึก|ข้อสอบ|ตัวข้อสอบ)/i.test(flat)) {
         sectionMode = 'QUESTIONS';
         currentItemNo = null;
+        currentItemKey = null;
+        inExplanationKey = null;
         return;
       }
-      if (/^ส่วนที่\s*3\s*[:\-]?\s*เฉลย/i.test(flat)) {
+      if (/^ส่วนที่\s*3\s*[:\-]?\s*(?:ตารางสรุป)?เฉลย/i.test(flat)) {
         sectionMode = 'KEYS';
         currentItemNo = null;
+        currentItemKey = null;
+        inExplanationKey = null;
         return;
       }
 
@@ -2833,7 +2911,7 @@
             const itemM = /^\s*(?:ข้อ(?:ที่)?\s*)?(\d{1,3})\s*$/.exec(c0);
             if (itemM) {
               const no = Number(itemM[1]);
-              const km = ensureKeyMeta(no);
+              const km = ensureKeyMeta(currentUnitIdx, no);
               if (cells.length >= 4) {
                 const indCand = cells[1].trim();
                 const ansCand = normalizeChoiceTokenTo14_(cells[2]);
@@ -2853,31 +2931,60 @@
           }
         }
         if (parsedAnyKeyRow || sectionMode === 'HEADER') return;
-        if (/พื้นที่ให้นักเรียนฝึกแสดงวิธีทำ|กรอบวางแผนภาพ|คำแนะนำสำหรับผู้จัดทำ/.test(flat)) return;
-      }
-
-      if (sectionMode === 'SUMMARY') {
-        if (/^คำชี้แจงสำหรับคณะกรรมการ|^แนวทางการสอนของครู:\s*ระบุเทคนิค|^\[กรอบวางแผนภาพ|^คำแนะนำสำหรับผู้จัดทำ/i.test(flat)) {
-          return;
-        }
-        normText.split('\n').map(l => l.trim()).filter(Boolean).forEach(l => {
-          if (!isUneditedPlaceholderText_(l)) out.summaryLines.push(l);
-        });
-        return;
       }
 
       const lines = normText.split('\n').map(l => l.trim()).filter(Boolean);
       lines.forEach((line) => {
-        const inlineAnsM = /^(?:เฉลย|คำตอบ)\s*(?:ข้อ(?:ที่)?\s*(\d{1,3}))?\s*[:=\-]?\s*(?:ตอบ(?:ข้อ)?\s*)?([1-4กขคงA-Da-d])\b(?:\s*(?:\||[:\-]|วิธีคิด(?:และเหตุผล)?|เหตุผล|คำอธิบาย|เพราะ)\s*[:=\-]?\s*(.*))?$/i.exec(line);
+        const modSumM = /^1\s*[\.\)]\s*สรุป(?:ความรู้|เนื้อหา)(?:ประจำ)?ตัวชี้วัด(?:ที่\s*(\d{1,3}))?(.*)$/i.exec(line);
+        if (modSumM) {
+          const uNo = modSumM[1] ? Number(modSumM[1]) : null;
+          activateUnit(uNo, extractIndicatorCodeFromText_(line), line);
+          sectionMode = 'SUMMARY';
+          currentItemNo = null;
+          currentItemKey = null;
+          inExplanationKey = null;
+          return;
+        }
+
+        const modPracM = /^2\s*[\.\)]\s*(?:แบบฝึก(?:ย่อย|ทักษะ)?|ข้อสอบ)(?:ประจำ)?(?:ตัวชี้วัด(?:ที่\s*(\d{1,3}))?)?(.*)$/i.exec(line);
+        if (modPracM) {
+          const uNo = modPracM[1] ? Number(modPracM[1]) : null;
+          const indC = extractIndicatorCodeFromText_(line);
+          if (uNo || indC) activateUnit(uNo, indC, '');
+          sectionMode = 'QUESTIONS';
+          currentItemNo = null;
+          currentItemKey = null;
+          inExplanationKey = null;
+          return;
+        }
+
+        const inlineAnsM = /^(?:เฉลย|คำตอบ)(?:\s*ข้อ(?:ที่)?\s*(\d{1,3}))?\s*[:=\-]?\s*(?:ตอบ(?:ตัวเลือก(?:ที่)?|ข้อ(?:ที่)?)?\s*)?([1-4กขคงA-Da-d])(?:\s*[\.\)])?(?:\s*(?:\||[:\-]|วิธีคิด[^\s:]*|เหตุผล|คำอธิบาย[^\s:]*|เพราะ)\s*[:=\-]?\s*(.*))?$/i.exec(line);
         if (inlineAnsM) {
           const targetNo = inlineAnsM[1] ? Number(inlineAnsM[1]) : currentItemNo;
           if (targetNo) {
-            const km = ensureKeyMeta(targetNo);
+            const km = ensureKeyMeta(currentUnitIdx, targetNo);
             const ch = normalizeChoiceTokenTo14_(inlineAnsM[2]);
             if (ch) km.correctChoice = ch;
-            const expRaw = String(inlineAnsM[3] || '').replace(/^(?:วิธีคิด(?:และเหตุผล)?|เหตุผล|คำอธิบาย)\s*[:=\-]?\s*/i, '').trim();
+            const expRaw = String(inlineAnsM[3] || '')
+              .replace(/^(?:วิธีคิด(?:และคำอธิบายอย่างละเอียด|และเหตุผล|ละเอียด)?|เหตุผล|คำอธิบาย(?:อย่างละเอียด|ละเอียด)?)\s*(?:\([^)]*\))?\s*[:=\-]?\s*/i, '')
+              .trim();
             if (expRaw && !isUneditedPlaceholderText_(expRaw)) {
               km.explanation = expRaw;
+            }
+            inExplanationKey = km.key;
+          }
+          return;
+        }
+
+        const expStartM = /^(?:วิธีคิด(?:และคำอธิบายอย่างละเอียด|และเหตุผล|ละเอียด)?|คำอธิบาย(?:อย่างละเอียด|ละเอียด)?|แนวทางอธิบาย[^:]*|เหตุผล(?:ละเอียด)?|แนวคิด)\s*(?:\([^)]*\))?\s*[:=\-]\s*(.*)$/i.exec(line);
+        if (expStartM && sectionMode !== 'SUMMARY') {
+          const targetNo = currentItemNo;
+          if (targetNo !== null) {
+            const km = ensureKeyMeta(currentUnitIdx, targetNo);
+            inExplanationKey = km.key;
+            const expBody = expStartM[1].trim();
+            if (expBody && !isUneditedPlaceholderText_(expBody)) {
+              km.explanation = km.explanation ? `${km.explanation} ${expBody}` : expBody;
             }
           }
           return;
@@ -2890,13 +2997,15 @@
           sectionMode = 'QUESTIONS';
           const qNo = Number(qStartM[1]);
           currentItemNo = qNo;
-          const it = ensureItem(qNo);
+          const it = ensureItem(currentUnitIdx, qNo);
+          currentItemKey = it.key;
+          inExplanationKey = null;
           let rest = qStartM[2].trim();
           const indBracketM = /^\[([^\]]+)\]\s*(.*)$/.exec(rest);
           if (indBracketM) {
             const bracketContent = indBracketM[1].trim();
             if (/[ทควต]\s*\d+\.\d+/i.test(bracketContent)) {
-              it.indicatorCode = bracketContent;
+              it.indicatorCode = extractIndicatorCodeFromText_(bracketContent) || bracketContent;
               rest = indBracketM[2].trim();
             }
           }
@@ -2906,17 +3015,30 @@
           return;
         }
 
+        if (sectionMode === 'SUMMARY') {
+          appendSummaryLine(line);
+          return;
+        }
+
+        if (inExplanationKey && out.keyMetaMap.has(inExplanationKey)) {
+          if (!isTutoringBoilerplateLine_(line)) {
+            const km = out.keyMetaMap.get(inExplanationKey);
+            km.explanation = km.explanation ? `${km.explanation} ${line}` : line;
+          }
+          return;
+        }
+
         if (sectionMode === 'QUESTIONS' && currentItemNo !== null) {
           const splitCh = splitChoicesFromParagraphLine_(line);
           if (splitCh.length > 0) {
-            const it = ensureItem(currentItemNo);
+            const it = ensureItem(currentUnitIdx, currentItemNo);
             splitCh.forEach((c) => {
               if (c.text && !isUneditedPlaceholderText_(c.text)) {
                 it.choices[c.key] = c.text;
               }
             });
-          } else if (!/^พื้นที่ให้นักเรียนฝึกแสดงวิธีทำ|^คำชี้แจง|^\[กรอบวาง/i.test(line) && !isUneditedPlaceholderText_(line)) {
-            const it = ensureItem(currentItemNo);
+          } else if (!isTutoringBoilerplateLine_(line)) {
+            const it = ensureItem(currentUnitIdx, currentItemNo);
             if (Object.keys(it.choices).length === 0) {
               it.stemLines.push(line);
             }
@@ -2926,6 +3048,23 @@
     });
 
     return out;
+  }
+
+  function buildSummaryPairFromLines_(lines, fallbackTitle, fallbackText) {
+    const cleanLines = (lines || []).filter(Boolean);
+    let title = fallbackTitle;
+    let text = '';
+    if (cleanLines.length > 0) {
+      const firstLine = cleanLines[0];
+      if (firstLine.length <= 95 && cleanLines.length > 1) {
+        title = firstLine;
+        text = cleanLines.slice(1).join(' ').slice(0, 650).trim();
+      } else {
+        text = cleanLines.join(' ').slice(0, 650).trim();
+      }
+    }
+    if (!text) text = fallbackText;
+    return { summaryTitle: title, summaryText: text };
   }
 
   function extractPracticeItemsFromTutoringDocxXml(params = {}) {
@@ -2938,39 +3077,37 @@
     const stuParsed = extractTutoringItemsFromSingleXml_(params.studentDocXml || '');
     const tchParsed = extractTutoringItemsFromSingleXml_(params.teacherDocXml || '');
 
-    const summarySourceLines = stuParsed.summaryLines.length > 0 ? stuParsed.summaryLines : tchParsed.summaryLines;
     const subjLabel = SUBJECT_NAMES[subjectCode] || subjectCode;
+    const globalSummaryLines = stuParsed.summaryLines.length > 0 ? stuParsed.summaryLines : tchParsed.summaryLines;
+    const globalFallbackTitle = `${subjLabel} สาระที่ ${strandNo}${subStandard && subStandard !== 'ALL' ? ' (' + subStandard + ')' : ''} — สรุปตรงจุดออกสอบ`;
+    const globalFallbackText = `ทบทวนหลักการสำคัญ ${subjLabel} สาระที่ ${strandNo} (${defaultIndicator}) ก่อนฝึกทำโจทย์`;
+    const globalSum = buildSummaryPairFromLines_(globalSummaryLines, globalFallbackTitle, globalFallbackText);
+    const summaryTitle = globalSum.summaryTitle;
+    const summaryText = globalSum.summaryText;
 
-    let summaryTitle = `${subjLabel} สาระที่ ${strandNo}${subStandard && subStandard !== 'ALL' ? ' (' + subStandard + ')' : ''} — สรุปตรงจุดออกสอบ`;
-    let summaryText = '';
-    if (summarySourceLines.length > 0) {
-      const firstLine = summarySourceLines[0];
-      if (firstLine.length <= 95 && summarySourceLines.length > 1) {
-        summaryTitle = firstLine;
-        summaryText = summarySourceLines.slice(1).join(' ').slice(0, 650).trim();
-      } else {
-        summaryText = summarySourceLines.join(' ').slice(0, 650).trim();
-      }
-    }
-    if (!summaryText) {
-      summaryText = `ทบทวนหลักการสำคัญ ${subjLabel} สาระที่ ${strandNo} (${defaultIndicator}) ก่อนฝึกทำโจทย์`;
-    }
-
-    const allNosSet = new Set([
+    const allKeysSet = new Set([
       ...Array.from(stuParsed.itemsMap.keys()),
       ...Array.from(tchParsed.itemsMap.keys())
     ]);
-    const sortedNos = Array.from(allNosSet).sort((a, b) => a - b);
+    const sortedKeys = Array.from(allKeysSet).sort((ka, kb) => {
+      const [ua, ia] = String(ka).split('::').map(Number);
+      const [ub, ib] = String(kb).split('::').map(Number);
+      if (ua !== ub) return ua - ub;
+      return ia - ib;
+    });
 
+    const hasPerUnitItems = sortedKeys.some((k) => Number(String(k).split('::')[0]) > 0);
     const items = [];
     const warnings = [];
     let skippedNoKeyCount = 0;
     let skippedIncompleteCount = 0;
+    let seqNo = 0;
 
-    sortedNos.forEach((no) => {
-      const sIt = stuParsed.itemsMap.get(no);
-      const tIt = tchParsed.itemsMap.get(no);
-      const kMeta = tchParsed.keyMetaMap.get(no) || stuParsed.keyMetaMap.get(no) || {};
+    sortedKeys.forEach((key) => {
+      const sIt = stuParsed.itemsMap.get(key);
+      const tIt = tchParsed.itemsMap.get(key);
+      const kMeta = tchParsed.keyMetaMap.get(key) || stuParsed.keyMetaMap.get(key) || {};
+      const [uIdx, localNo] = String(key).split('::').map(Number);
 
       const stemText = (sIt && sIt.stemLines.length ? sIt.stemLines.join(' ') : (tIt && tIt.stemLines.length ? tIt.stemLines.join(' ') : '')).trim();
       const mergedChoices = Object.assign({}, (tIt && tIt.choices) || {}, (sIt && sIt.choices) || {});
@@ -2990,22 +3127,46 @@
         return;
       }
 
+      const stuUnit = uIdx > 0 ? stuParsed.unitsMap.get(uIdx) : null;
+      const tchUnit = uIdx > 0 ? tchParsed.unitsMap.get(uIdx) : null;
+      const fallbackUnitInd = (uIdx > 0 && expectedIndicators[uIdx - 1]) ? expectedIndicators[uIdx - 1] : defaultIndicator;
+
       const indicatorCode = String(
         kMeta.indicatorCode ||
         (tIt && tIt.indicatorCode) ||
         (sIt && sIt.indicatorCode) ||
-        defaultIndicator
+        (stuUnit && stuUnit.indicatorCode) ||
+        (tchUnit && tchUnit.indicatorCode) ||
+        fallbackUnitInd
       ).trim();
 
+      let itemSummaryTitle = summaryTitle;
+      let itemSummaryText = summaryText;
+      if (uIdx > 0) {
+        const unitLines = (stuUnit && stuUnit.summaryLines.length > 0)
+          ? stuUnit.summaryLines
+          : ((tchUnit && tchUnit.summaryLines.length > 0) ? tchUnit.summaryLines : []);
+        const unitHeading = (stuUnit && stuUnit.title) || (tchUnit && tchUnit.title) || `${subjLabel} — สรุปความรู้ตัวชี้วัด ${indicatorCode}`;
+        const unitSum = buildSummaryPairFromLines_(
+          unitLines,
+          unitHeading,
+          summaryText || `ทบทวนหลักการสำคัญตัวชี้วัด ${indicatorCode} ก่อนฝึกทำโจทย์`
+        );
+        itemSummaryTitle = unitSum.summaryTitle;
+        itemSummaryText = unitSum.summaryText;
+      }
+
+      seqNo += 1;
+      const finalItemNo = hasPerUnitItems ? seqNo : localNo;
       const explanation = String(kMeta.explanation || `คำตอบที่ถูกต้องคือตัวเลือกที่ ${correctChoice} (ตามหลักการตัวชี้วัด ${indicatorCode})`).trim();
 
       items.push({
-        itemNo: no,
+        itemNo: finalItemNo,
         subjectCode,
         strandNo,
         indicatorCode,
-        summaryTitle,
-        summaryText,
+        summaryTitle: itemSummaryTitle,
+        summaryText: itemSummaryText,
         questionText: stemText,
         choice1: c1,
         choice2: c2,
@@ -5089,7 +5250,7 @@
     const subName = SUBJECT_NAMES[subCode] || subCode;
     const subStandard = (document.getElementById('upSubStandard') && document.getElementById('upSubStandard').value) || 'ALL';
     const inds = getExpectedUploadIndicatorsForCategory_(docCategory, examScope);
-    const indicatorDetails = STATE.blueprint.filter(r => r.subjectCode === subCode && inds.includes(r.indicatorCode));
+    const indicatorDetails = STATE.blueprint.filter(r => String(r.subjectCode) === String(subCode) && inds.includes(r.indicatorCode));
     const roundKey = examRound === 'POST' ? 'POST' : 'PRE';
     const examItems = (STATE.examStructure || []).filter(k => k.subjectCode === subCode && k.round === roundKey);
 
@@ -5195,8 +5356,8 @@
             `ไฟล์ในชุดนี้ประกอบด้วย 4 ฉบับมาตรฐาน (ตั้งค่า A4 ฟอนต์ TH SarabunPSK 16pt ล็อกตาราง 8306 DXA เรียบร้อยแล้ว):`,
             `1. ฉบับที่ 1: ข้อสอบคู่ขนาน (${examRound}) ฉบับนักเรียน — ล็อกเลขข้อตามผัง สทศ. ห้ามใส่คำตอบ/เฉลย/รหัสตัวชี้วัด`,
             `2. ฉบับที่ 2: ข้อสอบคู่ขนาน (${examRound}) ฉบับครู — มีตารางสรุปเฉลย รหัสตัวชี้วัด และวิธีคิดละเอียด (ใช้ตรวจ IOC 2 หน้าจอคู่ขนาน)`,
-            `3. ฉบับที่ 3: เอกสารยกระดับตามสาระฯ ฉบับนักเรียน — ส่วนที่ 1 สรุปความรู้ + ส่วนที่ 2 แบบฝึกทักษะ (ห้ามมีเฉลย)`,
-            `4. ฉบับที่ 4: เอกสารยกระดับตามสาระฯ ฉบับครู — ส่วนที่ 1 จุดเน้นการสอน + ส่วนที่ 2 โจทย์พร้อมเฉลย + ส่วนที่ 3 ตารางสรุปเฉลย (ระบบดึงเข้าคลังฝึกออนไลน์อัตโนมัติ)`,
+            `3. ฉบับที่ 3: เอกสารยกระดับตามสาระฯ ฉบับนักเรียน — วนรายตัวชี้วัด: (1) สรุปความรู้/รูปภาพ/อินโฟกราฟิก + (2) แบบฝึกย่อย 2–5 ข้อ พร้อมตัวเลือก (ห้ามมีเฉลย)`,
+            `4. ฉบับที่ 4: เอกสารยกระดับตามสาระฯ ฉบับครู — วนรายตัวชี้วัด: (1) สรุปความรู้/รูปภาพ/อินโฟกราฟิก + (2) แบบฝึกย่อย 2–5 ข้อ พร้อมตัวเลือกและเฉลยละเอียดรายข้อเพื่อให้ครูผู้สอนนำไปติวต่อได้ (ระบบดึงเข้าคลังฝึกออนไลน์อัตโนมัติ)`,
             ``,
             `กรณีใน 1 สาระมีครูช่วยกันทำหลายคน เลือกทำได้ 2 วิธี:`,
             `- วิธีที่ 1 (ทำรวมเป็นชุดเดียวของสาระ): แบ่งข้อ/แบ่งตัวชี้วัดกันพิมพ์ แล้วนำมารวมในไฟล์ 4 ฉบับของสาระนี้ ส่งครั้งเดียว`,
