@@ -102,9 +102,30 @@
     COMMITTEE_TEACHER: 'คณะกรรมการจัดทำเอกสาร'
   };
 
+  function parseTeacherRoles(rawRoleInput) {
+    const tokens = Array.isArray(rawRoleInput)
+      ? rawRoleInput.map(x => String(x || '').trim().toUpperCase())
+      : String(rawRoleInput || '').split(/[,+|;/]+/).map(x => x.trim().toUpperCase());
+    const order = ['SUPER_ADMIN', 'COMMITTEE_TEACHER', 'SUBJECT_TEACHER', 'SCHOOL_ACADEMIC'];
+    return order.filter(r => tokens.includes(r));
+  }
+
+  function teacherHasRole(teacherOrRole, roleCode) {
+    const raw = teacherOrRole && typeof teacherOrRole === 'object' ? teacherOrRole.role : teacherOrRole;
+    return parseTeacherRoles(raw).includes(String(roleCode || '').trim().toUpperCase());
+  }
+
+  function formatTeacherRolesTh(teacherOrRole) {
+    const raw = teacherOrRole && typeof teacherOrRole === 'object' ? teacherOrRole.role : teacherOrRole;
+    const roles = parseTeacherRoles(raw);
+    if (!roles.length) return String(raw || '');
+    return roles.map(r => ROLE_LABELS_TH[r] || r).join(' + ');
+  }
+
   const ROLE_UI_MAP = {
     COMMITTEE: {
       roleCode: 'COMMITTEE_TEACHER',
+      regRolesName: 'regRoles_COMMITTEE',
       loginForm: 'commLoginForm', regForm: 'commRegForm',
       btnLogin: 'btnCommModeLogin', btnReg: 'btnCommModeReg',
       loginSubmitBtn: 'btnCommLoginSubmit', regSubmitBtn: 'btnCommRegSubmit',
@@ -116,6 +137,7 @@
     },
     INSTRUCTOR: {
       roleCode: 'SUBJECT_TEACHER',
+      regRolesName: 'regRoles_INSTRUCTOR',
       loginForm: 'instLoginForm', regForm: 'instRegForm',
       btnLogin: 'btnInstModeLogin', btnReg: 'btnInstModeReg',
       loginSubmitBtn: 'btnInstLoginSubmit', regSubmitBtn: 'btnInstRegSubmit',
@@ -127,6 +149,7 @@
     },
     ACADEMIC: {
       roleCode: 'SCHOOL_ACADEMIC',
+      regRolesName: 'regRoles_ACADEMIC',
       loginForm: 'acadLoginForm', regForm: 'acadRegForm',
       btnLogin: 'btnAcadModeLogin', btnReg: 'btnAcadModeReg',
       loginSubmitBtn: 'btnAcadLoginSubmit', regSubmitBtn: 'btnAcadRegSubmit',
@@ -134,7 +157,7 @@
       chipsWrap: 'acadQuickChipsWrap', chipsBox: 'acadQuickChips',
       emptyHint: 'acadEmptyHint', passBox: 'acadPassBox',
       loginPass: 'acadLoginPass', chkRemember: 'chkRememberAcad', clearBtn: 'btnClearSavedAcad',
-      regSchool: 'acadRegSchool', regName: 'acadRegName', regPass: 'acadRegPass', regSubject: null
+      regSchool: 'acadRegSchool', regName: 'acadRegName', regPass: 'acadRegPass', regSubject: 'acadRegSubject'
     }
   };
 
@@ -3491,17 +3514,17 @@
 
   function canTeacherAccessTab(teacher, tab) {
     if (!teacher) return false;
-    if (teacher.role === 'SUPER_ADMIN') return true;
-    if (tab === 'COMMITTEE' && teacher.role === 'COMMITTEE_TEACHER') return true;
-    if (tab === 'INSTRUCTOR' && teacher.role === 'SUBJECT_TEACHER') return true;
-    if (tab === 'ACADEMIC' && teacher.role === 'SCHOOL_ACADEMIC') return true;
+    if (teacherHasRole(teacher, 'SUPER_ADMIN')) return true;
+    if (tab === 'COMMITTEE' && teacherHasRole(teacher, 'COMMITTEE_TEACHER')) return true;
+    if (tab === 'INSTRUCTOR' && teacherHasRole(teacher, 'SUBJECT_TEACHER')) return true;
+    if (tab === 'ACADEMIC' && teacherHasRole(teacher, 'SCHOOL_ACADEMIC')) return true;
     return false;
   }
 
   function activateTeacherSessionUI(teacher, targetTab, authToken, preloadedWorkspace = null) {
     if (authToken) STATE.authToken = authToken;
     STATE.currentTeacher = teacher;
-    const roleLabel = ROLE_LABELS_TH[teacher.role] || teacher.role;
+    const roleLabel = formatTeacherRolesTh(teacher);
     document.getElementById('currentUserBadge').textContent = `${teacher.fullName} (${roleLabel})`;
     document.getElementById('currentUserBadge').classList.remove('hidden');
     document.getElementById('btnLogout').classList.remove('hidden');
@@ -3520,9 +3543,10 @@
     }
 
     let defaultRoleTab = 'COMMITTEE';
-    if (teacher.role === 'SUPER_ADMIN') defaultRoleTab = 'ADMIN';
-    else if (teacher.role === 'SCHOOL_ACADEMIC') defaultRoleTab = 'ACADEMIC';
-    else if (teacher.role === 'SUBJECT_TEACHER') defaultRoleTab = 'INSTRUCTOR';
+    if (teacherHasRole(teacher, 'SUPER_ADMIN')) defaultRoleTab = 'ADMIN';
+    else if (teacherHasRole(teacher, 'COMMITTEE_TEACHER')) defaultRoleTab = 'COMMITTEE';
+    else if (teacherHasRole(teacher, 'SUBJECT_TEACHER')) defaultRoleTab = 'INSTRUCTOR';
+    else if (teacherHasRole(teacher, 'SCHOOL_ACADEMIC')) defaultRoleTab = 'ACADEMIC';
 
     const destTab = (targetTab && targetTab !== 'STUDENT' && canTeacherAccessTab(teacher, targetTab))
       ? targetTab
@@ -4411,7 +4435,7 @@
     const passBox = document.getElementById(ui.passBox);
     if (!filterSel || !teacherSel) return;
 
-    const allRoleTeachers = (STATE.teachers || []).filter(t => t.role === ui.roleCode);
+    const allRoleTeachers = (STATE.teachers || []).filter(t => teacherHasRole(t, ui.roleCode));
     const filterSchool = filterSel.value || 'ALL';
     const filtered = filterSchool === 'ALL'
       ? allRoleTeachers
@@ -4529,33 +4553,51 @@
     const schoolId = document.getElementById(ui.regSchool).value;
     const fullName = document.getElementById(ui.regName).value.trim();
     const password = document.getElementById(ui.regPass).value;
-    const subjectCode = ui.regSubject ? document.getElementById(ui.regSubject).value : 'ALL';
+    const subjectCode = ui.regSubject && document.getElementById(ui.regSubject)
+      ? document.getElementById(ui.regSubject).value
+      : 'ALL';
+    const checkedBoxes = ui.regRolesName
+      ? Array.from(document.querySelectorAll(`input[name="${ui.regRolesName}"]:checked`)).map(cb => cb.value)
+      : [ui.roleCode];
+
+    if (!checkedBoxes.length) {
+      showToast('กรุณาติ๊กเลือกบทบาทที่รับผิดชอบอย่างน้อย 1 บทบาทครับ', 'error');
+      return;
+    }
 
     return withButtonBusy(ui.regSubmitBtn, 'กำลังส่งลงทะเบียน...', async () => {
       try {
         const res = await callGas('apiRegisterTeacher', {
           fullName,
           schoolId,
-          role: ui.roleCode,
+          roles: checkedBoxes,
+          role: checkedBoxes.join(','),
           subjectCode,
           password
         });
         if (!res || !res.ok) { showToast((res && res.error) || 'ลงทะเบียนไม่สำเร็จ', 'error'); return; }
 
         if (res.teacher) {
-          STATE.teachers = (STATE.teachers || []).concat([res.teacher]);
+          const existingIdx = (STATE.teachers || []).findIndex(t => t.teacherId === res.teacher.teacherId);
+          if (existingIdx !== -1) {
+            STATE.teachers[existingIdx] = res.teacher;
+          } else {
+            STATE.teachers = (STATE.teachers || []).concat([res.teacher]);
+          }
         }
         document.getElementById(ui.regName).value = '';
         document.getElementById(ui.regPass).value = '';
 
         toggleRoleAuthMode(tabRole, 'LOGIN');
         if (schoolId) document.getElementById(ui.filterSchool).value = schoolId;
-        renderRoleTeacherSelect(tabRole);
+        ['COMMITTEE', 'INSTRUCTOR', 'ACADEMIC'].forEach(rTab => renderRoleTeacherSelect(rTab));
 
         if (res.teacher) {
           const teacherSel = document.getElementById(ui.selectTeacher);
-          teacherSel.value = res.teacher.usernameOrEmail;
-          onRoleTeacherSelected(tabRole, false);
+          if (teacherSel && Array.from(teacherSel.options).some(o => o.value === res.teacher.usernameOrEmail)) {
+            teacherSel.value = res.teacher.usernameOrEmail;
+            onRoleTeacherSelected(tabRole, false);
+          }
         }
         const pendingEl = document.getElementById(getPendingNoticeIdForRole(tabRole));
         if (pendingEl) {
@@ -4615,14 +4657,20 @@
         if (!res || !res.ok) { showToast((res && res.error) || 'เข้าสู่ระบบไม่สำเร็จ', 'error'); return; }
 
         const authToken = res.authToken || STATE.authToken || '';
+        const matchingTabs = ['COMMITTEE', 'INSTRUCTOR', 'ACADEMIC'].filter(tKey => canTeacherAccessTab(res.teacher, tKey));
         if (rememberChecked) {
           try {
-            localStorage.setItem(ROLE_CRED_KEYS[tabRole], JSON.stringify({ u: chosenUser, authToken }));
+            matchingTabs.forEach(tKey => {
+              localStorage.setItem(ROLE_CRED_KEYS[tKey], JSON.stringify({ u: chosenUser, authToken }));
+              const cBtn = ROLE_UI_MAP[tKey] && document.getElementById(ROLE_UI_MAP[tKey].clearBtn);
+              if (cBtn) cBtn.classList.remove('hidden');
+            });
           } catch (e) {}
-          if (clearBtn) clearBtn.classList.remove('hidden');
           persistActiveSession({ type: 'TEACHER', authToken, activeTab: tabRole });
         } else {
-          try { localStorage.removeItem(ROLE_CRED_KEYS[tabRole]); } catch (e) {}
+          try {
+            matchingTabs.forEach(tKey => localStorage.removeItem(ROLE_CRED_KEYS[tKey]));
+          } catch (e) {}
           if (clearBtn) clearBtn.classList.add('hidden');
           persistActiveSession(null);
         }
@@ -8693,10 +8741,10 @@
     renderNotificationsPopover();
 
     document.getElementById('adminTeachersApprovalList').innerHTML = sortedTeachers.map(t => {
-      const roleTh = ROLE_LABELS_TH[t.role] || t.role;
+      const roleTh = formatTeacherRolesTh(t);
       const subTh = t.subjectCode === 'ALL' ? 'ครบ 4 วิชา' : (SUBJECT_NAMES[t.subjectCode] || t.subjectCode);
       const isPending = t.status !== 'APPROVED';
-      const isSelfAdmin = t.teacherId === STATE.currentTeacher.teacherId || t.role === 'SUPER_ADMIN';
+      const isSelfAdmin = t.teacherId === STATE.currentTeacher.teacherId || teacherHasRole(t, 'SUPER_ADMIN');
       return `
       <div class="${isPending ? 'gw-alert-warn' : 'gw-subcard'} flex flex-wrap items-center justify-between gap-2">
         <div>
@@ -9393,8 +9441,13 @@
   function openEditTeacherModal(teacherId) {
     const t = (STATE.adminTeachersCache || []).find(x => x.teacherId === teacherId);
     if (!t) return;
-    const roleOpts = ['COMMITTEE_TEACHER', 'SUBJECT_TEACHER', 'SCHOOL_ACADEMIC']
-      .map(r => `<option value="${r}"${t.role === r ? ' selected' : ''}>${escHtml(ROLE_LABELS_TH[r] || r)}</option>`)
+    const roleCheckboxes = ['COMMITTEE_TEACHER', 'SUBJECT_TEACHER', 'SCHOOL_ACADEMIC']
+      .map(r => `
+        <label class="inline-flex items-center gap-2 font-semibold cursor-pointer select-none p-2 rounded-xl border" style="border-color: var(--gw-line); background: var(--gw-surface);">
+          <input type="checkbox" data-role-chk="${r}" value="${r}"${teacherHasRole(t, r) ? ' checked' : ''} class="w-4 h-4 rounded cursor-pointer" style="accent-color: var(--gw-accent);">
+          <span>${escHtml(ROLE_LABELS_TH[r] || r)}</span>
+        </label>
+      `)
       .join('');
     const schoolOpts = (STATE.schools || [])
       .map(s => `<option value="${escHtml(s.schoolId)}"${t.schoolId === s.schoolId ? ' selected' : ''}>${escHtml(s.schoolNo)}. ${escHtml(s.schoolName)}</option>`)
@@ -9407,7 +9460,7 @@
       .join('');
 
     openCustomModal({
-      title: 'แก้ไขสิทธิ์ & ข้อมูลบัญชีครู',
+      title: 'แก้ไขสิทธิ์ & บทบาทควบของครู',
       subtitle: `${t.fullName} (${t.usernameOrEmail})`,
       bodyHtml: `
         <div class="space-y-3 text-xs">
@@ -9416,27 +9469,33 @@
             <select data-field="newStatus" class="gw-input !py-1.5 text-xs">${statusOpts}</select>
           </div>
           <div>
-            <label class="font-bold block mb-1">บทบาทหน้าที่</label>
-            <select data-field="newRole" class="gw-input !py-1.5 text-xs">${roleOpts}</select>
+            <label class="font-bold block mb-1">บทบาทหน้าที่ (ติ๊กควบได้หลายบทบาท — ล็อกอินครั้งเดียวเข้าได้ทุกเมนูที่ติ๊ก)</label>
+            <div class="grid grid-cols-1 gap-1.5">${roleCheckboxes}</div>
           </div>
           <div>
             <label class="font-bold block mb-1">สังกัดโรงเรียน</label>
             <select data-field="newSchoolId" class="gw-input !py-1.5 text-xs">${schoolOpts}</select>
           </div>
           <div>
-            <label class="font-bold block mb-1">รายวิชาที่รับผิดชอบ</label>
+            <label class="font-bold block mb-1">รายวิชาที่รับผิดชอบ / สอน</label>
             <select data-field="newSubjectCode" class="gw-input !py-1.5 text-xs">${subOpts}</select>
           </div>
         </div>
       `,
       confirmText: 'บันทึกการแก้ไข',
       onConfirm: async (modal) => {
+        const pickedRoles = Array.from(modal.querySelectorAll('[data-role-chk]:checked')).map(el => el.value);
+        if (!pickedRoles.length) {
+          showToast('กรุณาติ๊กเลือกบทบาทอย่างน้อย 1 บทบาทครับ', 'error');
+          return false;
+        }
         const res = await callGas('apiApproveOrUpdateTeacher', {
           authToken: STATE.authToken || '',
           adminId: STATE.currentTeacher.teacherId,
           targetTeacherId: teacherId,
           newStatus: modal.querySelector('[data-field="newStatus"]').value,
-          newRole: modal.querySelector('[data-field="newRole"]').value,
+          newRoles: pickedRoles,
+          newRole: pickedRoles.join(','),
           newSchoolId: modal.querySelector('[data-field="newSchoolId"]').value,
           newSubjectCode: modal.querySelector('[data-field="newSubjectCode"]').value
         });
@@ -9444,7 +9503,7 @@
           showToast((res && res.error) || 'บันทึกการแก้ไขไม่สำเร็จ', 'error');
           return false;
         }
-        showToast('อัปเดตข้อมูลสิทธิ์คุณครูเรียบร้อยแล้วครับ', 'success');
+        showToast('อัปเดตข้อมูลสิทธิ์และบทบาทคุณครูเรียบร้อยแล้วครับ', 'success');
         refreshSuperAdminDashboard();
       }
     });
