@@ -1,0 +1,3532 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>โครงการยกระดับผลสัมฤทธิ์ผลการทดสอบทางการศึกษาระดับชาติขั้นพื้นฐาน (O-NET) ป.6 ปีการศึกษา 2569 | กลุ่มโรงเรียนศรีเสาวภาค</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+  <script src="https://unpkg.com/lucide@0.469.0/dist/umd/lucide.min.js"></script>
+    <meta name="description" content="ระบบห้องเรียนติว ฝึกข้อสอบ จัดทำเอกสาร 4 ฉบับ ตรวจ IOC และวิเคราะห์ผลสัมฤทธิ์ O-NET ป.6 ปีการศึกษา 2569 กลุ่มโรงเรียนศรีเสาวภาค สพป.สระบุรี เขต 2 (8 โรงเรียน)">
+  <meta name="theme-color" content="#14532d">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2064%2064%22%3E%3Crect%20width%3D%2264%22%20height%3D%2264%22%20rx%3D%2216%22%20fill%3D%22%2314532d%22%2F%3E%3Cpath%20d%3D%22M32%2014L12%2024l20%2010%2020-10-20-10z%22%20fill%3D%22%23fef08a%22%2F%3E%3Cpath%20d%3D%22M18%2031v11c0%204%206.3%208%2014%208s14-4%2014-8V31L32%2038%2018%2031z%22%20fill%3D%22%23ffffff%22%2F%3E%3C%2Fsvg%3E">
+  <meta property="og:type" content="website">
+  <meta property="og:locale" content="th_TH">
+  <meta property="og:url" content="https://keardtisakkaruna.github.io/onet-srisaowaphak/">
+  <meta property="og:title" content="โครงการยกระดับผลสัมฤทธิ์ O-NET ป.6 ปีการศึกษา 2569 | กลุ่มโรงเรียนศรีเสาวภาค">
+  <meta property="og:description" content="พื้นที่การเรียนรู้ ฝึกข้อสอบ จัดทำเอกสาร 4 ฉบับ ตรวจประเมิน IOC และวิเคราะห์ผลสัมฤทธิ์ O-NET ป.6 ร่วมกัน 8 โรงเรียน สพป.สระบุรี เขต 2">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Mali:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap');
+
+  :root {
+    --font-ui: 'Mali', 'Leelawadee UI', Tahoma, sans-serif;
+    --font-doc: 'TH SarabunPSK', Tahoma, sans-serif;
+    --gw-font-scale: 1.10;
+  }
+
+  /* ========================================================================
+   * 1. ADJUSTABLE GLASS WORKSPACE DESIGN SYSTEM (Symmetric + Scalable Mali UI)
+   * ======================================================================== */
+  @media screen {
+    html {
+      font-size: calc(16px * var(--gw-font-scale, 1.10));
+      scroll-padding-top: 24px;
+      scroll-padding-bottom: calc(116px + env(safe-area-inset-bottom, 0px));
+    }
+
+    html, body {
+      width: 100%;
+      max-width: 100%;
+      min-height: 100%;
+      overflow-x: hidden;
+      overflow-y: auto;
+      margin: 0;
+      padding: 0;
+      font-family: var(--font-ui);
+      background: #cfe0ec;
+    }
+
+    #printOnlyWrapper {
+      display: none;
+    }
+
+    .gw-root {
+      /* Default Warm Frosted Glass Palette (Light & Dark native tokens) */
+      --gw-ink: #222a25;
+      --gw-muted: #4a574d;
+      --gw-accent: #275e48;
+      --gw-accent-soft: rgba(39, 94, 72, 0.13);
+      --gw-line: rgba(40, 59, 48, 0.15);
+      --gw-line-strong: rgba(40, 59, 48, 0.28);
+      --gw-background: #cfe0ec;
+      --gw-shade: rgba(240, 246, 252, 0.14);
+      --gw-surface: #ffffff;
+      --gw-panel: #ffffff;
+      --gw-subcard-bg: rgba(255, 255, 255, 0.68);
+      --gw-brand: #274b39;
+      --gw-brand-ink: #ffffff;
+      --gw-avatar: #efe2ce;
+      --gw-segment: rgba(41, 61, 48, 0.08);
+      --gw-segment-active: #ffffff;
+      --gw-dock: rgba(248, 250, 252, 0.86);
+      --gw-dock-active: #274b39;
+      --gw-dock-ink: #ffffff;
+      --gw-button: #274b39;
+      --gw-button-ink: #ffffff;
+      --gw-input-bg: rgba(255, 255, 255, 0.85);
+      --gw-popover: rgba(247, 243, 236, 0.96);
+      --gw-shadow: rgba(20, 38, 29, 0.20);
+      --gw-panel-shadow: rgba(20, 37, 28, 0.14);
+      --gw-soft-shadow: rgba(32, 41, 32, 0.09);
+      --gw-popover-shadow: rgba(19, 32, 23, 0.26);
+      --gw-toast: #243e2e;
+      --gw-toast-ink: #ffffff;
+      --gw-hover: rgba(39, 75, 57, 0.09);
+      --gw-dock-hover: rgba(39, 75, 57, 0.10);
+      --gw-control-hover: rgba(47, 107, 83, 0.12);
+      --gw-highlight: #ffffff;
+      --gw-scrollbar: #839480;
+      --gw-warn-bg: rgba(245, 158, 11, 0.14);
+      --gw-warn-bd: rgba(217, 119, 6, 0.36);
+      --gw-warn-ink: #92400e;
+      --gw-danger-bg: rgba(225, 29, 72, 0.11);
+      --gw-danger-bd: rgba(225, 29, 72, 0.34);
+      --gw-danger-ink: #9f1239;
+      --gw-info-bg: rgba(2, 132, 199, 0.12);
+      --gw-info-bd: rgba(2, 132, 199, 0.34);
+      --gw-info-ink: #075985;
+      --gw-success-bg: rgba(16, 185, 129, 0.13);
+      --gw-success-bd: rgba(5, 150, 105, 0.36);
+      --gw-success-ink: #065f46;
+
+      position: relative;
+      width: 100%;
+      min-height: 100svh;
+      padding: 16px 20px calc(92px + env(safe-area-inset-bottom, 0px));
+      background: transparent;
+      color: var(--gw-ink);
+      font-family: var(--font-ui);
+      font-size: 0.95rem;
+      line-height: 1.62;
+      box-sizing: border-box;
+      color-scheme: light;
+      caret-color: var(--gw-accent);
+      scrollbar-width: thin;
+      scrollbar-color: var(--gw-scrollbar) transparent;
+    }
+
+    .gw-root ::selection {
+      background: color-mix(in srgb, var(--gw-accent) 26%, transparent);
+      color: var(--gw-ink);
+    }
+
+    .gw-root[data-theme="dark"] {
+      --gw-ink: #f4f4ed;
+      --gw-muted: #cfc9be;
+      --gw-accent: #91d5b0;
+      --gw-accent-soft: rgba(145, 213, 176, 0.16);
+      --gw-line: rgba(225, 237, 223, 0.16);
+      --gw-line-strong: rgba(225, 237, 223, 0.28);
+      --gw-background: #1a211d;
+      --gw-shade: rgba(12, 16, 14, 0.56);
+      --gw-surface: #232824;
+      --gw-panel: #2a302b;
+      --gw-subcard-bg: rgba(34, 40, 36, 0.72);
+      --gw-brand: #dff0e2;
+      --gw-brand-ink: #173524;
+      --gw-avatar: #4f5f4b;
+      --gw-segment: rgba(233, 246, 231, 0.09);
+      --gw-segment-active: rgba(218, 232, 216, 0.24);
+      --gw-dock: rgba(20, 32, 25, 0.88);
+      --gw-dock-active: #d8ebd7;
+      --gw-dock-ink: #173221;
+      --gw-button: #cbe6d2;
+      --gw-button-ink: #15301e;
+      --gw-input-bg: rgba(18, 28, 22, 0.76);
+      --gw-popover: rgba(22, 35, 28, 0.96);
+      --gw-shadow: rgba(0, 0, 0, 0.45);
+      --gw-panel-shadow: rgba(0, 0, 0, 0.38);
+      --gw-soft-shadow: rgba(0, 0, 0, 0.25);
+      --gw-popover-shadow: rgba(0, 0, 0, 0.5);
+      --gw-toast: #d8ebd7;
+      --gw-toast-ink: #17311f;
+      --gw-hover: rgba(255, 255, 255, 0.12);
+      --gw-dock-hover: rgba(255, 255, 255, 0.14);
+      --gw-control-hover: rgba(145, 213, 176, 0.16);
+      --gw-highlight: rgba(255, 255, 255, 0.60);
+      --gw-scrollbar: #6c7d6a;
+      --gw-warn-bg: rgba(251, 191, 36, 0.16);
+      --gw-warn-bd: rgba(251, 191, 36, 0.42);
+      --gw-warn-ink: #fde68a;
+      --gw-danger-bg: rgba(251, 113, 133, 0.18);
+      --gw-danger-bd: rgba(251, 113, 133, 0.44);
+      --gw-danger-ink: #fecdd3;
+      --gw-info-bg: rgba(56, 189, 248, 0.16);
+      --gw-info-bd: rgba(56, 189, 248, 0.42);
+      --gw-info-ink: #bae6fd;
+      --gw-success-bg: rgba(52, 211, 153, 0.16);
+      --gw-success-bd: rgba(52, 211, 153, 0.42);
+      --gw-success-ink: #a7f3d0;
+      background: transparent;
+      color-scheme: dark;
+    }
+
+    .gw-root *,
+    .gw-root button,
+    .gw-root input,
+    .gw-root select,
+    .gw-root textarea {
+      font-family: var(--font-ui);
+      box-sizing: border-box;
+    }
+
+    .gw-root button,
+    .gw-root a,
+    .gw-root select,
+    .gw-root input[type="checkbox"],
+    .gw-root input[type="range"],
+    .gw-root label {
+      touch-action: manipulation;
+    }
+
+    .gw-root button:disabled,
+    .gw-input:disabled {
+      opacity: 0.56;
+      cursor: not-allowed;
+      transform: none !important;
+    }
+
+    /* Fixed Scenic Wallpaper Layer (Positive z-index 0..2 under .gw-workspace z-index 5 — never hidden by body bg!) */
+    .gw-room-fallback {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+      background:
+        radial-gradient(circle at 20% 18%, rgba(255, 255, 255, 0.72), transparent 48%),
+        radial-gradient(circle at 82% 24%, rgba(191, 219, 254, 0.65), transparent 50%),
+        var(--gw-background);
+    }
+
+    .gw-room {
+      position: fixed;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: center 50%;
+      z-index: 1;
+      pointer-events: none;
+      transition: opacity 0.4s ease;
+    }
+
+    .gw-room-shade {
+      position: fixed;
+      inset: 0;
+      background: var(--gw-shade);
+      z-index: 2;
+      pointer-events: none;
+    }
+
+    /* Perfectly Centered Symmetric Container (Topbar & Main share 100% identical left/right edges!) */
+    .gw-workspace {
+      position: relative;
+      z-index: 5;
+      width: min(1240px, 100%);
+      margin: 0 auto;
+    }
+
+    /* Core Adjustable Frosted Glass Material */
+    .gw-glass {
+      background: color-mix(in srgb, var(--gw-surface) calc(var(--gw-opacity, 0.90) * 100%), transparent);
+      backdrop-filter: blur(var(--gw-blur, 31px)) saturate(var(--gw-saturation, 1.45));
+      -webkit-backdrop-filter: blur(var(--gw-blur, 31px)) saturate(var(--gw-saturation, 1.45));
+      box-shadow:
+        inset 0 1px 0 color-mix(in srgb, var(--gw-highlight) calc(var(--gw-edge, 0.60) * 100%), transparent),
+        inset 0 0 0 1px color-mix(in srgb, var(--gw-highlight) calc(var(--gw-edge, 0.60) * 38%), transparent),
+        0 20px 52px -24px var(--gw-shadow);
+      position: relative;
+    }
+
+    .gw-glass::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: var(--gw-tint, #eadbc7);
+      opacity: 0.14;
+      pointer-events: none;
+      border-radius: inherit;
+    }
+
+    /* Symmetric Single-Row Top Floating Glass Bar */
+    .gw-topbar {
+      width: 100%;
+      min-height: 68px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px 16px;
+      border-radius: 24px;
+      margin-bottom: 16px;
+      padding: 10px 22px;
+      z-index: 25;
+    }
+
+    .gw-brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+      color: inherit;
+      cursor: pointer;
+      min-width: 0;
+      flex: 1 1 280px;
+      white-space: normal;
+    }
+
+    .gw-brand-icon {
+      display: grid;
+      place-items: center;
+      width: 2.35rem;
+      height: 2.35rem;
+      background: var(--gw-brand);
+      color: var(--gw-brand-ink);
+      border-radius: 13px;
+      font-weight: 700;
+      box-shadow: 0 4px 12px var(--gw-soft-shadow);
+      flex: none;
+    }
+
+    .gw-brand-text {
+      min-width: 0;
+      flex: 1 1 auto;
+    }
+
+    .gw-brand-title {
+      display: block;
+      font-size: clamp(0.82rem, 1.04vw, 0.96rem);
+      font-weight: 700;
+      line-height: 1.34;
+      letter-spacing: -0.01em;
+      color: var(--gw-ink);
+      text-wrap: balance;
+      overflow-wrap: anywhere;
+    }
+
+    .gw-brand-sub {
+      display: block;
+      font-size: 0.74rem;
+      font-weight: 600;
+      color: var(--gw-muted);
+      line-height: 1.35;
+      margin-top: 1px;
+      white-space: normal;
+    }
+
+    .gw-toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-left: auto;
+    }
+
+    /* Quick Font Size Pill in Topbar */
+    .gw-font-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 2px;
+      border-radius: 13px;
+      padding: 3px 5px;
+      border: 1px solid var(--gw-line);
+      background: var(--gw-subcard-bg);
+    }
+
+    .gw-font-pill button {
+      border: 0;
+      background: transparent;
+      color: var(--gw-ink);
+      font-size: 0.8rem;
+      font-weight: 700;
+      padding: 4px 8px;
+      border-radius: 9px;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+
+    .gw-font-pill button:hover {
+      background: var(--gw-hover);
+    }
+
+    .gw-font-pill span,
+    .gw-font-reset {
+      font-size: 0.76rem;
+      font-weight: 700;
+      color: var(--gw-accent);
+      min-width: 2.5rem;
+      text-align: center;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .gw-adjust {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      border-radius: 13px;
+      padding: 7px 13px;
+      font-size: 0.84rem;
+      font-weight: 700;
+      border: 1px solid var(--gw-line);
+      background: var(--gw-subcard-bg);
+      color: var(--gw-ink);
+      cursor: pointer;
+      transition: background 0.2s, transform 0.15s;
+    }
+
+    .gw-adjust:hover {
+      background: var(--gw-hover);
+      transform: translateY(-1px);
+    }
+
+    .gw-icon-button {
+      width: 2.5rem;
+      height: 2.5rem;
+      min-width: 44px;
+      min-height: 44px;
+      display: grid;
+      place-items: center;
+      border-radius: 50%;
+      border: 1px solid var(--gw-line);
+      background: var(--gw-subcard-bg);
+      color: var(--gw-ink);
+      cursor: pointer;
+      position: relative;
+      flex-shrink: 0;
+      transition: background 0.2s;
+    }
+
+    .gw-icon-button:hover {
+      background: var(--gw-hover);
+    }
+
+    .gw-bell-dot {
+      position: absolute;
+      right: 7px;
+      top: 6px;
+      background: var(--gw-accent);
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+    }
+
+    .gw-sun { display: none; }
+    .gw-root[data-theme="dark"] .gw-sun { display: block; }
+    .gw-root[data-theme="dark"] .gw-moon { display: none; }
+
+    /* Symmetric Full-Width Main Glass Canvas (Flush with Topbar left & right!) */
+    .gw-stage {
+      width: 100%;
+      display: block;
+    }
+
+    .gw-main {
+      width: 100%;
+      border-radius: 28px;
+      padding: 26px 30px calc(112px + env(safe-area-inset-bottom, 0px));
+      min-width: 0;
+      min-height: calc(100svh - 132px);
+    }
+
+    .gw-view-heading {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--gw-line);
+    }
+
+    .gw-greeting {
+      font-size: 0.88rem;
+      font-weight: 600;
+      color: var(--gw-muted);
+      margin-bottom: 4px;
+    }
+
+    .gw-view-heading h1 {
+      font-size: clamp(1.42rem, 2.25vw, 1.86rem);
+      font-weight: 700;
+      letter-spacing: -0.015em;
+      line-height: 1.3;
+      margin: 0;
+      text-wrap: balance;
+    }
+
+    .gw-panel h2 {
+      font-size: clamp(1.12rem, 1.45vw, 1.25rem);
+      line-height: 1.36;
+      letter-spacing: -0.01em;
+      text-wrap: balance;
+    }
+
+    .gw-panel h3 {
+      font-size: 1.05rem;
+      line-height: 1.38;
+      text-wrap: balance;
+    }
+
+    /* Inner Glass Panels & Subcards */
+    .gw-panel {
+      background: color-mix(in srgb, var(--gw-panel) calc((0.30 + var(--gw-opacity, 0.90) * 0.62) * 100%), transparent);
+      border-radius: 22px;
+      border: 1px solid var(--gw-line);
+      box-shadow:
+        inset 0 1px 0 color-mix(in srgb, var(--gw-highlight) calc(var(--gw-edge, 0.60) * 82%), transparent),
+        0 12px 28px -20px var(--gw-panel-shadow);
+      padding: 24px;
+      min-width: 0;
+      position: relative;
+    }
+
+    .gw-subcard {
+      background: var(--gw-subcard-bg);
+      border: 1px solid var(--gw-line);
+      border-radius: 16px;
+      padding: 14px 16px;
+    }
+
+    /* Live 6-Unit Exam Countdown Scoreboard (เดือน | อาทิตย์ | วัน | ชั่วโมง | นาที | วินาที) */
+    .gw-live-dot {
+      width: 0.55rem;
+      height: 0.55rem;
+      border-radius: 9999px;
+      background: #16a34a;
+      box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.20);
+      display: inline-block;
+    }
+
+    .gw-countdown-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 0.5rem;
+      margin-top: 0.55rem;
+    }
+
+    @media (min-width: 640px) and (max-width: 1023px) {
+      .gw-countdown-grid {
+        grid-template-columns: repeat(6, minmax(0, 1fr));
+      }
+    }
+
+    .gw-cd-box {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 0.55rem 0.35rem;
+      border-radius: 14px;
+      background: var(--gw-subcard-bg);
+      border: 1px solid var(--gw-line);
+      text-align: center;
+      overflow: hidden;
+    }
+
+    .gw-cd-num {
+      font-size: 1.5rem;
+      line-height: 1.15;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      font-variant-numeric: tabular-nums;
+      color: var(--gw-ink);
+    }
+
+    .gw-cd-unit {
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: var(--gw-muted);
+      margin-top: 0.12rem;
+      white-space: nowrap;
+    }
+
+    .gw-cd-box.is-sec {
+      background: var(--gw-accent-soft);
+      border-color: color-mix(in srgb, var(--gw-accent) 42%, transparent);
+    }
+
+    .gw-cd-box.is-sec .gw-cd-num,
+    .gw-cd-box.is-sec .gw-cd-unit {
+      color: var(--gw-accent);
+    }
+
+    @keyframes gwSecPop {
+      0% { transform: scale(1.10); }
+      100% { transform: scale(1); }
+    }
+
+    .gw-sec-tick {
+      animation: gwSecPop 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    /* Glass Inputs, Selects, Buttons (rem-based so Font Zoom scales everything!) */
+    .gw-input {
+      width: 100%;
+      border-radius: 14px;
+      border: 1px solid var(--gw-line);
+      background: var(--gw-input-bg);
+      color: var(--gw-ink);
+      padding: 0.62rem 0.88rem;
+      font-size: 0.92rem;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    .gw-input:focus {
+      border-color: var(--gw-accent);
+      box-shadow: 0 0 0 3px color-mix(in srgb, var(--gw-accent) 34%, transparent);
+    }
+
+    .gw-input option {
+      background: var(--gw-surface);
+      color: var(--gw-ink);
+    }
+
+    .gw-root :focus-visible {
+      outline: 2.5px solid var(--gw-accent);
+      outline-offset: 2px;
+    }
+
+    .gw-input:focus-visible {
+      outline: 2px solid var(--gw-accent);
+      outline-offset: 0;
+    }
+
+    .gw-label {
+      display: block;
+      font-size: 0.88rem;
+      font-weight: 700;
+      color: var(--gw-ink);
+      margin-bottom: 6px;
+    }
+
+    .gw-btn-primary {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 0.72rem 1.2rem;
+      border-radius: 15px;
+      border: 0;
+      background: var(--gw-button);
+      color: var(--gw-button-ink);
+      font-size: 0.94rem;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 0 6px 16px -6px var(--gw-shadow);
+      transition: filter 0.18s, transform 0.15s;
+    }
+
+    .gw-btn-primary:hover {
+      filter: brightness(1.08);
+      transform: translateY(-1px);
+    }
+
+    .gw-btn-soft {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 0.52rem 0.95rem;
+      border-radius: 12px;
+      border: 1px solid var(--gw-line);
+      background: var(--gw-subcard-bg);
+      color: var(--gw-ink);
+      font-size: 0.86rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.18s;
+    }
+
+    .gw-btn-soft:hover {
+      background: var(--gw-control-hover);
+    }
+
+    .gw-btn-soft.is-active {
+      background: var(--gw-button);
+      color: var(--gw-button-ink);
+      border-color: transparent;
+    }
+
+    /* Selectable Profile Card & Quick Name Chips for Instant Login */
+    .gw-profile-card {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      padding: 14px 18px;
+      border-radius: 18px;
+      border: 2px solid var(--gw-line);
+      background: var(--gw-subcard-bg);
+      color: var(--gw-ink);
+      text-align: left;
+      cursor: pointer;
+      transition: border-color 0.2s, box-shadow 0.2s, transform 0.15s, background 0.2s;
+    }
+
+    .gw-profile-card:hover {
+      border-color: var(--gw-accent);
+      transform: translateY(-1px);
+    }
+
+    .gw-profile-card.is-selected {
+      border-color: var(--gw-accent);
+      background: var(--gw-accent-soft);
+      box-shadow: 0 0 0 3px var(--gw-accent-soft);
+    }
+
+    .gw-profile-avatar {
+      width: 2.85rem;
+      height: 2.85rem;
+      border-radius: 14px;
+      display: grid;
+      place-items: center;
+      background: var(--gw-brand);
+      color: var(--gw-brand-ink);
+      font-weight: 700;
+      font-size: 1.05rem;
+      flex-shrink: 0;
+    }
+
+    .gw-name-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 12px;
+      border-radius: 999px;
+      border: 1.5px solid var(--gw-line);
+      background: var(--gw-subcard-bg);
+      color: var(--gw-ink);
+      font-size: 0.82rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .gw-name-chip:hover {
+      border-color: var(--gw-accent);
+    }
+
+    .gw-name-chip.is-selected {
+      background: var(--gw-button);
+      color: var(--gw-button-ink);
+      border-color: transparent;
+    }
+
+    .gw-role-feature {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 12px 14px;
+      border-radius: 16px;
+      border: 1px solid var(--gw-line);
+      background: var(--gw-subcard-bg);
+    }
+
+    .gw-role-num {
+      width: 1.75rem;
+      height: 1.75rem;
+      border-radius: 10px;
+      display: grid;
+      place-items: center;
+      background: var(--gw-accent-soft);
+      color: var(--gw-accent);
+      font-size: 0.82rem;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+
+    /* Segment Pill Group */
+    .gw-segment {
+      display: inline-flex;
+      flex-wrap: wrap;
+      gap: 5px;
+      background: var(--gw-segment);
+      border: 1px solid var(--gw-line);
+      border-radius: 16px;
+      padding: 5px;
+    }
+
+    .gw-segment button {
+      padding: 0.52rem 0.98rem;
+      border-radius: 12px;
+      border: 0;
+      background: transparent;
+      color: var(--gw-muted);
+      font-size: 0.86rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s;
+    }
+
+    .gw-segment button.is-active {
+      background: var(--gw-segment-active);
+      color: var(--gw-ink);
+      box-shadow: 0 3px 8px var(--gw-soft-shadow);
+    }
+
+    /* Dead-Center Floating Bottom Glass Dock */
+    .gw-desktop-dock {
+      position: fixed;
+      bottom: max(14px, env(safe-area-inset-bottom, 14px));
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 28;
+      max-width: calc(100vw - 20px);
+      pointer-events: none;
+    }
+
+    .gw-dock {
+      pointer-events: auto;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      border-radius: 999px;
+      padding: 6px;
+      white-space: nowrap;
+      max-width: 100%;
+      overflow-x: auto;
+      scrollbar-width: none;
+      background: var(--gw-dock);
+      border: 1px solid var(--gw-line);
+      backdrop-filter: blur(24px) saturate(1.35);
+      -webkit-backdrop-filter: blur(24px) saturate(1.35);
+      box-shadow: 0 16px 38px -12px var(--gw-shadow);
+    }
+
+    .gw-dock::-webkit-scrollbar {
+      display: none;
+    }
+
+    .gw-dock button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+      min-height: 40px;
+      border-radius: 999px;
+      border: 0;
+      background: transparent;
+      color: var(--gw-ink);
+      padding: 8px clamp(10px, 1.05vw, 15px);
+      font-size: clamp(0.76rem, 0.92vw, 0.88rem);
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.22s, color 0.22s, transform 0.15s;
+    }
+
+    .gw-dock button[aria-current="page"] {
+      background: var(--gw-dock-active);
+      color: var(--gw-dock-ink);
+      box-shadow: 0 4px 12px var(--gw-soft-shadow);
+    }
+
+    .gw-dock button:not([aria-current="page"]):hover {
+      background: var(--gw-dock-hover);
+    }
+
+    .gw-mobile-nav {
+      display: none;
+    }
+
+    /* Glass Customizer & Notification Popovers */
+    .gw-material,
+    .gw-notifications {
+      position: fixed;
+      right: max(18px, calc(50vw - 620px));
+      top: 94px;
+      z-index: 40;
+      width: min(345px, calc(100vw - 24px));
+      max-height: calc(100svh - 116px);
+      overflow-y: auto;
+      overscroll-behavior: contain;
+      border-radius: 24px;
+      padding: 20px;
+      background: var(--gw-popover);
+      border: 1px solid var(--gw-line);
+      backdrop-filter: blur(26px) saturate(1.3);
+      box-shadow: 0 24px 70px var(--gw-popover-shadow);
+    }
+
+    .gw-material-sample {
+      position: relative;
+      height: 82px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 16px;
+      margin: 10px 0 12px;
+      border: 1px solid var(--gw-line);
+      overflow: hidden;
+    }
+
+    .gw-sample-bg {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      z-index: 0;
+    }
+
+    .gw-sample-orbs {
+      position: absolute;
+      inset: 0;
+      z-index: 1;
+      display: flex;
+      align-items: center;
+      justify-content: space-around;
+      padding: 0 18px;
+      pointer-events: none;
+    }
+
+    .gw-sample-orbs span {
+      padding: 3px 10px;
+      border-radius: 999px;
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: #ffffff;
+    }
+
+    .gw-sample-pane {
+      position: relative;
+      z-index: 2;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 18px;
+      border-radius: 12px;
+      background: color-mix(in srgb, var(--gw-surface) calc(min(0.62, var(--gw-opacity, 0.90)) * 100%), transparent);
+      backdrop-filter: blur(var(--gw-blur, 31px)) saturate(var(--gw-saturation, 1.45));
+      -webkit-backdrop-filter: blur(var(--gw-blur, 31px)) saturate(var(--gw-saturation, 1.45));
+      box-shadow:
+        inset 0 1px 0 color-mix(in srgb, var(--gw-highlight) calc(var(--gw-edge, 0.60) * 100%), transparent),
+        0 6px 18px rgba(0, 0, 0, 0.16);
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: var(--gw-ink);
+    }
+
+    .gw-presets {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 6px;
+      margin-bottom: 12px;
+    }
+
+    .gw-presets button {
+      border: 1px solid var(--gw-line);
+      background: var(--gw-subcard-bg);
+      color: var(--gw-ink);
+      border-radius: 10px;
+      padding: 6px 6px;
+      font-size: 0.78rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .gw-presets button.is-fav {
+      border-color: color-mix(in srgb, var(--gw-accent) 45%, transparent);
+      background: var(--gw-accent-soft);
+      color: var(--gw-accent);
+    }
+
+    .gw-presets button:hover {
+      background: var(--gw-control-hover);
+    }
+
+    .gw-range {
+      display: block;
+      margin: 11px 0;
+    }
+
+    .gw-range > span {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.82rem;
+      font-weight: 700;
+    }
+
+    .gw-range output {
+      font-size: 0.78rem;
+      color: var(--gw-muted);
+    }
+
+    .gw-range input[type="range"] {
+      width: 100%;
+      accent-color: var(--gw-accent);
+      height: 16px;
+      margin-top: 4px;
+      cursor: pointer;
+    }
+
+    /* Glass Tables */
+    .gw-table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      font-size: 0.86rem;
+      border: 1px solid var(--gw-line);
+      border-radius: 14px;
+      overflow: hidden;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .gw-table th {
+      background: var(--gw-accent-soft);
+      color: var(--gw-ink);
+      font-weight: 700;
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--gw-line);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .gw-table td {
+      padding: 9px 12px;
+      border-bottom: 1px solid var(--gw-line);
+      background: var(--gw-subcard-bg);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .gw-table tr:last-child td {
+      border-bottom: 0;
+    }
+
+    .gw-tabular {
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* Toast */
+    .gw-toast {
+      position: fixed;
+      left: 50%;
+      top: 20px;
+      transform: translateX(-50%);
+      z-index: 60;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 20px;
+      border-radius: 16px;
+      background: var(--gw-toast);
+      color: var(--gw-toast-ink);
+      box-shadow: 0 14px 36px var(--gw-popover-shadow);
+      font-size: 0.9rem;
+      font-weight: 700;
+      max-width: min(92vw, 620px);
+    }
+
+    /* Custom Answer Bubble Buttons */
+    .mc-bubble {
+      width: 2.5rem;
+      height: 2.5rem;
+      min-width: 44px;
+      min-height: 44px;
+      border-radius: 9999px;
+      border: 1.8px solid var(--gw-line);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 0.95rem;
+      font-variant-numeric: tabular-nums;
+      cursor: pointer;
+      transition: all 0.16s ease;
+      background: var(--gw-input-bg);
+      color: var(--gw-ink);
+    }
+
+    .mc-bubble:hover {
+      border-color: var(--gw-accent);
+      background: var(--gw-accent-soft);
+    }
+
+    .mc-bubble.active {
+      background: var(--gw-button);
+      border-color: var(--gw-button);
+      color: var(--gw-button-ink);
+      box-shadow: 0 4px 10px var(--gw-soft-shadow);
+      transform: scale(1.06);
+    }
+
+    /* Semantic Status Badges, Alerts & Progress Bars (Light + Dark WCAG AA) */
+    .gw-badge-warn { background: var(--gw-warn-bg); color: var(--gw-warn-ink); border: 1px solid var(--gw-warn-bd); }
+    .gw-badge-danger { background: var(--gw-danger-bg); color: var(--gw-danger-ink); border: 1px solid var(--gw-danger-bd); }
+    .gw-badge-info { background: var(--gw-info-bg); color: var(--gw-info-ink); border: 1px solid var(--gw-info-bd); }
+    .gw-badge-success { background: var(--gw-success-bg); color: var(--gw-success-ink); border: 1px solid var(--gw-success-bd); }
+
+    .gw-alert-warn { background: var(--gw-warn-bg); border: 1px solid var(--gw-warn-bd); color: var(--gw-warn-ink); border-radius: 14px; }
+    .gw-alert-danger { background: var(--gw-danger-bg); border: 1px solid var(--gw-danger-bd); color: var(--gw-danger-ink); border-radius: 14px; }
+    .gw-alert-info { background: var(--gw-info-bg); border: 1px solid var(--gw-info-bd); color: var(--gw-info-ink); border-radius: 14px; }
+    .gw-alert-success { background: var(--gw-success-bg); border: 1px solid var(--gw-success-bd); color: var(--gw-success-ink); border-radius: 14px; }
+
+    .gw-text-warn { color: var(--gw-warn-ink); }
+    .gw-text-danger { color: var(--gw-danger-ink); }
+    .gw-text-info { color: var(--gw-info-ink); }
+    .gw-text-success { color: var(--gw-success-ink); }
+
+    .gw-progress-track {
+      width: 100%;
+      height: 10px;
+      border-radius: 9999px;
+      background: var(--gw-segment);
+      border: 1px solid var(--gw-line);
+      overflow: hidden;
+    }
+
+    .gw-progress-fill {
+      height: 100%;
+      border-radius: 9999px;
+      background: linear-gradient(90deg, var(--gw-accent), var(--gw-brand));
+      transition: width 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    .ans-item-card {
+      transition: border-color 0.16s ease, box-shadow 0.16s ease, transform 0.14s ease;
+    }
+
+    .ans-item-card.is-focused {
+      border-color: var(--gw-accent) !important;
+      box-shadow: 0 0 0 3px var(--gw-accent-soft), 0 10px 24px -10px var(--gw-soft-shadow);
+    }
+
+    .a4-preview-scroll {
+      width: 100%;
+      overflow-x: auto;
+      padding: 8px 4px 16px;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .gw-modal-backdrop {
+      position: fixed;
+      inset: 0;
+      z-index: 80;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      background: rgba(15, 24, 19, 0.56);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      overscroll-behavior: contain;
+    }
+
+    .gw-modal-backdrop.hidden {
+      display: none !important;
+    }
+
+    .gw-modal-card {
+      width: 100%;
+      max-width: 520px;
+      border-radius: 24px;
+      padding: 22px;
+      background: var(--gw-popover);
+      border: 1px solid var(--gw-line);
+      color: var(--gw-ink);
+      box-shadow: 0 28px 60px -16px var(--gw-popover-shadow);
+      max-height: 88vh;
+      overflow-y: auto;
+      overscroll-behavior: contain;
+    }
+
+    /* Compact Laptop Height Framing (1366x768 / 1280x720 + GAS Top Banner) so CTAs sit cleanly above Bottom Dock */
+    @media (min-width: 741px) and (max-height: 780px) {
+      .gw-root {
+        padding: 10px 16px calc(86px + env(safe-area-inset-bottom, 0px));
+      }
+      .gw-topbar {
+        min-height: 56px;
+        margin-bottom: 10px;
+        padding: 8px 18px;
+      }
+      .gw-main {
+        padding: 18px 22px calc(104px + env(safe-area-inset-bottom, 0px));
+      }
+      .gw-view-heading {
+        margin-bottom: 14px;
+        padding-bottom: 10px;
+      }
+      .gw-panel {
+        padding: 18px 20px;
+      }
+      .gw-desktop-dock {
+        bottom: 10px;
+      }
+    }
+
+    @media (max-width: 1120px) {
+      .gw-topbar {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+      }
+      .gw-topbar-center {
+        display: none;
+      }
+      .gw-root {
+        padding: 14px 12px 28px;
+      }
+      .gw-main {
+        padding: 22px 18px 98px;
+      }
+    }
+
+    @media (max-width: 740px) {
+      .gw-brand-sub {
+        display: none;
+      }
+      .gw-toolbar {
+        flex-wrap: wrap;
+      }
+      .gw-desktop-dock {
+        display: none;
+      }
+      .gw-mobile-nav {
+        display: block;
+        margin-bottom: 18px;
+      }
+      .gw-mobile-nav .gw-dock {
+        width: 100%;
+        border-radius: 18px;
+        padding: 8px;
+        white-space: normal;
+        overflow: visible;
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 6px;
+      }
+      .gw-mobile-nav .gw-dock button {
+        white-space: normal;
+        min-height: 44px;
+        font-size: 0.8rem;
+        line-height: 1.25;
+        padding: 9px 8px;
+        text-align: center;
+      }
+      .gw-mobile-nav .gw-dock button:first-child {
+        grid-column: 1 / -1;
+      }
+      .gw-root {
+        padding: 14px 12px calc(36px + env(safe-area-inset-bottom, 0px));
+      }
+      .gw-main {
+        border-radius: 22px;
+        padding: 18px 14px 36px;
+      }
+    }
+
+    @keyframes gwSpin {
+      to { transform: rotate(360deg); }
+    }
+
+    .gw-btn-busy {
+      opacity: 0.88 !important;
+      pointer-events: none !important;
+      cursor: progress !important;
+    }
+
+    .gw-spin-ring {
+      display: inline-block;
+      width: 1rem;
+      height: 1rem;
+      border-radius: 9999px;
+      border: 2.2px solid currentColor;
+      border-right-color: transparent;
+      animation: gwSpin 0.65s linear infinite;
+      flex-shrink: 0;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      html {
+        scroll-behavior: auto !important;
+      }
+      .gw-root *,
+      .gw-live-dot,
+      .gw-sec-tick,
+      .gw-progress-fill,
+      .mc-bubble,
+      .gw-btn-primary,
+      .gw-btn-soft,
+      .gw-spin-ring {
+        animation: none !important;
+        transition: none !important;
+      }
+    }
+  }
+
+  /* ========================================================================
+   * 2. OFFICIAL THAI SARABAN A4 PRINT STANDARD (TH SarabunPSK ONLY!)
+   * ======================================================================== */
+  .print-sheet,
+  .print-sheet * {
+    font-family: 'TH SarabunPSK', Tahoma, sans-serif !important;
+    font-synthesis: none !important;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .print-sheet {
+    width: 210mm;
+    min-height: 297mm;
+    padding: 20mm 18mm 20mm 24mm;
+    background: #ffffff !important;
+    color: #000000 !important;
+    font-size: 16pt;
+    font-weight: 400;
+    line-height: 1.38;
+    box-sizing: border-box;
+    margin: 0 auto;
+    box-shadow: 0 18px 40px rgba(15, 23, 42, 0.25);
+  }
+
+  .print-sheet table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 8pt;
+    margin-bottom: 10pt;
+  }
+
+  .print-sheet th,
+  .print-sheet td {
+    border: 1px solid #1e293b !important;
+    padding: 4pt 6pt;
+    font-size: 15pt;
+    line-height: 1.32;
+    vertical-align: middle;
+    background: transparent !important;
+    color: #000000 !important;
+  }
+
+  .print-sheet th {
+    background: #e2e8f0 !important;
+    font-weight: 700;
+    text-align: center;
+  }
+
+  .th-word { display: inline; white-space: nowrap; }
+  .th-cj { display: inline; font-size: 0px; line-height: 0; white-space: nowrap; }
+  .th-wj { display: inline; font-size: 0px; line-height: 0; white-space: normal; }
+
+  /* Split-Screen IOC Studio & Exam Item Preview */
+  .ioc-pane-scroll {
+    max-height: 620px;
+    overflow-y: auto;
+    padding-right: 4px;
+    scroll-behavior: smooth;
+  }
+
+  @media (min-width: 1024px) {
+    .ioc-pane-scroll {
+      max-height: 68vh;
+      min-height: 480px;
+    }
+  }
+
+  .ioc-item-row {
+    border: 1px solid var(--gw-line);
+    border-radius: 14px;
+    padding: 12px 14px;
+    background: var(--gw-input-bg);
+    transition: border-color 0.16s ease, box-shadow 0.16s ease, background-color 0.16s ease;
+  }
+
+  .ioc-item-row:hover {
+    border-color: var(--gw-line-strong);
+  }
+
+  .ioc-item-row.is-active-item {
+    border-color: var(--gw-accent);
+    box-shadow: 0 0 0 2px var(--gw-accent-soft);
+  }
+
+  .ioc-shared-passage {
+    border-left: 3px solid var(--gw-accent);
+    background: var(--gw-accent-soft);
+    border-radius: 8px;
+    padding: 8px 10px;
+    font-size: 0.78rem;
+    line-height: 1.55;
+  }
+
+  .ioc-doc-img {
+    display: block;
+    max-width: 100%;
+    max-height: 280px;
+    width: auto;
+    height: auto;
+    border-radius: 10px;
+    border: 1px solid var(--gw-line);
+    margin: 6px 0;
+    background: #ffffff;
+  }
+
+  .ioc-doc-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.76rem;
+    margin: 6px 0;
+  }
+
+  .ioc-doc-table td,
+  .ioc-doc-table th {
+    border: 1px solid var(--gw-line-strong);
+    padding: 5px 8px;
+    vertical-align: top;
+  }
+
+  .ioc-choice-pill {
+    border: 1px solid var(--gw-line);
+    border-radius: 10px;
+    padding: 6px 10px;
+    font-size: 0.78rem;
+    line-height: 1.45;
+    background: color-mix(in srgb, var(--gw-surface) 60%, transparent);
+  }
+
+  .ioc-choice-pill.is-correct-choice {
+    border-color: #059669;
+    background: rgba(5, 150, 105, 0.12);
+    font-weight: 700;
+  }
+
+  @media print {
+    @page {
+      size: A4 portrait;
+      margin: 15mm 15mm 15mm 20mm;
+    }
+
+    html, body {
+      position: static !important;
+      width: auto !important;
+      height: auto !important;
+      overflow: visible !important;
+      background: #ffffff !important;
+    }
+
+    #appShell,
+    .no-print {
+      display: none !important;
+    }
+
+    #printOnlyWrapper {
+      display: block !important;
+      width: 100% !important;
+    }
+
+    .print-sheet {
+      width: 100% !important;
+      min-height: 0 !important;
+      padding: 0 !important;
+      margin: 0 !important;
+      box-shadow: none !important;
+    }
+  }
+</style>
+
+</head>
+<body>
+  <!-- Adjustable Glass Workspace Root -->
+  <div id="appShell" class="gw-root" data-theme="light"
+       style="--gw-blur: 31px; --gw-opacity: 0.90; --gw-saturation: 1.45; --gw-tint: #eadbc7; --gw-edge: 0.60;">
+
+    <!-- Scenic Room / Nature Wallpaper + Shade -->
+    <div class="gw-room-fallback" aria-hidden="true"></div>
+    <img id="gwRoomBg" class="gw-room"
+         src="https://images.unsplash.com/photo-1513002749550-c59d786b8e6c?auto=format&fit=crop&w=2000&q=80"
+         alt=""
+         onerror="this.style.opacity='0'">
+    <div class="gw-room-shade" aria-hidden="true"></div>
+
+    <div class="gw-workspace">
+      <!-- ================================================================
+           SYMMETRIC FLOATING GLASS TOPBAR (gw-topbar gw-glass)
+           ================================================================ -->
+      <header class="gw-topbar gw-glass">
+        <a class="gw-brand" href="#" onclick="event.preventDefault(); switchMainTab('STUDENT');">
+          <span class="gw-brand-icon">
+            <i data-lucide="layers" class="w-4 h-4"></i>
+          </span>
+          <div class="gw-brand-text">
+            <strong class="gw-brand-title">
+              โครงการยกระดับผลสัมฤทธิ์ผลการทดสอบทางการศึกษาระดับชาติขั้นพื้นฐาน (O-NET)
+            </strong>
+            <span class="gw-brand-sub">
+              ชั้นประถมศึกษาปีที่ 6 ปีการศึกษา 2569 | กลุ่มโรงเรียนศรีเสาวภาค สพป.สระบุรี เขต 2 (8 โรงเรียน)
+            </span>
+          </div>
+        </a>
+
+        <div class="gw-toolbar">
+          <span id="currentUserBadge" class="hidden px-3 py-1 rounded-full text-xs font-bold border whitespace-nowrap"
+                style="background: var(--gw-accent-soft); border-color: var(--gw-line); color: var(--gw-ink);"></span>
+
+          <button id="btnLogout" type="button" onclick="logoutAll()"
+                  class="hidden px-3 py-1.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold shadow cursor-pointer whitespace-nowrap">
+            ออกจากระบบ
+          </button>
+
+          <div class="gw-font-pill" role="group" aria-label="ปรับขนาดตัวอักษร">
+            <button type="button" aria-label="ลดขนาดตัวอักษร" title="ลดขนาดตัวอักษร" onclick="stepFontScale(-0.05)">ก-</button>
+            <button type="button" id="lblFontTop" class="gw-font-reset" aria-label="คืนค่าขนาดตัวอักษรมาตรฐาน 110%" title="คลิกเพื่อคืนค่าขนาดมาตรฐาน 110%" onclick="updateGlassSetting('fontScale', 1.10)">110%</button>
+            <button type="button" aria-label="เพิ่มขนาดตัวอักษร" title="เพิ่มขนาดตัวอักษร" onclick="stepFontScale(0.05)">ก+</button>
+          </div>
+
+          <button type="button" class="gw-adjust" id="btnToggleGlassPanel" onclick="toggleGlassPanel()">
+            <i data-lucide="sliders-horizontal" class="w-4 h-4"></i>
+            <span>ปรับแต่งกระจก</span>
+          </button>
+
+          <button type="button" class="gw-icon-button" aria-label="สลับโหมดสว่าง/มืด" title="สลับโหมดสว่าง / มืด" onclick="toggleWorkspaceTheme()">
+            <i data-lucide="sun" class="w-4 h-4 gw-sun"></i>
+            <i data-lucide="moon" class="w-4 h-4 gw-moon"></i>
+          </button>
+
+          <button type="button" class="gw-icon-button" aria-label="การแจ้งเตือน" title="กำหนดการและสถานะระบบ" onclick="toggleNotificationsPanel()">
+            <i data-lucide="bell" class="w-4 h-4"></i>
+            <span class="gw-bell-dot"></span>
+          </button>
+        </div>
+      </header>
+
+      <!-- ================================================================
+           STAGE: SYMMETRIC FULL-WIDTH FROSTED GLASS CANVAS (FLUSH LEFT & RIGHT)
+           ================================================================ -->
+      <div class="gw-stage">
+        <!-- Main Frosted Glass Canvas -->
+        <main id="mainScrollContainer" class="gw-main gw-glass">
+          <!-- Dynamic View Heading -->
+          <div class="gw-view-heading">
+            <div>
+              <p id="gwGreetingText" class="gw-greeting">
+                พื้นที่การเรียนรู้ร่วมกัน 8 โรงเรียน | กลุ่มโรงเรียนศรีเสาวภาค
+              </p>
+              <h1 id="gwViewTitle">1. ห้องเรียนติว & ฝึกข้อสอบ O-NET นักเรียน ป.6</h1>
+            </div>
+            <div class="flex items-center gap-2 flex-wrap">
+              <span id="gwCountdownBadge" class="gw-subcard text-xs font-bold inline-flex items-center gap-1.5 py-2 px-3.5">
+                <i data-lucide="sparkles" class="w-4 h-4" style="color: var(--gw-accent);"></i>
+                <span id="gwCountdownLabel">ครบ 4 วิชา | 108 ตัวชี้วัด สทศ. 2569</span>
+              </span>
+              <button type="button" id="btnDeveloperAbout" onclick="openDeveloperAboutModal()"
+                      class="gw-subcard text-xs font-bold inline-flex items-center gap-1.5 py-2 px-3.5 cursor-pointer transition hover:opacity-90"
+                      title="ข้อมูลผู้พัฒนาระบบและช่องทางติดต่อแจ้งปัญหา">
+                <i data-lucide="user-check" class="w-4 h-4" style="color: var(--gw-accent);"></i>
+                <span>ผู้พัฒนาระบบ / เกี่ยวกับระบบ</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Mobile Navigation Dock -->
+          <div class="gw-mobile-nav">
+            <nav class="gw-dock" aria-label="เมนูหลักมือถือ">
+              <button type="button" id="mobBtn_STUDENT" aria-current="page" onclick="switchMainTab('STUDENT')">
+                <span>1. นักเรียน</span>
+              </button>
+              <button type="button" id="mobBtn_COMMITTEE" onclick="switchMainTab('COMMITTEE')">
+                <span>2. คณะกรรมการจัดทำเอกสาร</span>
+              </button>
+              <button type="button" id="mobBtn_INSTRUCTOR" onclick="switchMainTab('INSTRUCTOR')">
+                <span>3. ครูผู้สอน ป.6</span>
+              </button>
+              <button type="button" id="mobBtn_ACADEMIC" onclick="switchMainTab('ACADEMIC')">
+                <span>4. ครูวิชาการ</span>
+              </button>
+              <button type="button" id="mobBtn_ADMIN" onclick="switchMainTab('ADMIN')">
+                <span>5. ผู้ดูแลกลุ่มฯ</span>
+              </button>
+            </nav>
+          </div>
+
+          <!-- ==============================================================
+               TAB 1: STUDENT PORTAL (8 SCHOOLS) + GLASS OVERVIEW HERO
+               ============================================================== -->
+          <section id="panel_STUDENT" class="space-y-4">
+            <!-- Glass Overview Bento Strip (Inspired by GlassWorkspace Overview) -->
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-4">
+              <!-- Left Hero Metric Card: Live 6-Unit Countdown -->
+              <div class="lg:col-span-5 gw-panel gw-reveal flex flex-col justify-between">
+                <div>
+                  <div class="flex items-center justify-between text-xs mb-1.5" style="color: var(--gw-muted);">
+                    <span class="inline-flex items-center gap-2 font-bold" style="color: var(--gw-ink);">
+                      <span class="gw-live-dot" aria-hidden="true"></span>
+                      <span>นับถอยหลังวันสอบ O-NET ป.6</span>
+                    </span>
+                    <i data-lucide="timer" class="w-4 h-4" style="color: var(--gw-accent);"></i>
+                  </div>
+
+                  <!-- 6-Unit Live Scoreboard: เดือน | อาทิตย์ | วัน | ชั่วโมง | นาที | วินาที -->
+                  <div class="gw-countdown-grid" role="timer" aria-live="off" aria-label="เวลานับถอยหลังสู่วันสอบ O-NET ป.6">
+                    <div class="gw-cd-box">
+                      <strong id="cdMonths" class="gw-cd-num">--</strong>
+                      <span class="gw-cd-unit">เดือน</span>
+                    </div>
+                    <div class="gw-cd-box">
+                      <strong id="cdWeeks" class="gw-cd-num">--</strong>
+                      <span class="gw-cd-unit">อาทิตย์</span>
+                    </div>
+                    <div class="gw-cd-box">
+                      <strong id="cdDays" class="gw-cd-num">--</strong>
+                      <span class="gw-cd-unit">วัน</span>
+                    </div>
+                    <div class="gw-cd-box">
+                      <strong id="cdHours" class="gw-cd-num">--</strong>
+                      <span class="gw-cd-unit">ชั่วโมง</span>
+                    </div>
+                    <div class="gw-cd-box">
+                      <strong id="cdMinutes" class="gw-cd-num">--</strong>
+                      <span class="gw-cd-unit">นาที</span>
+                    </div>
+                    <div class="gw-cd-box is-sec">
+                      <strong id="cdSeconds" class="gw-cd-num">--</strong>
+                      <span class="gw-cd-unit">วินาที</span>
+                    </div>
+                  </div>
+
+                  <p class="text-xs mt-2.5 flex flex-wrap items-center gap-1.5" style="color: var(--gw-muted);">
+                    <span class="inline-block px-2 py-0.5 rounded-md font-bold" style="background: var(--gw-accent-soft); color: var(--gw-accent);">เสาร์ที่ 30 ม.ค. 2570 (08.30 น.)</span>
+                    <span>รวมอีก <strong id="heroDaysLeft" class="font-bold gw-tabular" style="color: var(--gw-ink);">--</strong> วัน ก่อนสอบจริง</span>
+                  </p>
+                </div>
+
+                <!-- 4-Subject Mini Blueprint Pills -->
+                <div class="grid grid-cols-2 gap-2 mt-5 pt-4 border-t" style="border-color: var(--gw-line);">
+                  <div class="gw-subcard py-2 px-3">
+                    <div class="text-[11px]" style="color: var(--gw-muted);">ภาษาไทย (61)</div>
+                    <div class="text-xs font-bold">5 สาระ | 19 ตัวชี้วัด</div>
+                  </div>
+                  <div class="gw-subcard py-2 px-3">
+                    <div class="text-[11px]" style="color: var(--gw-muted);">คณิตศาสตร์ (64)</div>
+                    <div class="text-xs font-bold">3 สาระ | 15 ตัวชี้วัด</div>
+                  </div>
+                  <div class="gw-subcard py-2 px-3">
+                    <div class="text-[11px]" style="color: var(--gw-muted);">วิทยาศาสตร์ฯ (65)</div>
+                    <div class="text-xs font-bold">4 สาระ | 60 ตัวชี้วัด</div>
+                  </div>
+                  <div class="gw-subcard py-2 px-3">
+                    <div class="text-[11px]" style="color: var(--gw-muted);">ภาษาอังกฤษ (63)</div>
+                    <div class="text-xs font-bold">3 สาระ | 14 ตัวชี้วัด</div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Right Student Login Card (Inside Overview Bento) -->
+              <div id="studentLoginCard" class="lg:col-span-7 gw-panel gw-reveal flex flex-col justify-between">
+                <div>
+                  <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
+                    <div class="flex items-center gap-2.5">
+                      <span class="px-3 py-1 rounded-full text-xs font-bold" style="background: var(--gw-accent-soft); color: var(--gw-accent);">
+                        สำหรับนักเรียน ป.6
+                      </span>
+                      <h2 class="text-base sm:text-lg font-bold">เข้าห้องเรียนทบทวน & ฝึกข้อสอบ O-NET 2569</h2>
+                    </div>
+                  </div>
+                  <p class="text-xs mb-3.5" style="color: var(--gw-muted);">
+                    เลือกโรงเรียน | เลือกชื่อตนเอง | ครั้งแรกตั้งรหัสผ่านของตัวเองได้เลย ครั้งต่อไปกรอกรหัสเข้าเรียนได้ทันที
+                  </p>
+                  <div class="space-y-3.5">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 items-end">
+                      <div>
+                        <label for="stuSchoolSelect" class="gw-label">1. เลือกโรงเรียน (8 โรงเรียน)</label>
+                        <select id="stuSchoolSelect" onchange="onStudentSchoolChange()" class="gw-input"></select>
+                      </div>
+                      <div>
+                        <label for="stuNameSelect" class="gw-label">2. เลือกชื่อ-นามสกุลตนเอง</label>
+                        <select id="stuNameSelect" onchange="onStudentNameChange()" class="gw-input">
+                          <option value="">-- กรุณาเลือกโรงเรียนก่อน --</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <!-- Helper when student name is not yet in school's list -->
+                    <div id="stuSelfAddWrap" class="hidden">
+                      <button type="button" onclick="toggleStudentQuickAdd()" class="text-xs font-bold underline cursor-pointer" style="color: var(--gw-accent);">
+                        + ยังไม่พบชื่อตนเองในโรงเรียนนี้? คลิกเพิ่มชื่อนักเรียนครั้งแรก
+                      </button>
+                      <div id="stuQuickAddBox" class="hidden gw-subcard mt-2 space-y-2.5">
+                        <div class="text-xs font-bold">เพิ่มชื่อนักเรียนเข้าโรงเรียนที่เลือก (ทำครั้งเดียว ครั้งต่อไปเลือกชื่อได้เลย)</div>
+                        <div class="grid grid-cols-2 sm:grid-cols-5 gap-2 items-end">
+                          <div>
+                            <label for="stuAddNo" class="text-[11px] font-bold block mb-1">เลขที่</label>
+                            <input type="number" id="stuAddNo" value="1" min="1" class="gw-input !py-1.5 text-xs">
+                          </div>
+                          <div>
+                            <label for="stuAddRoom" class="text-[11px] font-bold block mb-1">ห้อง</label>
+                            <select id="stuAddRoom" class="gw-input !py-1.5 text-xs">
+                              <option value="ป.6/1">ป.6/1</option>
+                              <option value="ป.6/2">ป.6/2</option>
+                              <option value="ป.6/3">ป.6/3</option>
+                            </select>
+                          </div>
+                          <div>
+                            <label for="stuAddPrefix" class="text-[11px] font-bold block mb-1">คำนำหน้า</label>
+                            <select id="stuAddPrefix" class="gw-input !py-1.5 text-xs">
+                              <option value="ด.ช.">ด.ช.</option>
+                              <option value="ด.ญ.">ด.ญ.</option>
+                            </select>
+                          </div>
+                          <div>
+                            <label for="stuAddFirst" class="text-[11px] font-bold block mb-1">ชื่อจริง</label>
+                            <input type="text" id="stuAddFirst" placeholder="ชื่อ" class="gw-input !py-1.5 text-xs">
+                          </div>
+                          <div>
+                            <label for="stuAddLast" class="text-[11px] font-bold block mb-1">นามสกุล</label>
+                            <input type="text" id="stuAddLast" placeholder="นามสกุล" class="gw-input !py-1.5 text-xs">
+                          </div>
+                        </div>
+                        <button type="button" id="btnStudentQuickAddSubmit" onclick="submitStudentQuickAdd()" class="gw-btn-soft w-full text-xs !font-bold">
+                          บันทึกชื่อเข้าโรงเรียน &amp; เลือกตั้งรหัสผ่านทันที
+                        </button>
+                      </div>
+                    </div>
+
+                    <div id="stuPasswordBox" class="hidden space-y-2.5">
+                      <div>
+                        <label id="stuPasswordLabel" for="stuPasswordInput" class="gw-label">3. รหัสผ่านส่วนตัวของนักเรียน</label>
+                        <div class="relative">
+                          <input type="password" id="stuPasswordInput" autocomplete="current-password"
+                                 onkeydown="if(event.key==='Enter'){event.preventDefault();submitStudentLogin();}"
+                                 placeholder="กรอกรหัสผ่านอย่างน้อย 4 ตัวอักษร/ตัวเลข" class="gw-input pr-16">
+                          <button type="button" id="btnToggleStuPass" onclick="togglePassInput('stuPasswordInput', 'btnToggleStuPass')"
+                                  class="absolute right-2.5 top-1/2 -translate-y-1/2 px-2 py-1 rounded-lg text-xs font-bold cursor-pointer"
+                                  style="color: var(--gw-accent); background: var(--gw-accent-soft);">
+                            แสดง
+                          </button>
+                        </div>
+                        <p id="stuPasswordHint" class="text-xs mt-1" style="color: var(--gw-muted);"></p>
+                      </div>
+                      <div id="stuPasswordConfirmWrap" class="hidden">
+                        <label for="stuPasswordConfirm" class="gw-label">ยืนยันรหัสผ่านอีกครั้ง (ป้องกันพิมพ์ผิดครั้งแรก)</label>
+                        <div class="relative">
+                          <input type="password" id="stuPasswordConfirm" autocomplete="new-password"
+                                 onkeydown="if(event.key==='Enter'){event.preventDefault();submitStudentLogin();}"
+                                 placeholder="พิมพ์รหัสผ่านเดิมซ้ำอีกครั้ง" class="gw-input pr-16">
+                          <button type="button" id="btnToggleStuPassConfirm" onclick="togglePassInput('stuPasswordConfirm', 'btnToggleStuPassConfirm')"
+                                  class="absolute right-2.5 top-1/2 -translate-y-1/2 px-2 py-1 rounded-lg text-xs font-bold cursor-pointer"
+                                  style="color: var(--gw-accent); background: var(--gw-accent-soft);">
+                            แสดง
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+
+                    <label class="inline-flex items-center gap-2 text-xs font-semibold cursor-pointer select-none" style="color: var(--gw-muted);">
+                      <input type="checkbox" id="chkRememberStudent" class="w-4 h-4 rounded cursor-pointer" style="accent-color: var(--gw-accent);">
+                      <span>จำชื่อและรหัสผ่านไว้เข้าอัตโนมัติ (ติ๊กเฉพาะเครื่องส่วนตัวของนักเรียน)</span>
+                    </label>
+                  </div>
+                </div>
+                <button type="button" id="btnStudentLoginSubmit" onclick="submitStudentLogin()" class="gw-btn-primary w-full py-3 mt-4">
+                  <i data-lucide="rocket" class="w-4 h-4"></i>
+                  <span>เข้าสู่ห้องติว O-NET ปีการศึกษา 2569</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Student Dashboard (Shown after login) -->
+            <div id="studentWorkspace" class="hidden space-y-4">
+              <div class="gw-panel gw-reveal">
+                <div class="flex flex-wrap items-center justify-between gap-3 mb-3">
+                  <div>
+                    <h3 id="stuWelcomeTitle" class="text-lg font-bold"></h3>
+                    <p class="text-xs" style="color: var(--gw-muted);">อ่านสรุปความรู้ตรงจุดออกสอบและฝึกทำโจทย์รายตัวชี้วัดให้ครบทั้ง 4 วิชา</p>
+                  </div>
+                  <div class="text-right">
+                    <span id="stuProgressText" class="text-sm font-bold gw-tabular" style="color: var(--gw-accent);">ความก้าวหน้า 0%</span>
+                  </div>
+                </div>
+                <div class="w-full h-3.5 rounded-full overflow-hidden" style="background: var(--gw-line);">
+                  <div id="stuProgressBar" class="h-full transition-all duration-500 rounded-full" style="width: 0%; background: var(--gw-accent);"></div>
+                </div>
+
+                <!-- Student Pre/Post Score Summary -->
+                <div id="stuExamHistoryBox" class="mt-4 grid grid-cols-1 sm:grid-cols-4 gap-3"></div>
+              </div>
+
+              <!-- Student Materials Download Library (Student Edition ONLY) -->
+              <div id="stuMaterialsPanel" class="gw-panel gw-reveal space-y-3">
+                <div class="flex flex-wrap items-center justify-between gap-2 pb-2 border-b" style="border-color: var(--gw-line);">
+                  <div>
+                    <h3 class="text-base font-bold">คลังเอกสารสรุปความรู้ & แบบฝึกหัด (ฉบับนักเรียน — อนุมัติแล้ว)</h3>
+                    <p class="text-xs" style="color: var(--gw-muted);">เฉพาะเอกสารฉบับนักเรียนและฉบับรวมเล่มสำหรับทบทวนด้วยตนเอง (ไม่แสดงฉบับครูหรือไฟล์ที่มีเฉลย)</p>
+                  </div>
+                  <span class="px-2.5 py-1 rounded-full text-[11px] font-bold" style="background: var(--gw-accent-soft); color: var(--gw-accent);">ฉบับนักเรียนเท่านั้น</span>
+                </div>
+                <div class="gw-segment" role="group" aria-label="กรองเอกสารฉบับนักเรียน">
+                  <button type="button" id="stuMatFilter_ALL" onclick="filterStudentMaterials('ALL')" class="is-active">ทุกวิชา</button>
+                  <button type="button" id="stuMatFilter_61" onclick="filterStudentMaterials('61')">ภาษาไทย</button>
+                  <button type="button" id="stuMatFilter_64" onclick="filterStudentMaterials('64')">คณิตศาสตร์</button>
+                  <button type="button" id="stuMatFilter_65" onclick="filterStudentMaterials('65')">วิทยาศาสตร์ฯ</button>
+                  <button type="button" id="stuMatFilter_63" onclick="filterStudentMaterials('63')">ภาษาอังกฤษ</button>
+                </div>
+                <div id="stuMaterialsSummaryBar" class="text-xs font-bold" style="color: var(--gw-accent);"></div>
+                <div id="stuMaterialsList" class="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs"></div>
+              </div>
+
+              <!-- Subject Filter & Practice Cards -->
+              <div class="flex flex-wrap items-center justify-between gap-2">
+                <div class="gw-segment" role="group" aria-label="กรองรายวิชา">
+                  <button type="button" id="stuSubFilter_ALL" class="is-active" onclick="filterStudentPractice('ALL')">ครบทุกวิชา</button>
+                  <button type="button" id="stuSubFilter_61" onclick="filterStudentPractice('61')">ภาษาไทย (61)</button>
+                  <button type="button" id="stuSubFilter_64" onclick="filterStudentPractice('64')">คณิตศาสตร์ (64)</button>
+                  <button type="button" id="stuSubFilter_65" onclick="filterStudentPractice('65')">วิทยาศาสตร์ฯ (65)</button>
+                  <button type="button" id="stuSubFilter_63" onclick="filterStudentPractice('63')">ภาษาอังกฤษ (63)</button>
+                </div>
+                <div class="gw-segment" role="group" aria-label="รูปแบบการฝึก">
+                  <button type="button" id="btnStuModeAll" class="is-active" onclick="setStudentPracticeMode('ALL')">แสดงทุกข้อ</button>
+                  <button type="button" id="btnStuModeStep" onclick="setStudentPracticeMode('STEP')">โหมดทีละข้อ</button>
+                </div>
+              </div>
+              <div id="stuStepperNav" class="hidden gw-panel !p-3 flex flex-wrap items-center justify-between gap-2 text-xs">
+                <button type="button" onclick="stepStudentPractice(-1)" class="gw-btn-soft !py-1.5 !px-3">← ข้อก่อนหน้า</button>
+                <span id="stuStepperStatus" class="font-bold gw-tabular" style="color: var(--gw-accent);">ข้อ 1 / 1</span>
+                <button type="button" onclick="stepStudentPractice(1)" class="gw-btn-primary !py-1.5 !px-3">ข้อถัดไป →</button>
+              </div>
+              <div id="stuPracticeContainer" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+            </div>
+          </section>
+
+          <!-- ==============================================================
+               DEDICATED LOGIN 2: DOCUMENT DRAFTING COMMITTEE (.DOCX UPLOAD)
+               ============================================================== -->
+          <section id="authCard_COMMITTEE" class="hidden space-y-4">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 items-stretch">
+              <!-- Left Info: What Document Committee Can Do -->
+              <div class="lg:col-span-5 gw-panel gw-reveal flex flex-col justify-between space-y-4">
+                <div class="space-y-3">
+                  <span class="inline-block px-3 py-1 rounded-full text-xs font-bold" style="background: var(--gw-accent-soft); color: var(--gw-accent);">
+                    สำหรับคณะกรรมการจัดทำเอกสาร (ทั้ง 15 สาระ)
+                  </span>
+                  <h2 class="text-base sm:text-lg font-bold">หน้าคณะกรรมการจัดทำเอกสาร ทำอะไรได้บ้าง?</h2>
+                  <p class="text-xs leading-relaxed" style="color: var(--gw-muted);">
+                    สำหรับคุณครูที่ได้รับแต่งตั้งเป็นคณะกรรมการจัดทำเอกสารติวทั้ง 15 สาระ (จากทุกสายชั้นใน 8 โรงเรียน) เพื่อตรวจและส่งต้นฉบับให้เสร็จสมบูรณ์ภายในวันปฏิบัติการ
+                  </p>
+                  <div class="space-y-2.5 pt-1">
+                    <div class="gw-role-feature">
+                      <span class="gw-role-num">1</span>
+                      <div class="text-xs">
+                        <div class="font-bold">โหลดแม่แบบล็อกหน้า A4 & ตรวจไฟล์ .docx อัตโนมัติ</div>
+                        <div style="color: var(--gw-muted);">สแกนเช็กฟอนต์ TH SarabunPSK รหัสตัวชี้วัดปี 2569 โครงสร้างครบ 3 ส่วน และตรวจจุดเสี่ยงหน้าเคลื่อนก่อนส่ง</div>
+                      </div>
+                    </div>
+                    <div class="gw-role-feature">
+                      <span class="gw-role-num">2</span>
+                      <div class="text-xs">
+                        <div class="font-bold">อัปโหลดคู่ขนาน (.docx + PDF ล็อกหน้า) แยก 4 วิชา</div>
+                        <div style="color: var(--gw-muted);">ส่งไฟล์เข้า Google Drive กลาง (ภาษาไทย | คณิตศาสตร์ | วิทยาศาสตร์ฯ | ภาษาอังกฤษ) พร้อมรวมเล่มทันที</div>
+                      </div>
+                    </div>
+                    <div class="gw-role-feature">
+                      <span class="gw-role-num">3</span>
+                      <div class="text-xs">
+                        <div class="font-bold">ติดตามสถานะการตรวจรับครบทั้ง 15 สาระ</div>
+                        <div style="color: var(--gw-muted);">เปิดดูไฟล์ที่ส่งแล้ว เช็กผลการตรวจรับรวมเล่ม และเพิ่มโจทย์เข้าคลังฝึกออนไลน์ของกลุ่มโรงเรียน</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Right Login/Register for Document Drafting Committee -->
+              <div class="lg:col-span-7 gw-panel gw-reveal flex flex-col justify-between">
+                <div>
+                  <div class="flex flex-wrap items-center justify-between gap-2 mb-4 pb-3 border-b" style="border-color: var(--gw-line);">
+                    <div>
+                      <h2 class="text-base sm:text-lg font-bold">เข้าสู่ระบบสำหรับคณะกรรมการจัดทำเอกสาร</h2>
+                      <p class="text-xs" style="color: var(--gw-muted);">เลือกชื่อกรรมการที่ลงทะเบียนไว้ กรอกรหัสผ่าน แล้วเข้าส่งต้นฉบับได้เลย</p>
+                    </div>
+                    <div class="gw-segment">
+                      <button type="button" id="btnCommModeLogin" class="is-active" onclick="toggleRoleAuthMode('COMMITTEE', 'LOGIN')">เลือกชื่อเข้าสู่ระบบ</button>
+                      <button type="button" id="btnCommModeReg" onclick="toggleRoleAuthMode('COMMITTEE', 'REGISTER')">+ ลงทะเบียนกรรมการ</button>
+                    </div>
+                  </div>
+
+                  <!-- Committee Login Mode -->
+                  <form id="commLoginForm" onsubmit="event.preventDefault(); submitRoleSelectLogin('COMMITTEE');" class="space-y-3.5">
+                    <div id="commPendingNotice" class="hidden gw-alert-warn p-3 text-xs font-semibold"></div>
+                    <div id="commQuickChipsWrap" class="hidden space-y-1.5">
+                      <div class="text-xs font-bold" style="color: var(--gw-muted);">คลิกเลือกชื่อกรรมการจัดทำเอกสารที่มีในระบบได้ทันที:</div>
+                      <div id="commQuickChips" class="flex flex-wrap gap-1.5"></div>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 items-end">
+                      <div>
+                        <label for="commFilterSchool" class="gw-label">1. กรองตามโรงเรียน</label>
+                        <select id="commFilterSchool" onchange="renderRoleTeacherSelect('COMMITTEE')" class="gw-input"></select>
+                      </div>
+                      <div>
+                        <label for="commSelectTeacher" class="gw-label">2. เลือกชื่อกรรมการจัดทำเอกสาร</label>
+                        <select id="commSelectTeacher" onchange="onRoleTeacherSelected('COMMITTEE')" class="gw-input"></select>
+                      </div>
+                    </div>
+
+                    <div id="commEmptyHint" class="hidden gw-subcard text-xs flex flex-wrap items-center justify-between gap-2">
+                      <span>ยังไม่มีรายชื่อกรรมการจัดทำเอกสารในตัวกรองนี้ กดลงทะเบียนชื่อกรรมการครั้งแรกได้เลยครับ</span>
+                      <button type="button" onclick="toggleRoleAuthMode('COMMITTEE', 'REGISTER')" class="gw-btn-soft text-xs !font-bold">+ ลงทะเบียนชื่อกรรมการ</button>
+                    </div>
+
+                    <div id="commPassBox" class="hidden space-y-3">
+                      <div>
+                        <label for="commLoginPass" class="gw-label">3. รหัสผ่านของกรรมการจัดทำเอกสาร</label>
+                        <div class="relative">
+                          <input type="password" id="commLoginPass" autocomplete="current-password" placeholder="กรอกรหัสผ่านเพื่อเข้าส่งต้นฉบับ" class="gw-input pr-16">
+                          <button type="button" id="btnToggleCommPass" onclick="togglePassInput('commLoginPass', 'btnToggleCommPass')"
+                                  class="absolute right-2.5 top-1/2 -translate-y-1/2 px-2 py-1 rounded-lg text-xs font-bold cursor-pointer"
+                                  style="color: var(--gw-accent); background: var(--gw-accent-soft);">
+                            แสดง
+                          </button>
+                        </div>
+                      </div>
+                      <div class="flex flex-wrap items-center justify-between gap-2 text-xs">
+                        <label class="inline-flex items-center gap-2 font-semibold cursor-pointer select-none">
+                          <input type="checkbox" id="chkRememberComm" checked class="w-4 h-4 rounded cursor-pointer" style="accent-color: var(--gw-accent);">
+                          <span>จำชื่อและรหัสผ่านไว้เข้าอัตโนมัติในเครื่องนี้</span>
+                        </label>
+                        <button type="button" id="btnClearSavedComm" onclick="clearSavedRoleCred('COMMITTEE')"
+                                class="hidden gw-text-danger hover:underline font-bold cursor-pointer">
+                          ล้างรหัสที่จำไว้
+                        </button>
+                      </div>
+                    </div>
+
+                    <button type="submit" id="btnCommLoginSubmit" class="gw-btn-primary w-full py-3">
+                      <i data-lucide="log-in" class="w-4 h-4"></i>
+                      <span>เข้าสู่ระบบคณะกรรมการจัดทำเอกสาร</span>
+                    </button>
+                  </form>
+
+                  <!-- Committee Register Mode -->
+                  <div id="commRegForm" class="hidden space-y-3.5">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 items-end">
+                      <div>
+                        <label for="commRegSchool" class="gw-label">1. โรงเรียนสังกัด (8 โรงเรียน)</label>
+                        <select id="commRegSchool" class="gw-input"></select>
+                      </div>
+                      <div>
+                        <label for="commRegSubject" class="gw-label">2. กลุ่มสาระวิชาที่ได้รับมอบหมาย</label>
+                        <select id="commRegSubject" class="gw-input">
+                          <option value="61">ภาษาไทย (61)</option>
+                          <option value="64">คณิตศาสตร์ (64)</option>
+                          <option value="65">วิทยาศาสตร์และเทคโนโลยี (65)</option>
+                          <option value="63">ภาษาอังกฤษ (63)</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label for="commRegName" class="gw-label">3. ชื่อ-นามสกุลกรรมการจัดทำเอกสาร</label>
+                        <input type="text" id="commRegName" autocomplete="name" placeholder="เช่น นางสาวสมศรี ดีงาม" class="gw-input">
+                      </div>
+                      <div>
+                        <label for="commRegPass" class="gw-label">4. ตั้งรหัสผ่าน (อย่างน้อย 4 ตัว)</label>
+                        <input type="password" id="commRegPass" autocomplete="new-password" placeholder="ตั้งรหัสผ่านสำหรับเข้าครั้งต่อไป" class="gw-input">
+                      </div>
+                    </div>
+                    <p class="text-xs" style="color: var(--gw-muted);">
+                      * เมื่อบันทึกแล้ว ชื่อของท่านจะขึ้นในช่องเลือกเข้าสู่ระบบทันที และรอครูเกียรติศักดิ์กดอนุมัติสิทธิ์ก่อนเข้าใช้งานครับ
+                    </p>
+                    <button type="button" id="btnCommRegSubmit" onclick="submitRoleRegister('COMMITTEE')" class="gw-btn-primary w-full py-3">
+                      <i data-lucide="user-plus" class="w-4 h-4"></i>
+                      <span>ส่งลงทะเบียนกรรมการจัดทำเอกสาร (รอครูเกียรติศักดิ์อนุมัติ)</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- ==============================================================
+               DEDICATED LOGIN 3: P.6 SUBJECT TEACHER / INSTRUCTOR (8 SCHOOLS)
+               ============================================================== -->
+          <section id="authCard_INSTRUCTOR" class="hidden space-y-4">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 items-stretch">
+              <!-- Left Info: What P.6 Subject Teachers Can Do -->
+              <div class="lg:col-span-5 gw-panel gw-reveal flex flex-col justify-between space-y-4">
+                <div class="space-y-3">
+                  <span class="inline-block px-3 py-1 rounded-full text-xs font-bold" style="background: var(--gw-accent-soft); color: var(--gw-accent);">
+                    สำหรับครูผู้สอนชั้น ป.6 (ทั้ง 8 โรงเรียน)
+                  </span>
+                  <h2 class="text-base sm:text-lg font-bold">หน้าครูผู้สอน ป.6 เข้าไปทำอะไรได้บ้าง?</h2>
+                  <p class="text-xs leading-relaxed" style="color: var(--gw-muted);">
+                    ออกแบบสำหรับคุณครูผู้สอนชั้น ป.6 ประจำวิชาหรือครูประจำชั้น ป.6 ในแต่ละโรงเรียน เพื่อนำสื่อไปใช้ติวและติดตามพัฒนาการเด็กอย่างตรงจุด
+                  </p>
+                  <div class="space-y-2.5 pt-1">
+                    <div class="gw-role-feature">
+                      <span class="gw-role-num">1</span>
+                      <div class="text-xs">
+                        <div class="font-bold">ดาวน์โหลดเอกสารติวกลาง (ครบ 4 วิชา 15 สาระ)</div>
+                        <div style="color: var(--gw-muted);">ดาวน์โหลดไฟล์ PDF ล็อกหน้าพร้อมพิมพ์ และไฟล์ Word ต้นฉบับที่ผ่านการตรวจแล้วไปใช้สอนและติวนักเรียน</div>
+                      </div>
+                    </div>
+                    <div class="gw-role-feature">
+                      <span class="gw-role-num">2</span>
+                      <div class="text-xs">
+                        <div class="font-bold">ดูวิเคราะห์จุดอ่อนรายตัวชี้วัด (&lt;50%) & คะแนน Pre/Post</div>
+                        <div style="color: var(--gw-muted);">ชี้เป้าตัวชี้วัดที่นักเรียน ป.6 ในโรงเรียนและวิชาที่ตนเองสอนยังทำคะแนนได้ต่ำ เพื่อวางแผนเร่งติวเสริม</div>
+                      </div>
+                    </div>
+                    <div class="gw-role-feature">
+                      <span class="gw-role-num">3</span>
+                      <div class="text-xs">
+                        <div class="font-bold">ติดตามการเข้าฝึกทำโจทย์ออนไลน์ของนักเรียนรายคน</div>
+                        <div style="color: var(--gw-muted);">ตรวจเช็กว่านักเรียน ป.6 ในโรงเรียนตนเองคนใดเข้าฝึกทำข้อสอบออนไลน์แล้ว กี่บทเรียน และตอบถูกกี่เปอร์เซ็นต์</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Right Login/Register for P.6 Subject Teacher -->
+              <div class="lg:col-span-7 gw-panel gw-reveal flex flex-col justify-between">
+                <div>
+                  <div class="flex flex-wrap items-center justify-between gap-2 mb-4 pb-3 border-b" style="border-color: var(--gw-line);">
+                    <div>
+                      <h2 class="text-base sm:text-lg font-bold">เข้าสู่ระบบสำหรับครูผู้สอน ป.6</h2>
+                      <p class="text-xs" style="color: var(--gw-muted);">เลือกชื่อครูผู้สอน ป.6 กรอกรหัสผ่าน เพื่อดาวน์โหลดเอกสารติวและดูข้อมูลนักเรียน</p>
+                    </div>
+                    <div class="gw-segment">
+                      <button type="button" id="btnInstModeLogin" class="is-active" onclick="toggleRoleAuthMode('INSTRUCTOR', 'LOGIN')">เลือกชื่อเข้าสู่ระบบ</button>
+                      <button type="button" id="btnInstModeReg" onclick="toggleRoleAuthMode('INSTRUCTOR', 'REGISTER')">+ ลงทะเบียนครูผู้สอน ป.6</button>
+                    </div>
+                  </div>
+
+                  <!-- Instructor Login Mode -->
+                  <form id="instLoginForm" onsubmit="event.preventDefault(); submitRoleSelectLogin('INSTRUCTOR');" class="space-y-3.5">
+                    <div id="instPendingNotice" class="hidden gw-alert-warn p-3 text-xs font-semibold"></div>
+                    <div id="instQuickChipsWrap" class="hidden space-y-1.5">
+                      <div class="text-xs font-bold" style="color: var(--gw-muted);">คลิกเลือกชื่อครูผู้สอน ป.6 ที่มีในระบบได้ทันที:</div>
+                      <div id="instQuickChips" class="flex flex-wrap gap-1.5"></div>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 items-end">
+                      <div>
+                        <label for="instFilterSchool" class="gw-label">1. กรองตามโรงเรียน</label>
+                        <select id="instFilterSchool" onchange="renderRoleTeacherSelect('INSTRUCTOR')" class="gw-input"></select>
+                      </div>
+                      <div>
+                        <label for="instSelectTeacher" class="gw-label">2. เลือกชื่อครูผู้สอน ป.6</label>
+                        <select id="instSelectTeacher" onchange="onRoleTeacherSelected('INSTRUCTOR')" class="gw-input"></select>
+                      </div>
+                    </div>
+
+                    <div id="instEmptyHint" class="hidden gw-subcard text-xs flex flex-wrap items-center justify-between gap-2">
+                      <span>ยังไม่มีรายชื่อครูผู้สอน ป.6 ในตัวกรองนี้ กดลงทะเบียนชื่อครูผู้สอน ป.6 ครั้งแรกได้เลยครับ</span>
+                      <button type="button" onclick="toggleRoleAuthMode('INSTRUCTOR', 'REGISTER')" class="gw-btn-soft text-xs !font-bold">+ ลงทะเบียนครูผู้สอน ป.6</button>
+                    </div>
+
+                    <div id="instPassBox" class="hidden space-y-3">
+                      <div>
+                        <label for="instLoginPass" class="gw-label">3. รหัสผ่านของครูผู้สอน ป.6</label>
+                        <div class="relative">
+                          <input type="password" id="instLoginPass" autocomplete="current-password" placeholder="กรอกรหัสผ่านเพื่อเข้าหน้าครูผู้สอน ป.6" class="gw-input pr-16">
+                          <button type="button" id="btnToggleInstPass" onclick="togglePassInput('instLoginPass', 'btnToggleInstPass')"
+                                  class="absolute right-2.5 top-1/2 -translate-y-1/2 px-2 py-1 rounded-lg text-xs font-bold cursor-pointer"
+                                  style="color: var(--gw-accent); background: var(--gw-accent-soft);">
+                            แสดง
+                          </button>
+                        </div>
+                      </div>
+                      <div class="flex flex-wrap items-center justify-between gap-2 text-xs">
+                        <label class="inline-flex items-center gap-2 font-semibold cursor-pointer select-none">
+                          <input type="checkbox" id="chkRememberInst" checked class="w-4 h-4 rounded cursor-pointer" style="accent-color: var(--gw-accent);">
+                          <span>จำชื่อและรหัสผ่านไว้เข้าอัตโนมัติในเครื่องนี้</span>
+                        </label>
+                        <button type="button" id="btnClearSavedInst" onclick="clearSavedRoleCred('INSTRUCTOR')"
+                                class="hidden gw-text-danger hover:underline font-bold cursor-pointer">
+                          ล้างรหัสที่จำไว้
+                        </button>
+                      </div>
+                    </div>
+
+                    <button type="submit" id="btnInstLoginSubmit" class="gw-btn-primary w-full py-3">
+                      <i data-lucide="book-open-check" class="w-4 h-4"></i>
+                      <span>เข้าสู่ระบบครูผู้สอน ป.6 (โหลดเอกสารติว & ดูผลนักเรียน)</span>
+                    </button>
+                  </form>
+
+                  <!-- Instructor Register Mode -->
+                  <div id="instRegForm" class="hidden space-y-3.5">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 items-end">
+                      <div>
+                        <label for="instRegSchool" class="gw-label">1. โรงเรียนสังกัด (8 โรงเรียน)</label>
+                        <select id="instRegSchool" class="gw-input"></select>
+                      </div>
+                      <div>
+                        <label for="instRegSubject" class="gw-label">2. รายวิชาที่สอนชั้น ป.6</label>
+                        <select id="instRegSubject" class="gw-input">
+                          <option value="ALL">สอนครบทั้ง 4 วิชา (ครูประจำชั้น ป.6)</option>
+                          <option value="61">ภาษาไทย (61)</option>
+                          <option value="64">คณิตศาสตร์ (64)</option>
+                          <option value="65">วิทยาศาสตร์และเทคโนโลยี (65)</option>
+                          <option value="63">ภาษาอังกฤษ (63)</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label for="instRegName" class="gw-label">3. ชื่อ-นามสกุลครูผู้สอน ป.6</label>
+                        <input type="text" id="instRegName" autocomplete="name" placeholder="เช่น นายสมชาย ใจดี" class="gw-input">
+                      </div>
+                      <div>
+                        <label for="instRegPass" class="gw-label">4. ตั้งรหัสผ่าน (อย่างน้อย 4 ตัว)</label>
+                        <input type="password" id="instRegPass" autocomplete="new-password" placeholder="ตั้งรหัสผ่านสำหรับเข้าครั้งต่อไป" class="gw-input">
+                      </div>
+                    </div>
+                    <p class="text-xs" style="color: var(--gw-muted);">
+                      * เมื่อบันทึกแล้ว ชื่อของท่านจะขึ้นในช่องเลือกเข้าสู่ระบบทันที และรอครูเกียรติศักดิ์กดอนุมัติสิทธิ์ก่อนเข้าใช้งานครับ
+                    </p>
+                    <button type="button" id="btnInstRegSubmit" onclick="submitRoleRegister('INSTRUCTOR')" class="gw-btn-primary w-full py-3">
+                      <i data-lucide="user-plus" class="w-4 h-4"></i>
+                      <span>ส่งลงทะเบียนครูผู้สอน ป.6 (รอครูเกียรติศักดิ์อนุมัติ)</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- ==============================================================
+               DEDICATED LOGIN 3: ACADEMIC TEACHER (ROSTER & PRE/POST GRADING)
+               ============================================================== -->
+          <section id="authCard_ACADEMIC" class="hidden space-y-4">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 items-stretch">
+              <!-- Left Info: What Academic Teachers Can Do -->
+              <div class="lg:col-span-5 gw-panel gw-reveal flex flex-col justify-between space-y-4">
+                <div class="space-y-3">
+                  <span class="inline-block px-3 py-1 rounded-full text-xs font-bold" style="background: var(--gw-accent-soft); color: var(--gw-accent);">
+                    สำหรับครูวิชาการประจำโรงเรียน (8 โรงเรียน)
+                  </span>
+                  <h2 class="text-base sm:text-lg font-bold">หน้าครูวิชาการ เข้าไปจัดการอะไรได้บ้าง?</h2>
+                  <p class="text-xs leading-relaxed" style="color: var(--gw-muted);">
+                    ศูนย์กลางสำหรับครูวิชาการทั้ง 8 โรงเรียนในการจัดการรายชื่อนักเรียน ป.6 กรอกคะแนนสอบ และพิมพ์รายงานผลสัมฤทธิ์
+                  </p>
+                  <div class="space-y-2.5 pt-1">
+                    <div class="gw-role-feature">
+                      <span class="gw-role-num">1</span>
+                      <div class="text-xs">
+                        <div class="font-bold">จัดการรายชื่อนักเรียน ป.6 & รีเซ็ตรหัสผ่าน</div>
+                        <div style="color: var(--gw-muted);">นำเข้าไฟล์ Excel รายชื่อนักเรียนทั้งห้อง เพิ่มรายชื่อเพื่อให้เด็กเลือกชื่อเข้าเรียน และกดรีเซ็ตรหัสผ่านได้ทันที</div>
+                      </div>
+                    </div>
+                    <div class="gw-role-feature">
+                      <span class="gw-role-num">2</span>
+                      <div class="text-xs">
+                        <div class="font-bold">กรอกข้อมูลกระดาษคำตอบ Pre / Post O-NET</div>
+                        <div style="color: var(--gw-muted);">บันทึกคำตอบรายข้อ ตรวจให้คะแนนอัตโนมัติครบทั้ง 5 รูปแบบข้อสอบตามโครงสร้าง สทศ. ปี 2569</div>
+                      </div>
+                    </div>
+                    <div class="gw-role-feature">
+                      <span class="gw-role-num">3</span>
+                      <div class="text-xs">
+                        <div class="font-bold">วิเคราะห์ค่าพัฒนาการ & พิมพ์รายงาน A4</div>
+                        <div style="color: var(--gw-muted);">สรุปคะแนนเฉลี่ย PreเทียบPost ชี้เป้าตัวชี้วัดที่ต้องเร่งติวเสริม และสั่งพิมพ์รายงานราชการฟอนต์ TH SarabunPSK</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Right Login/Register for Academic Teacher -->
+              <div class="lg:col-span-7 gw-panel gw-reveal flex flex-col justify-between">
+                <div>
+                  <div class="flex flex-wrap items-center justify-between gap-2 mb-4 pb-3 border-b" style="border-color: var(--gw-line);">
+                    <div>
+                      <h2 class="text-base sm:text-lg font-bold">เข้าสู่ระบบสำหรับครูวิชาการ</h2>
+                      <p class="text-xs" style="color: var(--gw-muted);">เลือกชื่อครูวิชาการของโรงเรียน กรอกรหัสผ่าน เพื่อจัดการรายชื่อและกรอกคะแนน</p>
+                    </div>
+                    <div class="gw-segment">
+                      <button type="button" id="btnAcadModeLogin" class="is-active" onclick="toggleRoleAuthMode('ACADEMIC', 'LOGIN')">เลือกชื่อเข้าสู่ระบบ</button>
+                      <button type="button" id="btnAcadModeReg" onclick="toggleRoleAuthMode('ACADEMIC', 'REGISTER')">+ ลงทะเบียนครูวิชาการ</button>
+                    </div>
+                  </div>
+
+                  <!-- Academic Login Mode -->
+                  <form id="acadLoginForm" onsubmit="event.preventDefault(); submitRoleSelectLogin('ACADEMIC');" class="space-y-3.5">
+                    <div id="acadPendingNotice" class="hidden gw-alert-warn p-3 text-xs font-semibold"></div>
+                    <div id="acadQuickChipsWrap" class="hidden space-y-1.5">
+                      <div class="text-xs font-bold" style="color: var(--gw-muted);">คลิกเลือกชื่อครูวิชาการที่มีในระบบได้ทันที:</div>
+                      <div id="acadQuickChips" class="flex flex-wrap gap-1.5"></div>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 items-end">
+                      <div>
+                        <label for="acadFilterSchool" class="gw-label">1. กรองตามโรงเรียน</label>
+                        <select id="acadFilterSchool" onchange="renderRoleTeacherSelect('ACADEMIC')" class="gw-input"></select>
+                      </div>
+                      <div>
+                        <label for="acadSelectTeacher" class="gw-label">2. เลือกชื่อครูวิชาการ</label>
+                        <select id="acadSelectTeacher" onchange="onRoleTeacherSelected('ACADEMIC')" class="gw-input"></select>
+                      </div>
+                    </div>
+
+                    <div id="acadEmptyHint" class="hidden gw-subcard text-xs flex flex-wrap items-center justify-between gap-2">
+                      <span>ยังไม่มีรายชื่อครูวิชาการของโรงเรียนที่เลือก กดลงทะเบียนชื่อครูวิชาการครั้งแรกได้เลยครับ</span>
+                      <button type="button" onclick="toggleRoleAuthMode('ACADEMIC', 'REGISTER')" class="gw-btn-soft text-xs !font-bold">+ ลงทะเบียนชื่อครูวิชาการ</button>
+                    </div>
+
+                    <div id="acadPassBox" class="hidden space-y-3">
+                      <div>
+                        <label for="acadLoginPass" class="gw-label">3. รหัสผ่านของครูวิชาการ</label>
+                        <div class="relative">
+                          <input type="password" id="acadLoginPass" autocomplete="current-password" placeholder="กรอกรหัสผ่านเพื่อจัดการรายชื่อและคะแนน" class="gw-input pr-16">
+                          <button type="button" id="btnToggleAcadPass" onclick="togglePassInput('acadLoginPass', 'btnToggleAcadPass')"
+                                  class="absolute right-2.5 top-1/2 -translate-y-1/2 px-2 py-1 rounded-lg text-xs font-bold cursor-pointer"
+                                  style="color: var(--gw-accent); background: var(--gw-accent-soft);">
+                            แสดง
+                          </button>
+                        </div>
+                      </div>
+                      <div class="flex flex-wrap items-center justify-between gap-2 text-xs">
+                        <label class="inline-flex items-center gap-2 font-semibold cursor-pointer select-none">
+                          <input type="checkbox" id="chkRememberAcad" checked class="w-4 h-4 rounded cursor-pointer" style="accent-color: var(--gw-accent);">
+                          <span>จำชื่อและรหัสผ่านไว้เข้าอัตโนมัติในเครื่องนี้</span>
+                        </label>
+                        <button type="button" id="btnClearSavedAcad" onclick="clearSavedRoleCred('ACADEMIC')"
+                                class="hidden gw-text-danger hover:underline font-bold cursor-pointer">
+                          ล้างรหัสที่จำไว้
+                        </button>
+                      </div>
+                    </div>
+
+                    <button type="submit" id="btnAcadLoginSubmit" class="gw-btn-primary w-full py-3">
+                      <i data-lucide="clipboard-check" class="w-4 h-4"></i>
+                      <span>เข้าสู่ระบบครูวิชาการ (จัดการรายชื่อ & กรอกข้อมูล)</span>
+                    </button>
+                  </form>
+
+                  <!-- Academic Register Mode -->
+                  <div id="acadRegForm" class="hidden space-y-3.5">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 items-end">
+                      <div>
+                        <label for="acadRegSchool" class="gw-label">1. โรงเรียนสังกัด (8 โรงเรียน)</label>
+                        <select id="acadRegSchool" class="gw-input"></select>
+                      </div>
+                      <div>
+                        <label for="acadRegName" class="gw-label">2. ชื่อ-นามสกุลครูวิชาการ</label>
+                        <input type="text" id="acadRegName" autocomplete="name" placeholder="เช่น นางสาววิชาการ ดีเยี่ยม" class="gw-input">
+                      </div>
+                    </div>
+                    <div>
+                      <label for="acadRegPass" class="gw-label">3. ตั้งรหัสผ่านเข้าใช้งาน (อย่างน้อย 4 ตัวอักษร/ตัวเลข)</label>
+                      <input type="password" id="acadRegPass" autocomplete="new-password" placeholder="ตั้งรหัสผ่านสำหรับเข้าจัดการข้อมูลโรงเรียน" class="gw-input">
+                    </div>
+                    <p class="text-xs" style="color: var(--gw-muted);">
+                      * เมื่อบันทึกแล้ว ชื่อของท่านจะขึ้นในช่องเลือกเข้าสู่ระบบทันที และรอครูเกียรติศักดิ์กดอนุมัติสิทธิ์ก่อนเข้าใช้งานครับ
+                    </p>
+                    <button type="button" id="btnAcadRegSubmit" onclick="submitRoleRegister('ACADEMIC')" class="gw-btn-primary w-full py-3">
+                      <i data-lucide="user-plus" class="w-4 h-4"></i>
+                      <span>ส่งลงทะเบียนชื่อครูวิชาการ (รอครูเกียรติศักดิ์อนุมัติ)</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- ==============================================================
+               DEDICATED LOGIN 4: EXCLUSIVE SUPER ADMIN LOGIN (SINGLE ADMIN ONLY)
+               ============================================================== -->
+          <section id="authCard_ADMIN" class="hidden gw-panel gw-reveal max-w-2xl mx-auto space-y-4">
+            <div class="flex flex-wrap items-center justify-between gap-2 pb-3 border-b" style="border-color: var(--gw-line);">
+              <div>
+                <span class="inline-block px-3 py-1 rounded-full text-xs font-bold mb-1.5" style="background: var(--gw-accent-soft); color: var(--gw-accent);">
+                  เฉพาะผู้ดูแลระบบกลุ่มฯ (Super Admin)
+                </span>
+                <h2 class="text-lg font-bold">เข้าสู่ระบบผู้ดูแลระบบกลางกลุ่มโรงเรียนศรีเสาวภาค</h2>
+                <p class="text-xs" style="color: var(--gw-muted);">
+                  หน้านี้สำหรับแอดมินระบบเพียงท่านเดียว — คลิกเลือกชื่อด้านล่าง กรอกรหัสผ่าน แล้วเข้าใช้งานได้ทันที
+                </p>
+              </div>
+            </div>
+
+            <form onsubmit="event.preventDefault(); submitAdminExclusiveLogin();" class="space-y-4">
+              <div>
+                <div class="gw-label">1. คลิกเลือกบัญชีผู้ดูแลระบบ</div>
+                <button type="button" id="btnAdminProfileCard" onclick="selectAdminProfile(true)" class="gw-profile-card is-selected">
+                  <div class="flex items-center gap-3.5">
+                    <span class="gw-profile-avatar">
+                      <i data-lucide="shield-check" class="w-5 h-5"></i>
+                    </span>
+                    <div>
+                      <div class="text-sm sm:text-base font-bold">นายเกียรติศักดิ์ กรุณา</div>
+                      <div class="text-xs" style="color: var(--gw-muted);">
+                        ผู้ดูแลระบบกลุ่มโรงเรียนศรีเสาวภาค | โรงเรียนวัดคลองห้า
+                      </div>
+                    </div>
+                  </div>
+                  <span id="adminSelectBadge" class="px-3 py-1 rounded-full text-xs font-bold shrink-0"
+                        style="background: var(--gw-accent-soft); color: var(--gw-accent);">
+                    ✓ เลือกบัญชีนี้แล้ว
+                  </span>
+                </button>
+              </div>
+
+              <div id="adminPassBox" class="space-y-3">
+                <div>
+                  <label for="adminLoginPass" class="gw-label">2. กรอกรหัสผ่านแอดมิน (ครูเกียรติศักดิ์)</label>
+                  <div class="relative">
+                    <input type="password" id="adminLoginPass" autocomplete="current-password"
+                           placeholder="กรอกรหัสผ่านผู้ดูแลระบบ" class="gw-input pr-16">
+                    <button type="button" id="btnToggleAdminPass" onclick="togglePassInput('adminLoginPass', 'btnToggleAdminPass')"
+                            class="absolute right-2.5 top-1/2 -translate-y-1/2 px-2 py-1 rounded-lg text-xs font-bold cursor-pointer"
+                            style="color: var(--gw-accent); background: var(--gw-accent-soft);">
+                      แสดง
+                    </button>
+                  </div>
+                </div>
+
+                <div class="flex flex-wrap items-center justify-between gap-2 text-xs">
+                  <label class="inline-flex items-center gap-2 font-semibold cursor-pointer select-none">
+                    <input type="checkbox" id="chkRememberAdmin" checked class="w-4 h-4 rounded cursor-pointer" style="accent-color: var(--gw-accent);">
+                    <span>จำรหัสผ่านไว้ในเครื่องนี้ (เปิดเว็บครั้งหน้าเข้าได้เลย)</span>
+                  </label>
+                  <button type="button" id="btnClearSavedAdmin" onclick="clearSavedRoleCred('ADMIN')"
+                          class="hidden gw-text-danger hover:underline font-bold cursor-pointer">
+                    ล้างรหัสที่จำไว้
+                  </button>
+                </div>
+
+                <button type="submit" id="btnAdminLoginSubmit" class="gw-btn-primary w-full py-3">
+                  <i data-lucide="shield-check" class="w-4 h-4"></i>
+                  <span>เข้าสู่แดชบอร์ดผู้ดูแลระบบกลุ่มฯ</span>
+                </button>
+              </div>
+            </form>
+          </section>
+
+          <!-- ==============================================================
+               TAB 2: COMMITTEE TEACHER WORKSPACE (.DOCX AUTO PRE-CHECK & UPLOAD)
+               ============================================================== -->
+          <section id="panel_COMMITTEE" class="hidden space-y-4">
+            <!-- Sub-navigation: 1. Upload Docs, 2. Practice Bank CRUD, 3. Exam IOC Review -->
+            <div class="gw-segment gw-reveal" role="group" aria-label="เมนูคณะกรรมการ">
+              <button type="button" id="btnCommSub_UPLOAD" onclick="switchCommitteeSubTab('UPLOAD')" class="is-active">
+                1. ส่งต้นฉบับเอกสารติว (.docx / .pdf)
+              </button>
+              <button type="button" id="btnCommSub_BANK" onclick="switchCommitteeSubTab('BANK')">
+                2. จัดการคลังโจทย์ฝึกออนไลน์นักเรียน
+              </button>
+              <button type="button" id="btnCommSub_IOC" onclick="switchCommitteeSubTab('IOC')">
+                3. ตรวจประเมินข้อสอบ (IOC +1/0/-1)
+              </button>
+            </div>
+
+            <div id="commPanel_UPLOAD">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-4">
+              <!-- Left: Upload + Auto Pre-Check (4-Document Standard) -->
+              <div class="lg:col-span-7 gw-panel gw-reveal space-y-4">
+                <div class="flex flex-wrap items-center justify-between gap-2 pb-3 border-b" style="border-color: var(--gw-line);">
+                  <div>
+                    <h2 class="text-base sm:text-lg font-bold">ส่งไฟล์ต้นฉบับเอกสารติวและข้อสอบคู่ขนาน Pre-Post O-NET (.docx)</h2>
+                    <p class="text-xs" style="color: var(--gw-muted);">แยกตรวจอัตโนมัติระหว่าง "ฉบับนักเรียน (ห้ามหลุดเฉลย)" และ "ฉบับครู (มีเฉลยและวิธีคิด)" ก่อนอัปโหลดเข้า Google Drive</p>
+                  </div>
+                  <span class="px-3 py-1 rounded-full text-xs font-bold" style="background: var(--gw-accent-soft); color: var(--gw-accent);">Auto Pre-Check (4 ฉบับ)</span>
+                </div>
+
+                <!-- Category & Exam Settings -->
+                <div class="gw-subcard space-y-3 border" style="border-color: var(--gw-line-strong);">
+                  <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 items-end">
+                    <div class="sm:col-span-1">
+                      <label for="upDocCategory" class="gw-label">ประเภทงานที่จัดทำส่ง</label>
+                      <select id="upDocCategory" onchange="onUploadCategoryChange()" class="gw-input font-bold">
+                        <option value="TUTORING_STRAND">📚 เอกสารยกระดับตามสาระฯ</option>
+                        <option value="PREPOST_EXAM">📝 ข้อสอบคู่ขนาน Pre-Post O-NET</option>
+                      </select>
+                    </div>
+                    <div id="upExamRoundWrap" class="hidden">
+                      <label for="upExamRound" class="gw-label">รอบข้อสอบ Pre-Post</label>
+                      <select id="upExamRound" onchange="onUploadStrandChange()" class="gw-input">
+                        <option value="PRE" selected>ข้อสอบ Pre-Test (ก่อนติว — ส่งเป็นต้นแบบแรก)</option>
+                        <option value="POST">ข้อสอบ Post-Test (หลังติว — ข้อสอบคู่ขนานใหม่)</option>
+                        <option value="PRE_POST">คู่ขนาน Pre & Post (ทั้งชุด)</option>
+                      </select>
+                    </div>
+                    <div id="upExamScopeWrap" class="hidden">
+                      <label for="upExamScope" class="gw-label">ขอบเขตข้อสอบ Pre-Post</label>
+                      <select id="upExamScope" onchange="onUploadCategoryChange()" class="gw-input">
+                        <option value="BY_STRAND" selected>เฉพาะสาระ / ขอบเขตที่เลือกด้านล่าง (สำหรับแบ่งกันทำแล้วรวมเล่ม)</option>
+                        <option value="WHOLE_SUBJECT">ครบชุดทั้งรายวิชา (ตาม Test Blueprint)</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div id="upPrePostGuideNote" class="hidden text-xs rounded-xl px-3 py-2 border" style="background: var(--gw-accent-soft); border-color: var(--gw-line); color: var(--gw-accent);">
+                    <strong>แนวทางปฏิบัติตามผัง สทศ.:</strong> 1) ส่งข้อสอบ <strong>Pre-Test</strong> เป็นต้นแบบก่อน (ระบบล็อกเลขข้อตามสาระ/ตัวชี้วัดให้อัตโนมัติ) 2) ออกแบบ <strong>Post-Test</strong> คู่ขนาน 3) กรรมการทุกท่านร่วมตรวจลงคะแนน <strong>IOC (+1 / 0 / -1)</strong> แบบ 2 หน้าจอคู่ขนานที่เมนูย่อย 3 ก่อนแอดมินอนุมัติรวมเล่ม
+                  </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 items-end">
+                  <div>
+                    <label for="upSubjectCode" class="gw-label">รายวิชา</label>
+                    <select id="upSubjectCode" onchange="onUploadSubjectChange()" class="gw-input">
+                      <option value="61">1. ภาษาไทย (61)</option>
+                      <option value="64">2. คณิตศาสตร์ (64)</option>
+                      <option value="65">3. วิทยาศาสตร์ฯ (65)</option>
+                      <option value="63">4. ภาษาอังกฤษ (63)</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label for="upStrandNo" class="gw-label">สาระการเรียนรู้ในผัง 2569</label>
+                    <select id="upStrandNo" onchange="onUploadStrandChange()" class="gw-input"></select>
+                  </div>
+                  <div>
+                    <label for="upSubStandard" class="gw-label">แบ่งงานในสาระ (กรณีมีครูช่วยกันทำ)</label>
+                    <select id="upSubStandard" onchange="onUploadStrandChange()" class="gw-input"></select>
+                  </div>
+                </div>
+
+                <div id="expectedIndicatorsBox" class="gw-subcard text-xs space-y-1.5"></div>
+
+                <!-- Anti-Layout-Shift Word Template Box (Complete 4 Editions + 1-Click ZIP) -->
+                <div class="gw-subcard space-y-3 border-2" style="border-color: var(--gw-accent-soft);">
+                  <div class="flex flex-wrap items-start justify-between gap-2 text-xs">
+                    <div>
+                      <div class="font-bold text-sm" style="color: var(--gw-accent);">🛡️ ดาวน์โหลดชุดแม่แบบมาตรฐานครบ 4 ฉบับ (A4 TH SarabunPSK + ล็อกเลขข้อตามผัง สทศ. 2569)</div>
+                      <div style="color: var(--gw-muted);">เลือกวิชา สาระ และวิธีแบ่งงานด้านบน แล้วกดดาวน์โหลดครบทั้ง 4 ฉบับรวดเดียว (.zip) หรือเลือกโหลดเฉพาะฉบับที่ต้องการได้เลยครับ</div>
+                    </div>
+                    <button type="button" id="btnDownload4PackZip" onclick="downloadAll4StrandTemplatesZip()" class="gw-btn-primary text-xs !py-2 !px-3.5 !font-bold shrink-0">
+                      <i data-lucide="package-check" class="w-4 h-4"></i>
+                      <span>📦 โหลดครบทั้ง 4 ฉบับรวดเดียว (.zip)</span>
+                    </button>
+                  </div>
+                  <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    <button type="button" onclick="downloadSpecificTemplateEdition('PREPOST_EXAM', 'STUDENT')" class="gw-btn-soft text-xs !py-2 !px-3 !font-bold justify-start border text-left" style="border-color: var(--gw-accent);">
+                      <i data-lucide="file-down" class="w-4 h-4 shrink-0"></i>
+                      <span>1️⃣ ฉบับที่ 1: ข้อสอบ Pre/Post — ฉบับนักเรียน (.docx)</span>
+                    </button>
+                    <button type="button" onclick="downloadSpecificTemplateEdition('PREPOST_EXAM', 'TEACHER')" class="gw-btn-soft text-xs !py-2 !px-3 !font-bold justify-start border text-left" style="border-color: var(--gw-danger-bd); color: var(--gw-danger-ink);">
+                      <i data-lucide="file-down" class="w-4 h-4 shrink-0"></i>
+                      <span>2️⃣ ฉบับที่ 2: ข้อสอบ Pre/Post — ฉบับครู+เฉลย (.docx)</span>
+                    </button>
+                    <button type="button" onclick="downloadSpecificTemplateEdition('TUTORING_STRAND', 'STUDENT')" class="gw-btn-soft text-xs !py-2 !px-3 !font-bold justify-start border text-left" style="border-color: var(--gw-accent);">
+                      <i data-lucide="file-down" class="w-4 h-4 shrink-0"></i>
+                      <span>3️⃣ ฉบับที่ 3: เอกสารยกระดับฯ — ฉบับนักเรียน (.docx)</span>
+                    </button>
+                    <button type="button" onclick="downloadSpecificTemplateEdition('TUTORING_STRAND', 'TEACHER')" class="gw-btn-soft text-xs !py-2 !px-3 !font-bold justify-start border text-left" style="border-color: var(--gw-danger-bd); color: var(--gw-danger-ink);">
+                      <i data-lucide="file-down" class="w-4 h-4 shrink-0"></i>
+                      <span>4️⃣ ฉบับที่ 4: เอกสารยกระดับฯ — ฉบับครู+เฉลย (.docx)</span>
+                    </button>
+                  </div>
+                  <div class="rounded-lg px-3 py-2 text-[11px] leading-relaxed border" style="background: var(--gw-input-bg); border-color: var(--gw-line); color: var(--gw-muted);">
+                    <strong style="color: var(--gw-ink);">วิธีอัปโหลดส่งคืนทั้ง 4 ฉบับ (ส่งทีละคู่ 2 ช่องด้านล่าง):</strong>
+                    ① เลือกประเภทงาน <strong>"📚 เอกสารยกระดับตามสาระฯ"</strong> → แนบ <strong>ฉบับที่ 3</strong> (ช่องซ้าย) คู่กับ <strong>ฉบับที่ 4</strong> (ช่องขวา) กดอัปโหลด (ระบบดึงเข้าคลังฝึกออนไลน์อัตโนมัติ) &nbsp;|&nbsp;
+                    ② เปลี่ยนประเภทงานเป็น <strong>"📝 ข้อสอบคู่ขนาน Pre-Post"</strong> (เลือกรอบ Pre หรือ Post) → แนบ <strong>ฉบับที่ 1</strong> (ช่องซ้าย) คู่กับ <strong>ฉบับที่ 2</strong> (ช่องขวา) กดอัปโหลด (ส่งเข้าหน้าตรวจ IOC 2 หน้าจออัตโนมัติ)
+                  </div>
+                </div>
+
+                <!-- Paired Upload Slots: Student Edition & Teacher Edition -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  <!-- Slot 1: Student Edition -->
+                  <div class="gw-subcard space-y-2.5 border" style="border-color: var(--gw-accent);">
+                    <div class="flex items-center justify-between gap-2">
+                      <span class="font-bold text-xs" style="color: var(--gw-accent);">📘 1. ไฟล์ฉบับนักเรียน (ห้ามมีเฉลย)</span>
+                      <span class="px-2 py-0.5 rounded-full text-[10px] font-bold" style="background: var(--gw-accent-soft); color: var(--gw-accent);">บล็อกเฉลยอัตโนมัติ</span>
+                    </div>
+                    <div>
+                      <label for="upDocxFile_STUDENT" class="gw-label !text-[11px]">เลือกไฟล์ Word ฉบับนักเรียน (.docx)</label>
+                      <input type="file" id="upDocxFile_STUDENT" accept=".docx,application/vnd.openxmlformats-officedocument.wordprocessingml.document" onchange="runSlotDocxPreCheck('STUDENT')"
+                        class="gw-input border-dashed cursor-pointer py-2 text-xs">
+                    </div>
+                    <div>
+                      <label for="upPdfFile_STUDENT" class="gw-label !text-[11px]">แนบ PDF ล็อกหน้าฉบับนักเรียน (ถ้ามี)</label>
+                      <input type="file" id="upPdfFile_STUDENT" accept=".pdf" onchange="onSlotPdfSelected('STUDENT')"
+                        class="gw-input border-dashed cursor-pointer py-2 text-xs">
+                      <div id="pdfStatus_STUDENT" class="text-[11px] mt-1" style="color: var(--gw-muted);"></div>
+                    </div>
+                    <div id="preCheckCard_STUDENT" class="hidden rounded-xl border p-3 text-xs space-y-1.5"></div>
+                  </div>
+
+                  <!-- Slot 2: Teacher Edition -->
+                  <div class="gw-subcard space-y-2.5 border" style="border-color: var(--gw-danger-bd);">
+                    <div class="flex items-center justify-between gap-2">
+                      <span class="font-bold text-xs" style="color: var(--gw-danger-ink);">📕 2. ไฟล์ฉบับครู (มีเฉลยและวิธีคิด)</span>
+                      <span class="px-2 py-0.5 rounded-full text-[10px] font-bold gw-badge-danger">ต้องมีเฉลย+วิธีคิด</span>
+                    </div>
+                    <div>
+                      <label for="upDocxFile_TEACHER" class="gw-label !text-[11px]">เลือกไฟล์ Word ฉบับครู (.docx)</label>
+                      <input type="file" id="upDocxFile_TEACHER" accept=".docx,application/vnd.openxmlformats-officedocument.wordprocessingml.document" onchange="runSlotDocxPreCheck('TEACHER')"
+                        class="gw-input border-dashed cursor-pointer py-2 text-xs">
+                    </div>
+                    <div>
+                      <label for="upPdfFile_TEACHER" class="gw-label !text-[11px]">แนบ PDF ล็อกหน้าฉบับครู (ถ้ามี)</label>
+                      <input type="file" id="upPdfFile_TEACHER" accept=".pdf" onchange="onSlotPdfSelected('TEACHER')"
+                        class="gw-input border-dashed cursor-pointer py-2 text-xs">
+                      <div id="pdfStatus_TEACHER" class="text-[11px] mt-1" style="color: var(--gw-muted);"></div>
+                    </div>
+                    <div id="preCheckCard_TEACHER" class="hidden rounded-xl border p-3 text-xs space-y-1.5"></div>
+                  </div>
+                </div>
+
+                <div id="autoSyncPracticeToggleBox" class="rounded-xl border px-3 py-2.5 text-xs space-y-1" style="background: var(--gw-accent-soft); border-color: var(--gw-line);">
+                  <label class="flex items-start gap-2 cursor-pointer font-bold" style="color: var(--gw-accent);">
+                    <input type="checkbox" id="chkAutoSyncPracticeOnUpload" checked class="mt-0.5 rounded">
+                    <span>⚡ ให้ระบบดึงสรุปความรู้และโจทย์แบบฝึก 4 ตัวเลือกจากไฟล์ที่ส่ง เข้า "คลังฝึกออนไลน์นักเรียน (เมนูย่อย 2)" ให้อัตโนมัติ</span>
+                  </label>
+                  <div class="pl-5 text-[11px]" style="color: var(--gw-muted);">
+                    เมื่อแนบไฟล์เอกสารยกระดับฯ (ฉบับครู หรือคู่ฉบับนักเรียน+ฉบับครู) ระบบจะสกัดสรุปความรู้ ส่วนที่ 1, โจทย์ตัวเลือก ส่วนที่ 2 และเฉลยวิธีคิด ส่วนที่ 3 เข้าห้องติวนักเรียนให้อัตโนมัติโดยไม่ต้องพิมพ์ซ้ำ
+                  </div>
+                </div>
+
+                <p class="text-xs" style="color: var(--gw-muted);">
+                  * สามารถเลือกส่งพร้อมกันทั้ง <strong>ฉบับนักเรียน + ฉบับครู</strong> ในคลิกเดียว (ระบบจะจับคู่ให้) หรือเลือกส่งแก้ไขเฉพาะฉบับใดฉบับหนึ่งก็ได้ครับ
+                </p>
+
+                <button type="button" id="btnUploadManuscript" onclick="submitCommitteeUpload()" class="gw-btn-primary w-full py-3">
+                  <i data-lucide="cloud-upload" class="w-4 h-4"></i>
+                  <span>อัปโหลดไฟล์ที่เลือกเข้า Google Drive (wkha@saraburi2.go.th)</span>
+                </button>
+              </div>
+
+              <!-- Right: Submission Status List -->
+              <div class="lg:col-span-5 gw-panel gw-reveal space-y-3">
+                <div class="flex flex-wrap items-center justify-between gap-2">
+                  <h3 class="text-base font-bold">สถานะการส่งต้นฉบับทั้ง 4 วิชา</h3>
+                  <button type="button" onclick="loadCommitteeSubmissions()" class="gw-btn-soft text-xs py-1 px-2.5">รีเฟรช</button>
+                </div>
+                <div class="gw-segment" role="group" aria-label="กรองรายการส่งงาน">
+                  <button type="button" id="btnCommFilterAll" class="is-active" onclick="setCommitteeSubFilter('ALL')">ทั้งหมด</button>
+                  <button type="button" id="btnCommFilterMine" onclick="setCommitteeSubFilter('MINE')">เฉพาะงานของฉัน</button>
+                </div>
+                <div id="committeeSubmissionsList" class="space-y-2.5 max-h-[440px] overflow-y-auto text-xs"></div>
+              </div>
+            </div>
+            </div>
+
+            <!-- Committee Subtab 2: Auto-Synced Practice Bank + Manual Review/Edit -->
+            <div id="commPanel_PRACTICE_BANK" class="hidden grid grid-cols-1 lg:grid-cols-12 gap-4">
+              <!-- Top Full-Width Auto-Sync Engine from Submitted Teacher Files -->
+              <div class="lg:col-span-12 gw-panel gw-reveal space-y-3">
+                <div class="flex flex-wrap items-center justify-between gap-3">
+                  <div class="space-y-0.5">
+                    <div class="flex flex-wrap items-center gap-2">
+                      <span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold whitespace-nowrap" style="background: var(--gw-accent-soft); color: var(--gw-accent);">ระบบอัตโนมัติ (Auto-Extract)</span>
+                      <h2 class="text-base font-bold">ดึงโจทย์และสรุปความรู้จากไฟล์เอกสารที่ครูส่ง เข้าคลังฝึกออนไลน์อัตโนมัติ</h2>
+                    </div>
+                    <p class="text-xs" style="color: var(--gw-muted);">
+                      ระบบสร้างโจทย์ฝึกออนไลน์ให้นักเรียนอัตโนมัติจากไฟล์เอกสารยกระดับฯ (.docx) ที่คณะกรรมการส่งในเมนูย่อยที่ 1 หรือกดซิงค์ย้อนหลัง/เลือกไฟล์จากเครื่องได้ทันที (หากต้องการปรับแก้ถ้อยคำรายข้อ ใช้ฟอร์มด้านซ้ายด้านล่างได้เลย)
+                    </p>
+                  </div>
+                  <div class="flex flex-wrap items-center gap-2">
+                    <select id="pbAutoSyncSubject" aria-label="เลือกรายวิชาที่ต้องการซิงค์โจทย์จากไฟล์ที่ครูส่ง" class="gw-input !w-auto !py-1.5 text-xs font-bold">
+                      <option value="ALL">ซิงค์ครบทุกวิชาที่ครูส่งแล้ว</option>
+                      <option value="61">เฉพาะภาษาไทย (61)</option>
+                      <option value="64">เฉพาะคณิตศาสตร์ (64)</option>
+                      <option value="65">เฉพาะวิทยาศาสตร์ฯ (65)</option>
+                      <option value="63">เฉพาะภาษาอังกฤษ (63)</option>
+                    </select>
+                    <button type="button" id="btnSyncPracticeFromSubmitted" onclick="syncPracticeBankFromSubmittedDocs()" class="gw-btn-primary !py-2 !px-3.5 text-xs font-bold">
+                      <i data-lucide="sparkles" class="w-4 h-4"></i>
+                      <span>ดึงโจทย์จากไฟล์ที่ครูส่งแล้วอัตโนมัติ</span>
+                    </button>
+                    <input type="file" id="pbQuickImportDocxInput" accept=".docx,application/vnd.openxmlformats-officedocument.wordprocessingml.document" multiple class="hidden" onchange="importPracticeFromLocalDocxFiles(this)">
+                    <button type="button" id="btnPbLocalDocxImport" onclick="document.getElementById('pbQuickImportDocxInput').click()" class="gw-btn-soft !py-2 !px-3 text-xs font-bold">
+                      <i data-lucide="file-up" class="w-4 h-4"></i>
+                      <span>เลือกไฟล์ .docx จากเครื่อง</span>
+                    </button>
+                  </div>
+                </div>
+                <div id="pbAutoSyncResultBox" class="hidden rounded-xl border px-3 py-2 text-xs" style="background: var(--gw-input-bg); border-color: var(--gw-line);"></div>
+              </div>
+
+              <div class="lg:col-span-6 gw-panel gw-reveal space-y-3">
+                <div class="flex items-center justify-between gap-2 pb-2 border-b" style="border-color: var(--gw-line);">
+                  <div>
+                    <h3 id="pbFormTitle" class="text-base font-bold">ตรวจสอบ / แก้ไขรายข้อ หรือเพิ่มโจทย์เสริมด้วยตนเอง</h3>
+                    <p class="text-xs" style="color: var(--gw-muted);">ใช้กรณีต้องการปรับแก้คำถาม/ตัวเลือกที่ระบบดึงมา หรือเพิ่มโจทย์พิเศษเพิ่มเติม</p>
+                  </div>
+                  <button type="button" id="btnPbCancelEdit" onclick="resetPracticeBankForm()" class="hidden gw-btn-soft text-xs !py-1.5 !px-3">ยกเลิกแก้ไข</button>
+                </div>
+                <input type="hidden" id="pbEditItemId" value="">
+
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+                  <div>
+                    <label for="pbSubject" class="gw-label">รายวิชา</label>
+                    <select id="pbSubject" onchange="onPbSubjectChange()" class="gw-input text-xs">
+                      <option value="61">ภาษาไทย (61)</option>
+                      <option value="64">คณิตศาสตร์ (64)</option>
+                      <option value="65">วิทยาศาสตร์ฯ (65)</option>
+                      <option value="63">ภาษาอังกฤษ (63)</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label for="pbStrand" class="gw-label">สาระที่</label>
+                    <select id="pbStrand" onchange="onPbStrandChange()" class="gw-input text-xs"></select>
+                  </div>
+                  <div>
+                    <label for="pbIndicator" class="gw-label">ตัวชี้วัด</label>
+                    <select id="pbIndicator" class="gw-input text-xs"></select>
+                  </div>
+                </div>
+
+                <div>
+                  <label for="pbSummaryTitle" class="gw-label">หัวข้อสรุปความรู้ / เทคนิคจำสั้น</label>
+                  <input type="text" id="pbSummaryTitle" placeholder="เช่น หลักการหา ค.ร.น. และ ห.ร.ม. ในโจทย์ปัญหา" class="gw-input text-xs">
+                </div>
+                <div>
+                  <label for="pbSummaryText" class="gw-label">เนื้อหาสรุปสั้นก่อนทำโจทย์</label>
+                  <textarea id="pbSummaryText" rows="2" placeholder="สรุปหลักการสำคัญสั้น ๆ ให้นักเรียนทบทวนก่อนตอบ..." class="gw-input text-xs"></textarea>
+                </div>
+                <div>
+                  <label for="pbQuestionText" class="gw-label">โจทย์คำถาม</label>
+                  <textarea id="pbQuestionText" rows="3" placeholder="พิมพ์โจทย์คำถามให้นักเรียนเลือกตอบ..." class="gw-input text-xs"></textarea>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  <div>
+                    <label for="pbChoice1" class="text-xs font-bold block mb-1">ตัวเลือก 1</label>
+                    <input type="text" id="pbChoice1" placeholder="คำตอบข้อ 1" class="gw-input !py-1.5 text-xs">
+                  </div>
+                  <div>
+                    <label for="pbChoice2" class="text-xs font-bold block mb-1">ตัวเลือก 2</label>
+                    <input type="text" id="pbChoice2" placeholder="คำตอบข้อ 2" class="gw-input !py-1.5 text-xs">
+                  </div>
+                  <div>
+                    <label for="pbChoice3" class="text-xs font-bold block mb-1">ตัวเลือก 3</label>
+                    <input type="text" id="pbChoice3" placeholder="คำตอบข้อ 3" class="gw-input !py-1.5 text-xs">
+                  </div>
+                  <div>
+                    <label for="pbChoice4" class="text-xs font-bold block mb-1">ตัวเลือก 4</label>
+                    <input type="text" id="pbChoice4" placeholder="คำตอบข้อ 4" class="gw-input !py-1.5 text-xs">
+                  </div>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5 items-start">
+                  <div>
+                    <label for="pbCorrectChoice" class="gw-label">เฉลยข้อที่ถูก</label>
+                    <select id="pbCorrectChoice" class="gw-input text-xs font-bold">
+                      <option value="1">ข้อ 1</option>
+                      <option value="2">ข้อ 2</option>
+                      <option value="3">ข้อ 3</option>
+                      <option value="4">ข้อ 4</option>
+                    </select>
+                  </div>
+                  <div class="sm:col-span-2">
+                    <label for="pbExplanation" class="gw-label">คำอธิบายเฉลยละเอียด</label>
+                    <textarea id="pbExplanation" rows="2" placeholder="อธิบายวิธีคิดเมื่อนักเรียนตอบเสร็จ..." class="gw-input text-xs"></textarea>
+                  </div>
+                </div>
+                <button type="button" id="btnPbSave" onclick="savePracticeBankItem()" class="gw-btn-primary w-full py-2.5 text-xs">
+                  <i data-lucide="save" class="w-4 h-4"></i>
+                  <span>บันทึกข้อสอบเข้าคลังฝึกออนไลน์</span>
+                </button>
+              </div>
+
+              <div class="lg:col-span-6 gw-panel gw-reveal space-y-3">
+                <div class="flex flex-wrap items-center justify-between gap-2 pb-2 border-b" style="border-color: var(--gw-line);">
+                  <div>
+                    <h3 class="text-base font-bold">รายการโจทย์ในคลังฝึกออนไลน์</h3>
+                    <span id="pbCountBadge" class="text-xs font-bold gw-tabular" style="color: var(--gw-accent);">0 ข้อ</span>
+                  </div>
+                  <select id="pbFilterSubject" aria-label="กรองโจทย์ตามรายวิชา" onchange="loadPracticeBankList()" class="gw-input !w-auto !py-1.5 text-xs font-bold">
+                    <option value="ALL">ครบทุกวิชา</option>
+                    <option value="61">ภาษาไทย (61)</option>
+                    <option value="64">คณิตศาสตร์ (64)</option>
+                    <option value="65">วิทยาศาสตร์ฯ (65)</option>
+                    <option value="63">ภาษาอังกฤษ (63)</option>
+                  </select>
+                </div>
+                <div id="pbItemsListBody" class="space-y-2.5 max-h-[600px] overflow-y-auto text-xs"></div>
+              </div>
+            </div>
+
+            <!-- Committee Subtab 3: Split-Screen Exam IOC Studio (Left = IOC Per-Item | Right = Exam Per-Item) -->
+            <div id="commPanel_IOC" class="hidden space-y-4">
+              <!-- Top Header & Subject Selector -->
+              <div class="gw-panel gw-reveal space-y-3">
+                <div class="flex flex-wrap items-center justify-between gap-2 pb-2.5 border-b" style="border-color: var(--gw-line);">
+                  <div>
+                    <h2 class="text-base sm:text-lg font-bold">ตรวจประเมินความเที่ยงตรงเชิงเนื้อหาของข้อสอบ (IOC: +1 / 0 / -1) แบบ 2 หน้าจอคู่ขนาน</h2>
+                    <p class="text-xs" style="color: var(--gw-muted);">เลือกรอบสอบและรายวิชาแล้วตรวจเทียบแบบข้อต่อข้อ — ฝั่งซ้ายลงคะแนน IOC รายข้อ | ฝั่งขวาดูตัวข้อสอบรายข้อพร้อมซิงค์เลื่อนอัตโนมัติ</p>
+                  </div>
+                  <div class="flex flex-wrap items-center gap-2">
+                    <select id="iocRound" aria-label="เลือกรอบข้อสอบประเมิน IOC" onchange="loadExamIocData()" class="gw-input !w-auto !py-1.5 text-xs font-bold">
+                      <option value="PRE">Pre O-NET (ก่อนติว)</option>
+                      <option value="POST">Post O-NET (หลังติว)</option>
+                    </select>
+                    <select id="iocSubject" aria-label="เลือกรายวิชาประเมิน IOC" onchange="loadExamIocData()" class="gw-input !w-auto !py-1.5 text-xs font-bold">
+                      <option value="61">ภาษาไทย (61)</option>
+                      <option value="64">คณิตศาสตร์ (64)</option>
+                      <option value="65">วิทยาศาสตร์ฯ (65)</option>
+                      <option value="63">ภาษาอังกฤษ (63)</option>
+                    </select>
+                    <button type="button" onclick="loadExamIocData(true)" class="gw-btn-soft !py-1.5 !px-3 text-xs font-bold">รีเฟรช</button>
+                  </div>
+                </div>
+
+                <!-- Quorum & IOC Summary Banner -->
+                <div id="iocQuorumSummaryBox" class="rounded-xl border px-3 py-2 space-y-1.5 text-xs" style="background: var(--gw-input-bg); border-color: var(--gw-line);"></div>
+
+                <!-- Quick Toolbar -->
+                <div class="flex flex-wrap items-center justify-between gap-2">
+                  <div class="flex flex-wrap gap-2">
+                    <button type="button" id="btnIocMarkAllPlusOne" onclick="markAllIocPlusOne()" class="gw-btn-soft text-xs !py-2 !px-3 font-bold border" style="border-color: var(--gw-accent); color: var(--gw-accent);">
+                      ⚡ ให้ +1 (สอดคล้อง) ทุกข้อตั้งต้น
+                    </button>
+                    <button type="button" onclick="previewAndPrintIocA4Report('COMM')" class="gw-btn-soft text-xs !py-2 !px-3 font-bold">
+                      🖨️ พิมพ์สรุปผล IOC (A4)
+                    </button>
+                    <button type="button" onclick="exportOfficialIocDocx('COMM')" class="gw-btn-soft text-xs !py-2 !px-3 font-bold">
+                      📄 ดาวน์โหลดรายงาน IOC (.docx)
+                    </button>
+                  </div>
+                  <div id="iocReadOnlyBadge" class="hidden text-xs font-bold px-3 py-1 rounded-full gw-badge-warn whitespace-nowrap">
+                    โหมดอ่านอย่างเดียว (วิชานี้ไม่ใช่รายวิชาที่ท่านได้รับมอบหมาย)
+                  </div>
+                </div>
+
+                <!-- Mobile Screen Switcher (Visible below lg breakpoint) -->
+                <div class="lg:hidden gw-segment" role="group" aria-label="สลับหน้าจอประเมิน IOC บนมือถือ">
+                  <button type="button" id="btnIocMobBoth" class="is-active" onclick="setIocMobilePaneMode('BOTH')">แสดงคู่</button>
+                  <button type="button" id="btnIocMobLeft" onclick="setIocMobilePaneMode('LEFT')">ฝั่งซ้าย: ประเมิน IOC</button>
+                  <button type="button" id="btnIocMobRight" onclick="setIocMobilePaneMode('RIGHT')">ฝั่งขวา: ข้อสอบรายข้อ</button>
+                </div>
+              </div>
+
+              <!-- 2-Screen Split Studio: Left = IOC Per-Item Evaluation | Right = Exam Per-Item Preview -->
+              <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 items-start">
+                <!-- LEFT SCREEN: Per-item IOC Evaluation -->
+                <div id="iocSplitLeftCol" class="lg:col-span-6 gw-panel space-y-3">
+                  <div class="flex flex-wrap items-center justify-between gap-2 pb-2 border-b" style="border-color: var(--gw-line);">
+                    <div>
+                      <h3 class="text-sm sm:text-base font-bold">📝 ฝั่งซ้าย: ประเมิน IOC รายข้อ (+1 / 0 / -1)</h3>
+                      <p class="text-[11px]" style="color: var(--gw-muted);">คลิกที่ข้อใดก็ได้เพื่อซิงค์เลื่อนดูโจทย์ฝั่งขวาทันที</p>
+                    </div>
+                    <div class="flex items-center gap-1.5 flex-wrap">
+                      <span id="iocScoredProgressBadge" class="px-2.5 py-0.5 rounded-full text-[11px] font-bold gw-tabular whitespace-nowrap" style="background: var(--gw-accent-soft); color: var(--gw-accent);">ให้คะแนนแล้ว 0/0 ข้อ</span>
+                      <select id="iocLeftItemFilter" aria-label="กรองข้อประเมิน IOC" onchange="renderCommitteeIocLeftItemsOnly()" class="gw-input !w-auto !py-1 !px-2 text-[11px] font-bold">
+                        <option value="ALL">แสดงทุกข้อ</option>
+                        <option value="UNSCORED">เฉพาะข้อที่ยังไม่ให้คะแนน</option>
+                        <option value="REVISE">เฉพาะข้อที่ IOC &lt; 0.50</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div id="iocItemsEvaluationList" class="ioc-pane-scroll space-y-2.5"></div>
+
+                  <!-- Overall Note & Submit right inside Left Screen -->
+                  <div class="space-y-2 pt-2.5 border-t" style="border-color: var(--gw-line);">
+                    <div>
+                      <label for="iocSummaryNote" class="gw-label">ความเห็นภาพรวมของกรรมการต่อข้อสอบชุดนี้ (ถ้ามี)</label>
+                      <input type="text" id="iocSummaryNote" placeholder="เช่น ข้อสอบตรงตัวชี้วัด เหมาะสมกับระดับชั้น ป.6 พร้อมนำไปใช้สอบจริง..." class="gw-input text-xs">
+                    </div>
+                    <button type="button" id="btnSaveMyIoc" onclick="saveCommitteeIocReview()" class="gw-btn-primary w-full py-2.5 text-xs">
+                      <i data-lucide="check-circle-2" class="w-4 h-4"></i>
+                      <span>💾 บันทึกผลประเมิน IOC ของฉัน</span>
+                    </button>
+                  </div>
+                </div>
+
+                <!-- RIGHT SCREEN: Exam Items Preview (Per-Item + Original File View) -->
+                <div id="iocSplitRightCol" class="lg:col-span-6 gw-panel space-y-3">
+                  <div class="flex flex-wrap items-center justify-between gap-2 pb-2 border-b" style="border-color: var(--gw-line);">
+                    <div class="min-w-0">
+                      <div class="flex flex-wrap items-center gap-1.5">
+                        <h3 class="text-sm sm:text-base font-bold">📖 ฝั่งขวา: ข้อสอบรายข้อ</h3>
+                        <span id="iocRightSourceBadge" class="px-2 py-0.5 rounded-full text-[10px] font-bold whitespace-nowrap" style="background: var(--gw-accent-soft); color: var(--gw-accent);">กำลังโหลด...</span>
+                      </div>
+                      <p class="text-[11px]" style="color: var(--gw-muted);">แสดงตัวโจทย์ ตัวเลือก ภาพประกอบ ตาราง และเฉลยวิธีคิดรายข้อ</p>
+                    </div>
+                    <div class="flex flex-wrap items-center gap-1.5">
+                      <button type="button" id="btnIocRightModeItems" onclick="setIocRightViewMode('ITEMS')" class="gw-btn-soft !py-1 !px-2.5 text-[11px] font-bold border" style="border-color: var(--gw-accent); color: var(--gw-accent);">
+                        📋 รายข้อ
+                      </button>
+                      <button type="button" id="btnIocRightModeDoc" onclick="setIocRightViewMode('DOC')" class="gw-btn-soft !py-1 !px-2.5 text-[11px] font-bold">
+                        📄 ไฟล์ต้นฉบับ
+                      </button>
+                      <button type="button" id="btnToggleIocShowKey" onclick="toggleIocRightShowKey()" class="gw-btn-soft !py-1 !px-2.5 text-[11px] font-bold">
+                        🔑 เฉลย: แสดง
+                      </button>
+                    </div>
+                  </div>
+
+                  <!-- Mode 1: Per-Item Exam Cards -->
+                  <div id="iocExamItemsPreviewList" class="ioc-pane-scroll space-y-2.5"></div>
+
+                  <!-- Mode 2: Original Uploaded PDF / Docx Preview + Links -->
+                  <div id="iocRawDocPreviewBox" class="hidden space-y-2.5">
+                    <div id="iocRefDocsBox" class="space-y-1.5 text-xs"></div>
+                    <div id="iocRawDocIframeWrap" class="rounded-xl border overflow-hidden" style="border-color: var(--gw-line); min-height: 520px; background: var(--gw-input-bg);"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- ==============================================================
+               TAB 3: P.6 SUBJECT TEACHER / INSTRUCTOR WORKSPACE
+               ============================================================== -->
+          <section id="panel_INSTRUCTOR" class="hidden space-y-4">
+            <!-- Sub-navigation for P.6 Subject Teacher -->
+            <div class="gw-segment gw-reveal">
+              <button type="button" onclick="switchInstructorSubTab('MATERIALS')" id="instSub_MATERIALS" class="is-active">
+                1. ดาวน์โหลดเอกสารติวกลาง (4 วิชา 15 สาระ)
+              </button>
+              <button type="button" onclick="switchInstructorSubTab('WEAKNESS')" id="instSub_WEAKNESS">
+                2. วิเคราะห์จุดอ่อนรายตัวชี้วัด (&lt;50%) &amp; คะแนน Pre/Post
+              </button>
+              <button type="button" onclick="switchInstructorSubTab('PRACTICE')" id="instSub_PRACTICE">
+                3. ติดตามการเข้าฝึกทำโจทย์ออนไลน์ของนักเรียน
+              </button>
+            </div>
+
+            <!-- Instructor Subtab 1: Download 15-Strand Tutoring Booklets -->
+            <div id="instPanel_MATERIALS" class="space-y-4">
+              <div class="gw-panel gw-reveal space-y-3.5">
+                <div class="flex flex-wrap items-center justify-between gap-2 pb-3 border-b" style="border-color: var(--gw-line);">
+                  <div>
+                    <h2 class="text-base sm:text-lg font-bold">คลังเอกสารติวกลาง กลุ่มโรงเรียนศรีเสาวภาค (ครบ 4 วิชา 15 สาระ)</h2>
+                    <p class="text-xs" style="color: var(--gw-muted);">ดาวน์โหลดไฟล์ PDF ล็อกหน้าพร้อมพิมพ์แจกนักเรียน หรือไฟล์ Word (.docx) ที่ผ่านการตรวจแล้วไปใช้สอนเสริมได้ทันที</p>
+                  </div>
+                  <button type="button" onclick="loadInstructorMaterials()" class="gw-btn-soft text-xs !font-bold">
+                    <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i>
+                    <span>อัปเดตรายการไฟล์ล่าสุด</span>
+                  </button>
+                </div>
+
+                <div class="gw-segment" role="group" aria-label="กรองรายวิชาเอกสารติว">
+                  <button type="button" id="instMatSub_ALL" class="is-active" onclick="filterInstructorMaterials('ALL')">ครบทั้ง 4 วิชา (15 สาระ)</button>
+                  <button type="button" id="instMatSub_61" onclick="filterInstructorMaterials('61')">ภาษาไทย (5 สาระ)</button>
+                  <button type="button" id="instMatSub_64" onclick="filterInstructorMaterials('64')">คณิตศาสตร์ (3 สาระ)</button>
+                  <button type="button" id="instMatSub_65" onclick="filterInstructorMaterials('65')">วิทยาศาสตร์ฯ (4 สาระ)</button>
+                  <button type="button" id="instMatSub_63" onclick="filterInstructorMaterials('63')">ภาษาอังกฤษ (3 สาระ)</button>
+                </div>
+
+                <div class="flex flex-wrap gap-2 text-xs" role="group" aria-label="กรองประเภทเอกสารครูผู้สอน">
+                  <button type="button" id="instMatCat_ALL" onclick="filterInstructorMaterialCategory('ALL')" class="gw-btn-primary !py-1.5 !px-3 text-xs">ทุกประเภท</button>
+                  <button type="button" id="instMatCat_MERGED_BOOK" onclick="filterInstructorMaterialCategory('MERGED_BOOK')" class="gw-btn-soft !py-1.5 !px-3 text-xs">📚 เล่มรวมสมบูรณ์</button>
+                  <button type="button" id="instMatCat_PREPOST_EXAM" onclick="filterInstructorMaterialCategory('PREPOST_EXAM')" class="gw-btn-soft !py-1.5 !px-3 text-xs">📝 ข้อสอบ Pre-Post</button>
+                  <button type="button" id="instMatCat_TUTORING_STRAND" onclick="filterInstructorMaterialCategory('TUTORING_STRAND')" class="gw-btn-soft !py-1.5 !px-3 text-xs">📄 เอกสารตามสาระฯ</button>
+                </div>
+
+                <div id="instFeaturedMaterials" class="hidden space-y-2"></div>
+                <div id="instMaterialsSummaryBar" class="text-xs font-bold" style="color: var(--gw-accent);"></div>
+                <div id="instMaterialsGrid" class="grid grid-cols-1 md:grid-cols-2 gap-3.5"></div>
+              </div>
+            </div>
+
+            <!-- Instructor Subtab 2: Weakness Analysis (<50%) & Pre/Post Scores -->
+            <div id="instPanel_WEAKNESS" class="hidden space-y-4">
+              <div class="gw-panel gw-reveal space-y-4">
+                <div class="flex flex-wrap items-end justify-between gap-3 pb-3 border-b" style="border-color: var(--gw-line);">
+                  <div class="flex flex-wrap gap-3">
+                    <div>
+                      <label for="instWeakSchoolId" class="gw-label">โรงเรียนของท่าน</label>
+                      <select id="instWeakSchoolId" onchange="loadInstructorWeaknessView()" class="gw-input"></select>
+                    </div>
+                    <div>
+                      <label for="instWeakSubjectCode" class="gw-label">รายวิชาที่ต้องการวิเคราะห์จุดอ่อน</label>
+                      <select id="instWeakSubjectCode" onchange="loadInstructorWeaknessView()" class="gw-input">
+                        <option value="61">ภาษาไทย (61)</option>
+                        <option value="64">คณิตศาสตร์ (64)</option>
+                        <option value="65">วิทยาศาสตร์และเทคโนโลยี (65)</option>
+                        <option value="63">ภาษาอังกฤษ (63)</option>
+                      </select>
+                    </div>
+                  </div>
+                  <button type="button" onclick="loadInstructorWeaknessView()" class="gw-btn-soft text-xs !font-bold">
+                    <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i>
+                    <span>รีเฟรชผลวิเคราะห์</span>
+                  </button>
+                </div>
+
+                <div id="instWeakKpiCards" class="grid grid-cols-1 sm:grid-cols-4 gap-3.5"></div>
+              </div>
+
+              <div class="grid grid-cols-1 lg:grid-cols-12 gap-4">
+                <div class="lg:col-span-6 gw-panel gw-reveal space-y-3">
+                  <h3 class="text-base font-bold">ลำดับตัวชี้วัดจุดอ่อน (&lt;50%) ที่ต้องเร่งติวเสริม</h3>
+                  <div id="instWeakIndicatorsBox" class="space-y-2 max-h-[460px] overflow-y-auto text-xs"></div>
+                </div>
+                <div class="lg:col-span-6 gw-panel gw-reveal space-y-3">
+                  <h3 class="text-base font-bold">คะแนน Pre O-NET เทียบ Post O-NET รายบุคคล</h3>
+                  <div id="instWeakStudentsTable" class="overflow-x-auto max-h-[460px] text-xs"></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Instructor Subtab 3: Online Practice Tracking per Student -->
+            <div id="instPanel_PRACTICE" class="hidden space-y-4">
+              <div class="gw-panel gw-reveal space-y-4">
+                <div class="flex flex-wrap items-end justify-between gap-3 pb-3 border-b" style="border-color: var(--gw-line);">
+                  <div class="flex flex-wrap gap-3">
+                    <div>
+                      <label for="instPracSchoolId" class="gw-label">โรงเรียนของท่าน</label>
+                      <select id="instPracSchoolId" onchange="loadInstructorPracticeTracking()" class="gw-input"></select>
+                    </div>
+                    <div>
+                      <label for="instPracSubjectCode" class="gw-label">กรองตามรายวิชา</label>
+                      <select id="instPracSubjectCode" onchange="loadInstructorPracticeTracking()" class="gw-input">
+                        <option value="ALL">รวมครบทั้ง 4 วิชา</option>
+                        <option value="61">ภาษาไทย (61)</option>
+                        <option value="64">คณิตศาสตร์ (64)</option>
+                        <option value="65">วิทยาศาสตร์และเทคโนโลยี (65)</option>
+                        <option value="63">ภาษาอังกฤษ (63)</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label for="instPracCompletionFilter" class="gw-label">สถานะการเข้าฝึก</label>
+                      <select id="instPracCompletionFilter" onchange="renderInstructorPracticeTable()" class="gw-input">
+                        <option value="ALL">นักเรียนทั้งหมด</option>
+                        <option value="ACTIVE">เข้าฝึกทำโจทย์แล้ว</option>
+                        <option value="INACTIVE">ยังไม่เคยเข้าฝึก</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label for="instPracSortBy" class="gw-label">เรียงลำดับตาม</label>
+                      <select id="instPracSortBy" onchange="renderInstructorPracticeTable()" class="gw-input">
+                        <option value="NO">เรียงตามเลขที่</option>
+                        <option value="PROGRESS_DESC">ความก้าวหน้ามาก → น้อย</option>
+                        <option value="PROGRESS_ASC">ความก้าวหน้าน้อย → มาก</option>
+                      </select>
+                    </div>
+                  </div>
+                  <button type="button" onclick="loadInstructorPracticeTracking()" class="gw-btn-soft text-xs !font-bold">
+                    <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i>
+                    <span>อัปเดตความก้าวหน้าล่าสุด</span>
+                  </button>
+                </div>
+
+                <div id="instPracKpiCards" class="grid grid-cols-1 sm:grid-cols-4 gap-3.5"></div>
+                <div id="instPracStudentsTable" class="overflow-x-auto text-xs"></div>
+              </div>
+            </div>
+          </section>
+
+          <!-- ==============================================================
+               TAB 4: SCHOOL ACADEMIC TEACHER (ROSTER, DIGITAL ANSWER SHEET, A4 REPORT)
+               ============================================================== -->
+          <section id="panel_ACADEMIC" class="hidden space-y-4">
+            <!-- Sub-navigation -->
+            <div class="gw-segment gw-reveal">
+              <button type="button" onclick="switchAcademicSubTab('GRADING')" id="acadSub_GRADING" class="is-active">
+                1. กรอกกระดาษคำตอบนักเรียน (ตรวจอัตโนมัติ 5 รูปแบบ)
+              </button>
+              <button type="button" onclick="switchAcademicSubTab('REPORT')" id="acadSub_REPORT">
+                2. สรุปคะแนน Pre vs Post & พิมพ์รายงาน A4
+              </button>
+              <button type="button" onclick="switchAcademicSubTab('ROSTER')" id="acadSub_ROSTER">
+                3. จัดการรายชื่อนักเรียน & รีเซ็ตรหัสผ่าน
+              </button>
+              <button type="button" onclick="switchAcademicSubTab('MATERIALS')" id="acadSub_MATERIALS">
+                4. คลังข้อสอบ Pre-Post & เอกสารติว (โหลดให้ครู/นักเรียน)
+              </button>
+            </div>
+
+            <!-- Academic Subtab 1: Digital Answer Sheet -->
+            <div id="acadPanel_GRADING" class="gw-panel gw-reveal space-y-4">
+              <div class="pb-3 border-b" style="border-color: var(--gw-line);">
+                <h2 class="text-base sm:text-lg font-bold">กระดาษคำตอบดิจิทัล Pre O-NET / Post O-NET (คำนวณคะแนนทศนิยมเต็ม 100 อัตโนมัติ)</h2>
+                <p class="text-xs" style="color: var(--gw-muted);">รองรับครบทั้ง ปรนัย 4 ตัวเลือก, เรียงลำดับ (ไทย), เขียนตอบ 0–15 (ไทย), ระบายตัวเลข (คณิต 7.125), และเลือกตอบเชิงซ้อน (วิทย์)</p>
+              </div>
+
+              <div class="grid grid-cols-1 sm:grid-cols-4 gap-3 items-end">
+                <div>
+                  <label for="gradeSchoolId" class="gw-label">โรงเรียน</label>
+                  <select id="gradeSchoolId" onchange="loadGradingSheetData()" class="gw-input"></select>
+                </div>
+                <div>
+                  <label for="gradeRound" class="gw-label">รอบการทดสอบ</label>
+                  <select id="gradeRound" onchange="loadGradingSheetData()" class="gw-input">
+                    <option value="PRE">Pre O-NET (สอบก่อนติว)</option>
+                    <option value="POST">Post O-NET (สอบหลังติว)</option>
+                  </select>
+                </div>
+                <div>
+                  <label for="gradeSubjectCode" class="gw-label">รายวิชา</label>
+                  <select id="gradeSubjectCode" onchange="loadGradingSheetData()" class="gw-input">
+                    <option value="61">ภาษาไทย (22 ข้อ = 100 คะแนน)</option>
+                    <option value="64">คณิตศาสตร์ (15 ข้อ = 100 คะแนน)</option>
+                    <option value="65">วิทยาศาสตร์ฯ (20 ข้อ = 100 คะแนน)</option>
+                    <option value="63">ภาษาอังกฤษ (32 ข้อ = 100 คะแนน)</option>
+                  </select>
+                </div>
+                <div>
+                  <label for="gradeStudentId" class="gw-label">เลือกนักเรียน</label>
+                  <select id="gradeStudentId" onchange="onGradeStudentChange()" class="gw-input"></select>
+                </div>
+              </div>
+
+              <!-- Rapid Keyboard Grading Bar -->
+              <div id="gradeRapidToolbar" class="gw-subcard flex flex-wrap items-center justify-between gap-2 text-xs">
+                <div class="flex flex-wrap items-center gap-2">
+                  <span id="gradeSessionCounter" class="px-2.5 py-1 rounded-full font-bold gw-tabular" style="background: var(--gw-accent-soft); color: var(--gw-accent);">ตรวจแล้ว 0 / 0 คน</span>
+                  <span id="gradeAnsweredCounter" class="px-2.5 py-1 rounded-full font-bold gw-tabular gw-badge-info">ตอบแล้ว 0 / 0 ข้อ</span>
+                  <span id="gradeExistingBadge" class="hidden px-2.5 py-1 rounded-full font-bold gw-badge-success"></span>
+                </div>
+                <div style="color: var(--gw-muted);">
+                  ⌨️ <b>คีย์ลัดตรวจไว:</b> พิมพ์เลข <b>1–4</b> เลือกและข้ามข้ออัตโนมัติ | <b>↑↓</b> เลื่อนข้อ | <b>Backspace</b> ล้างข้อ | <b>Ctrl+Enter</b> บันทึกและไปคนถัดไป
+                </div>
+              </div>
+
+              <!-- Dynamic Answer Sheet Grid -->
+              <div id="digitalAnswerSheetContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 pt-1"></div>
+
+              <div class="flex flex-wrap items-center justify-between gap-3 pt-3 border-t" style="border-color: var(--gw-line);">
+                <div id="lastGradedScoreBanner" class="text-sm font-bold gw-tabular" style="color: var(--gw-accent);"></div>
+                <div class="flex flex-wrap gap-2">
+                  <button type="button" onclick="submitAnswerSheet(false)" class="gw-btn-soft px-4 py-3 text-xs !font-bold">
+                    <i data-lucide="check-circle-2" class="w-4 h-4"></i>
+                    <span>ตรวจคำตอบและบันทึกคะแนน</span>
+                  </button>
+                  <button type="button" id="btnSaveAndNextStudent" onclick="submitAnswerSheet(true)" class="gw-btn-primary px-5 py-3 text-xs">
+                    <i data-lucide="fast-forward" class="w-4 h-4"></i>
+                    <span>บันทึกและไปคนถัดไป ➔</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Academic Subtab 2: Pre vs Post Analytics & Live A4 Print Report -->
+            <div id="acadPanel_REPORT" class="hidden space-y-4">
+              <div class="gw-panel gw-reveal space-y-4">
+                <div class="flex flex-wrap items-end justify-between gap-3">
+                  <div class="flex flex-wrap gap-3">
+                    <div>
+                      <label for="repSchoolId" class="gw-label">เลือกโรงเรียน</label>
+                      <select id="repSchoolId" onchange="loadSchoolAnalyticsReport()" class="gw-input"></select>
+                    </div>
+                    <div>
+                      <label for="repSubjectCode" class="gw-label">เลือกรายวิชา</label>
+                      <select id="repSubjectCode" onchange="loadSchoolAnalyticsReport()" class="gw-input">
+                        <option value="61">ภาษาไทย (61)</option>
+                        <option value="64">คณิตศาสตร์ (64)</option>
+                        <option value="65">วิทยาศาสตร์และเทคโนโลยี (65)</option>
+                        <option value="63">ภาษาอังกฤษ (63)</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div class="flex flex-wrap gap-2">
+                    <button type="button" id="btnExportAnalyticsDocx" onclick="exportOfficialAnalyticsDocx()" class="gw-btn-soft text-xs !font-bold">
+                      <i data-lucide="file-text" class="w-4 h-4"></i>
+                      <span>ส่งออกไฟล์ Word มาตรฐาน (.docx)</span>
+                    </button>
+                    <button type="button" onclick="triggerPrintA4Report()" class="gw-btn-primary text-xs">
+                      <i data-lucide="printer" class="w-4 h-4"></i>
+                      <span>สั่งพิมพ์รายงานวิเคราะห์ผลขนาด A4 (TH SarabunPSK)</span>
+                    </button>
+                  </div>
+                </div>
+
+                <div id="analyticsKpiCards" class="grid grid-cols-1 sm:grid-cols-3 gap-4"></div>
+              </div>
+
+              <!-- Live A4 Paper Sheet Preview -->
+              <div class="gw-panel">
+                <div class="text-xs font-bold mb-3 text-center" style="color: var(--gw-accent);">
+                  พรีวิวกระดาษรายงานราชการขนาด A4 (ฟอนต์ TH SarabunPSK 16pt | ตรงกับตอนสั่งพิมพ์จริง 100%)
+                </div>
+                <div class="a4-preview-scroll">
+                  <div id="liveReportPaperPreview" class="print-sheet"></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Academic Subtab 3: Student Roster & Password Reset -->
+            <div id="acadPanel_ROSTER" class="hidden grid grid-cols-1 lg:grid-cols-12 gap-4">
+              <div class="lg:col-span-5 gw-panel gw-reveal space-y-3.5">
+                <div class="flex flex-wrap items-center justify-between gap-2 pb-2 border-b" style="border-color: var(--gw-line);">
+                  <div>
+                    <h3 class="text-base font-bold">นำเข้ารายชื่อนักเรียน ป.6 (รองรับไฟล์ Excel แท้ & DMC)</h3>
+                    <p class="text-xs" style="color: var(--gw-muted);">จัดระเบียบคำนำหน้า ชื่อ นามสกุล และห้องให้ตรงกันทั้ง 8 โรงเรียนอัตโนมัติ</p>
+                  </div>
+                  <button type="button" onclick="downloadStandardRosterExcelTemplate()" class="gw-btn-soft text-xs !font-bold">
+                    <i data-lucide="download" class="w-3.5 h-3.5"></i>
+                    <span>ดาวน์โหลดแม่แบบ Excel (.xlsx)</span>
+                  </button>
+                </div>
+
+                <div>
+                  <label for="rosterSchoolId" class="gw-label">โรงเรียนที่ต้องการจัดการรายชื่อ</label>
+                  <select id="rosterSchoolId" onchange="refreshRosterTable()" class="gw-input"></select>
+                </div>
+
+                <!-- Method 1: Direct Excel File Upload -->
+                <div class="gw-subcard space-y-2">
+                  <label for="rosterExcelFile" class="text-xs font-bold block">วิธีที่ 1: เลือกไฟล์ Excel (.xlsx, .xls, .csv) จากเครื่องโดยตรง</label>
+                  <input type="file" id="rosterExcelFile" accept=".xlsx,.xls,.csv" onchange="handleRosterExcelUpload()"
+                    class="gw-input border-dashed cursor-pointer !py-2 text-xs">
+                  <div class="text-[11px]" style="color: var(--gw-muted);">
+                    รองรับทั้งไฟล์แม่แบบมาตรฐาน และไฟล์ส่งออกจากระบบ DMC (ข้ามหัวตารางและแยกคำนำหน้าให้อัตโนมัติ)
+                  </div>
+                </div>
+
+                <!-- Method 2: Copy-Paste from Excel -->
+                <div>
+                  <label for="bulkStudentsTextarea" class="gw-label">วิธีที่ 2: ก๊อปปี้ตารางจาก Excel มาวาง (หรือเพิ่มทีละบรรทัด)</label>
+                  <textarea id="bulkStudentsTextarea" rows="4" oninput="previewBulkStudents()"
+                    placeholder="ก๊อปปี้จาก Excel มาวางได้เลย เช่น:&#10;1	เด็กชาย	กิตติ	ใจดี	ป.6/1&#10;2	ด.ญ.มานี มีสุข	ป.6/1"
+                    class="gw-input text-xs"></textarea>
+                </div>
+
+                <!-- Live Parsed Preview Before Saving -->
+                <div id="rosterPreviewWrap" class="hidden gw-subcard space-y-2">
+                  <div class="flex items-center justify-between text-xs">
+                    <span id="rosterPreviewTitle" class="font-bold" style="color: var(--gw-accent);"></span>
+                    <button type="button" onclick="clearRosterImportPreview()" class="gw-text-danger font-bold hover:underline cursor-pointer">ล้างตัวอย่าง</button>
+                  </div>
+                  <div id="rosterPreviewTable" class="overflow-x-auto max-h-[180px] text-xs"></div>
+                </div>
+
+                <label class="inline-flex items-start gap-2 text-xs font-semibold cursor-pointer select-none" style="color: var(--gw-muted);">
+                  <input type="checkbox" id="chkUpdateExistingRoom" class="w-4 h-4 mt-0.5 rounded cursor-pointer" style="accent-color: var(--gw-accent);">
+                  <span>อัปเดตเลขที่และห้องเรียนทับรายชื่อเดิมที่มีอยู่แล้ว (ไม่กระทบผลการเรียน/รหัสผ่าน)</span>
+                </label>
+
+                <button type="button" onclick="submitBulkStudents()" class="gw-btn-primary w-full">
+                  <i data-lucide="users" class="w-4 h-4"></i>
+                  <span>+ ยืนยันบันทึกรายชื่อนักเรียนเข้าโรงเรียน</span>
+                </button>
+              </div>
+
+              <div class="lg:col-span-7 gw-panel gw-reveal space-y-3">
+                <div class="flex flex-wrap items-center justify-between gap-2">
+                  <h3 class="text-base font-bold">รายชื่อนักเรียนในระบบและปุ่มรีเซ็ตรหัสผ่าน</h3>
+                  <span id="rosterCountBadge" class="text-xs font-bold gw-tabular" style="color: var(--gw-accent);"></span>
+                </div>
+                <div>
+                  <input type="search" id="acadRosterSearch" aria-label="ค้นหาชื่อ-นามสกุล เลขที่ หรือห้องเรียน" oninput="filterAcademicRosterTable()"
+                         placeholder="ค้นหาชื่อ-นามสกุล เลขที่ หรือห้องเรียน..." class="gw-input !py-1.5 text-xs">
+                </div>
+                <div id="rosterTableContainer" class="overflow-x-auto max-h-[480px]"></div>
+              </div>
+            </div>
+
+            <!-- Academic Subtab 4: Central Download Library for School Academic Coordinator -->
+            <div id="acadPanel_MATERIALS" class="hidden space-y-4">
+              <div class="gw-panel gw-reveal space-y-3.5">
+                <div class="flex flex-wrap items-center justify-between gap-2 pb-3 border-b" style="border-color: var(--gw-line);">
+                  <div>
+                    <h2 class="text-base sm:text-lg font-bold">คลังข้อสอบ Pre-Post และเอกสารยกระดับ (สำหรับครูวิชาการดาวน์โหลดให้ครู/นักเรียน)</h2>
+                    <p class="text-xs" style="color: var(--gw-muted);">เห็นครบทั้งไฟล์ฉบับนักเรียน (สำหรับพิมพ์/แจกนักเรียน) และไฟล์ฉบับครูมีเฉลย (สำหรับครูผู้สอนในโรงเรียน) พร้อมฉบับรวมเล่มสมบูรณ์</p>
+                  </div>
+                  <button type="button" onclick="loadAcademicMaterials()" class="gw-btn-soft text-xs !font-bold">
+                    <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i>
+                    <span>รีเฟรชรายการไฟล์</span>
+                  </button>
+                </div>
+
+                <div class="gw-segment" role="group" aria-label="กรองรายวิชาครูวิชาการ">
+                  <button type="button" id="acadMatSub_ALL" class="is-active" onclick="filterAcademicMaterials('ALL')">ครบทั้ง 4 วิชา</button>
+                  <button type="button" id="acadMatSub_61" onclick="filterAcademicMaterials('61')">ภาษาไทย</button>
+                  <button type="button" id="acadMatSub_64" onclick="filterAcademicMaterials('64')">คณิตศาสตร์</button>
+                  <button type="button" id="acadMatSub_65" onclick="filterAcademicMaterials('65')">วิทยาศาสตร์ฯ</button>
+                  <button type="button" id="acadMatSub_63" onclick="filterAcademicMaterials('63')">ภาษาอังกฤษ</button>
+                </div>
+
+                <div class="flex flex-wrap gap-2 text-xs" role="group" aria-label="กรองประเภทเอกสารครูวิชาการ">
+                  <button type="button" id="acadMatCat_ALL" onclick="filterAcademicMaterialCategory('ALL')" class="gw-btn-primary !py-1.5 !px-3 text-xs">ทุกประเภท</button>
+                  <button type="button" id="acadMatCat_MERGED_BOOK" onclick="filterAcademicMaterialCategory('MERGED_BOOK')" class="gw-btn-soft !py-1.5 !px-3 text-xs">📚 เล่มรวมสมบูรณ์</button>
+                  <button type="button" id="acadMatCat_PREPOST_EXAM" onclick="filterAcademicMaterialCategory('PREPOST_EXAM')" class="gw-btn-soft !py-1.5 !px-3 text-xs">📝 ข้อสอบ Pre-Post</button>
+                  <button type="button" id="acadMatCat_TUTORING_STRAND" onclick="filterAcademicMaterialCategory('TUTORING_STRAND')" class="gw-btn-soft !py-1.5 !px-3 text-xs">📄 เอกสารตามสาระฯ</button>
+                </div>
+
+                <div id="acadMaterialsSummaryBar" class="text-xs font-bold" style="color: var(--gw-accent);"></div>
+                <div id="acadMaterialsGrid" class="grid grid-cols-1 md:grid-cols-2 gap-3.5"></div>
+              </div>
+            </div>
+          </section>
+
+          <!-- ==============================================================
+               TAB 4: SUPER ADMIN PORTAL (ครูเกียรติศักดิ์ กรุณา)
+               ============================================================== -->
+          <section id="panel_ADMIN" class="hidden space-y-4">
+            <!-- Drive Folder Cross-Account Setup -->
+            <div class="gw-panel gw-reveal space-y-4">
+              <div class="flex flex-wrap items-center justify-between gap-2 pb-3 border-b" style="border-color: var(--gw-line);">
+                <div>
+                  <h2 class="text-base sm:text-lg font-bold">ตั้งค่าระบบกลาง & เชื่อมโฟลเดอร์ Google Drive ข้ามบัญชี (wkha@saraburi2.go.th)</h2>
+                  <p class="text-xs" style="color: var(--gw-muted);">เชื่อมต่อโฟลเดอร์รับงานในไดรฟ์โรงเรียนวัดคลองห้า พร้อมสร้างแยก 4 โฟลเดอร์รายวิชาอัตโนมัติ (จัดทำและส่งงานภายในวันปฏิบัติการทันที)</p>
+                </div>
+                <button type="button" onclick="refreshSuperAdminDashboard()" class="gw-btn-soft">
+                  <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i>
+                  <span>รีเฟรชข้อมูลล่าสุด</span>
+                </button>
+              </div>
+
+              <div>
+                <label for="adminDriveFolderInput" class="gw-label">ลิงก์โฟลเดอร์ หรือ Folder ID ของไดรฟ์ wkha@saraburi2.go.th</label>
+                <div class="flex flex-wrap sm:flex-nowrap gap-2">
+                  <input type="text" id="adminDriveFolderInput" placeholder="วางลิงก์ https://drive.google.com/drive/folders/... หรือรหัสโฟลเดอร์"
+                    class="gw-input flex-1">
+                  <button type="button" onclick="connectDriveFolders()" class="gw-btn-primary whitespace-nowrap text-xs">
+                    เชื่อมไดรฟ์ & สร้าง 4 โฟลเดอร์วิชา
+                  </button>
+                </div>
+                <div id="driveSubfoldersStatus" class="mt-2 text-xs font-bold" style="color: var(--gw-accent);"></div>
+              </div>
+            </div>
+
+            <!-- 8-School Network Summary Table -->
+            <div class="gw-panel gw-reveal space-y-3">
+              <div class="flex flex-wrap items-center justify-between gap-2">
+                <h3 class="text-base font-bold">แดชบอร์ดเปรียบเทียบผลสัมฤทธิ์ทั้ง 8 โรงเรียน (กลุ่มโรงเรียนศรีเสาวภาค)</h3>
+                <select id="adminNetSubjectFilter" aria-label="กรองผลสัมฤทธิ์ตามรายวิชา" onchange="refreshSuperAdminDashboard()" class="gw-input !w-auto !py-1.5 text-xs font-bold">
+                  <option value="ALL">รวมครบทั้ง 4 วิชา</option>
+                  <option value="61">ภาษาไทย (61)</option>
+                  <option value="64">คณิตศาสตร์ (64)</option>
+                  <option value="65">วิทยาศาสตร์และเทคโนโลยี (65)</option>
+                  <option value="63">ภาษาอังกฤษ (63)</option>
+                </select>
+              </div>
+              <div id="adminNetworkTable" class="overflow-x-auto"></div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+              <!-- Teacher Account 1-Click Approval -->
+              <div class="gw-panel gw-reveal space-y-3">
+                <div class="flex flex-wrap items-center justify-between gap-2">
+                  <h3 class="text-base font-bold">อนุมัติสิทธิ์คณะกรรมการ ครูผู้สอน ป.6 และครูวิชาการ</h3>
+                  <button type="button" id="btnApproveAllPending" onclick="approveAllPendingTeachers()" class="hidden gw-btn-primary !py-1.5 !px-3 text-xs">
+                    ✓ อนุมัติที่รอทั้งหมด
+                  </button>
+                </div>
+                <div id="adminTeachersApprovalList" class="space-y-2 max-h-[380px] overflow-y-auto text-xs"></div>
+              </div>
+
+              <!-- Manuscript Review Queue -->
+              <div class="gw-panel gw-reveal space-y-3">
+                <div class="flex flex-wrap items-center justify-between gap-2">
+                  <h3 class="text-base font-bold">ตรวจรับไฟล์ต้นฉบับ & ข้อสอบ Pre-Post</h3>
+                  <select id="adminRevFilter" aria-label="กรองรายการตรวจรับไฟล์ต้นฉบับ" onchange="renderAdminReviewList()" class="gw-input !w-auto py-1 text-xs font-bold">
+                    <option value="ALL">ทุกประเภท/ทุกสถานะ</option>
+                    <option value="รอตรวจ">เฉพาะรอตรวจ</option>
+                    <option value="รอกรรมการตรวจ IOC">เฉพาะรอกรรมการตรวจ IOC</option>
+                    <option value="ผ่านพร้อมรวมเล่ม">เฉพาะผ่านพร้อมรวมเล่ม</option>
+                    <option value="PREPOST_EXAM">เฉพาะข้อสอบ Pre-Post</option>
+                    <option value="TUTORING_STRAND">เฉพาะเอกสารตามสาระฯ</option>
+                    <option value="MERGED_BOOK">เฉพาะฉบับรวมเล่มแล้ว</option>
+                    <option value="STUDENT">เฉพาะฉบับนักเรียน</option>
+                    <option value="TEACHER">เฉพาะฉบับครู</option>
+                  </select>
+                </div>
+                <div class="gw-subcard flex flex-wrap items-center justify-between gap-2 text-xs">
+                  <label class="inline-flex items-center gap-2 font-bold cursor-pointer select-none">
+                    <input type="checkbox" id="chkAllowStudentPrePost" onchange="toggleStudentPrePostVisibility(this.checked)" class="w-4 h-4 rounded cursor-pointer" style="accent-color: var(--gw-accent);">
+                    <span>เปิดให้นักเรียนดาวน์โหลดไฟล์ข้อสอบคู่ขนาน Pre-Post (ฉบับนักเรียน)</span>
+                  </label>
+                  <span id="lblAllowStudentPrePost" class="px-2.5 py-0.5 rounded-full text-[11px] font-bold gw-badge-warn">ปิดไว้ (เห็นเฉพาะครู/วิชาการ)</span>
+                </div>
+                <div id="adminSubmissionsReviewList" class="space-y-2 max-h-[380px] overflow-y-auto text-xs"></div>
+              </div>
+            </div>
+
+            <!-- 1-Click Auto-Merge .docx Book Studio + Demo Simulator -->
+            <div id="adminAutoMergeStudio" class="gw-panel gw-reveal space-y-3.5 border-2" style="border-color: var(--gw-accent-soft);">
+              <div class="flex flex-wrap items-center justify-between gap-2 pb-2 border-b" style="border-color: var(--gw-line);">
+                <div>
+                  <h3 class="text-base font-bold">📚 สตูดิโอรวมเล่มเอกสาร (.docx) อัตโนมัติ (หน้าปก สทศ. + สารบัญ + เรียงเลขข้อ/สาระ)</h3>
+                  <p class="text-xs" style="color: var(--gw-muted);">นำไฟล์ Word ที่ผ่านการอนุมัติแล้วมารวมเป็นเล่มเดียวอัตโนมัติ พร้อมปกข้อสอบ สทศ. (สำหรับ Pre-Post), เรียงลำดับข้อ 1..N ข้ามสาระ และล็อกรูปภาพ 8306 DXA</p>
+                </div>
+                <button type="button" id="btnMergeDemoPreview" onclick="runSampleDemoAutoMergeDocx()" class="gw-btn-soft text-xs !font-bold border" style="border-color: var(--gw-accent);">
+                  <i data-lucide="flask-conical" class="w-3.5 h-3.5"></i>
+                  <span>🧪 ทดลองสร้างไฟล์ตัวอย่าง & รวมเล่มจำลอง</span>
+                </button>
+              </div>
+
+              <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 items-end">
+                <div>
+                  <label for="mergeSubjectCode" class="gw-label">1. เลือกรายวิชาที่จะรวมเล่ม</label>
+                  <select id="mergeSubjectCode" onchange="refreshAdminMergeReadiness()" class="gw-input font-bold">
+                    <option value="61">ภาษาไทย (รหัสวิชา 61)</option>
+                    <option value="64">คณิตศาสตร์ (รหัสวิชา 64)</option>
+                    <option value="65">วิทยาศาสตร์ฯ (รหัสวิชา 65)</option>
+                    <option value="63">ภาษาอังกฤษ (รหัสวิชา 63)</option>
+                  </select>
+                </div>
+                <div>
+                  <label for="mergeDocGroup" class="gw-label">2. เลือกประเภทชุดเอกสาร</label>
+                  <select id="mergeDocGroup" onchange="refreshAdminMergeReadiness()" class="gw-input font-bold">
+                    <option value="TUTORING_STRAND">เอกสารยกระดับตามสาระฯ</option>
+                    <option value="PREPOST_EXAM">ข้อสอบคู่ขนาน Pre-Post O-NET</option>
+                  </select>
+                </div>
+                <div id="mergeExamRoundWrap">
+                  <label for="mergeExamRound" class="gw-label">3. รอบข้อสอบ (กรณี Pre-Post)</label>
+                  <select id="mergeExamRound" onchange="refreshAdminMergeReadiness()" class="gw-input font-bold">
+                    <option value="PRE">Pre O-NET (รหัสชุด 100)</option>
+                    <option value="POST">Post O-NET (รหัสชุด 200)</option>
+                    <option value="ALL">รวมทุกรอบที่อนุมัติ</option>
+                  </select>
+                </div>
+                <div>
+                  <label for="mergeTargetAudience" class="gw-label">4. เลือกฉบับที่จะรวมเล่ม</label>
+                  <select id="mergeTargetAudience" onchange="refreshAdminMergeReadiness()" class="gw-input font-bold">
+                    <option value="STUDENT">📘 ฉบับนักเรียน (พร้อมแจกนักเรียน)</option>
+                    <option value="TEACHER">📕 ฉบับครู (รวมเฉลย+วิธีคิดละเอียด)</option>
+                  </select>
+                </div>
+              </div>
+
+              <div id="adminMergeReadinessBox" class="gw-subcard text-xs space-y-2"></div>
+
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <button type="button" id="btnMergeDownloadLocal" onclick="runAdminAutoMergeDocx(false)" class="gw-btn-soft w-full py-2.5 text-xs !font-bold border" style="border-color: var(--gw-accent);">
+                  <i data-lucide="file-down" class="w-4 h-4"></i>
+                  <span>รวมเล่มและดาวน์โหลด Word (.docx) ลงเครื่อง</span>
+                </button>
+                <button type="button" id="btnMergePublishDrive" onclick="runAdminAutoMergeDocx(true)" class="gw-btn-primary w-full py-2.5 text-xs">
+                  <i data-lucide="cloud-upload" class="w-4 h-4"></i>
+                  <span>รวมเล่ม + บันทึกขึ้น Google Drive เผยแพร่ทันที</span>
+                </button>
+              </div>
+              <div id="adminMergeLog" class="hidden rounded-xl border p-3 text-xs space-y-1"></div>
+            </div>
+
+            <!-- Admin IOC Governance & Inspection Matrix -->
+            <div id="adminIocDashboardPanel" class="gw-panel gw-reveal space-y-3 border" style="border-color: var(--gw-line-strong);">
+              <div class="flex flex-wrap items-center justify-between gap-2 pb-2 border-b" style="border-color: var(--gw-line);">
+                <div>
+                  <h3 class="text-base font-bold">🎯 กระดานติดตามผลตรวจประเมินข้อสอบ (IOC: +1 / 0 / -1) ทั้ง Pre & Post</h3>
+                  <p class="text-xs" style="color: var(--gw-muted);">ตรวจสอบองค์ประชุมคณะกรรมการ ค่า IOC รายข้อ (เกณฑ์ผ่าน >= 0.50) ข้อเสนอแนะ และกดอนุมัติชุดข้อสอบเข้าพร้อมรวมเล่ม</p>
+                </div>
+                <div class="flex flex-wrap gap-2">
+                  <select id="adminIocRound" aria-label="เลือกรอบข้อสอบติดตามผล IOC" onchange="loadAdminIocDetail()" class="gw-input !w-auto py-1.5 text-xs font-bold">
+                    <option value="PRE">Pre O-NET</option>
+                    <option value="POST">Post O-NET</option>
+                  </select>
+                  <select id="adminIocSubject" aria-label="เลือกรายวิชาติดตามผล IOC" onchange="loadAdminIocDetail()" class="gw-input !w-auto py-1.5 text-xs font-bold">
+                    <option value="61">ภาษาไทย (61)</option>
+                    <option value="64">คณิตศาสตร์ (64)</option>
+                    <option value="65">วิทยาศาสตร์ฯ (65)</option>
+                    <option value="63">ภาษาอังกฤษ (63)</option>
+                  </select>
+                </div>
+              </div>
+
+              <div id="adminIocOverviewGrid" class="grid grid-cols-2 sm:grid-cols-4 gap-2.5 text-xs"></div>
+              <div id="adminIocDetailBox" class="gw-subcard space-y-2.5 text-xs"></div>
+            </div>
+
+            <!-- Answer Key Manager for Pre/Post O-NET -->
+            <div class="gw-panel gw-reveal space-y-3">
+              <div class="flex flex-wrap items-center justify-between gap-2">
+                <h3 class="text-base font-bold">จัดการเฉลยข้อสอบคู่ขนาน Pre O-NET / Post O-NET ทั้ง 4 วิชา</h3>
+                <div class="flex flex-wrap gap-2">
+                  <select id="adminKeyRound" aria-label="เลือกรอบข้อสอบจัดการเฉลย" onchange="renderAdminKeyEditor()" class="gw-input !w-auto py-1.5 text-xs font-bold">
+                    <option value="PRE">Pre O-NET</option>
+                    <option value="POST">Post O-NET</option>
+                  </select>
+                  <select id="adminKeySubject" aria-label="เลือกรายวิชาจัดการเฉลย" onchange="renderAdminKeyEditor()" class="gw-input !w-auto py-1.5 text-xs font-bold">
+                    <option value="61">ภาษาไทย (22 ข้อ)</option>
+                    <option value="64">คณิตศาสตร์ (15 ข้อ)</option>
+                    <option value="65">วิทยาศาสตร์ฯ (20 ข้อ)</option>
+                    <option value="63">ภาษาอังกฤษ (32 ข้อ)</option>
+                  </select>
+                  <button type="button" id="btnImportKeysFromTeacherDocx" onclick="importAnswerKeysFromTeacherDocx()" class="gw-btn-soft text-xs py-2 px-3 font-bold border" style="border-color: var(--gw-accent);">
+                    📥 ดึงเฉลยอัตโนมัติจากไฟล์ฉบับครู (.docx)
+                  </button>
+                  <button type="button" onclick="saveAdminExamKeys()" class="gw-btn-primary text-xs py-2 px-4">
+                    บันทึกเฉลยชุดนี้
+                  </button>
+                </div>
+              </div>
+              <div class="gw-subcard text-xs" style="color: var(--gw-muted);">
+                <b>รูปแบบเฉลย สทศ. 2569:</b> MC4 = 1–4 | NUMERIC (คณิต 12–15) = จำนวนเต็ม 0–999 | ORDER (ไทย 21) = แยก 21.1 และ 21.2 (ระบบคั่น | ให้อัตโนมัติ) | COMPLEX_MC (วิทย์ 19–20) = ใช่|ไม่ใช่|ใช่ (3/3 = 5, 2/3 = 2.5 คะแนน) | ESSAY = คะแนนเต็ม 15
+              </div>
+              <div id="adminKeyEditorGrid" class="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 gap-2.5 pt-2"></div>
+            </div>
+          </section>
+
+          <footer class="mt-7 pt-4 border-t flex flex-wrap items-center justify-between gap-2 text-[11px]"
+                  style="border-color: var(--gw-line); color: var(--gw-muted);">
+            <span class="inline-flex items-center gap-1.5">
+              <span class="w-2 h-2 rounded-full inline-block" style="background: var(--gw-accent);"></span>
+              โครงการยกระดับผลสัมฤทธิ์ผลการทดสอบทางการศึกษาระดับชาติขั้นพื้นฐาน (O-NET) ชั้น ป.6 ปีการศึกษา 2569 | กลุ่มโรงเรียนศรีเสาวภาค สพป.สระบุรี เขต 2
+            </span>
+            <span>
+              ออกแบบและพัฒนาระบบโดย
+              <button type="button" onclick="openDeveloperAboutModal()" class="font-bold underline decoration-dotted underline-offset-2 cursor-pointer" style="color: var(--gw-ink);">
+                นายเกียรติศักดิ์ กรุณา
+              </button>
+              | โรงเรียนวัดคลองห้า
+            </span>
+          </footer>
+        </main>
+      </div>
+
+      <!-- ================================================================
+           FLOATING BOTTOM GLASS PILL DOCK (DESKTOP - 5 ROLES)
+           ================================================================ -->
+      <div class="gw-desktop-dock">
+        <nav class="gw-dock" aria-label="เมนูหลักของระบบ">
+          <button type="button" id="tabBtn_STUDENT" aria-current="page" onclick="switchMainTab('STUDENT')">
+            <i data-lucide="graduation-cap" class="w-4 h-4"></i>
+            <span>1. นักเรียน (8 โรงเรียน)</span>
+          </button>
+          <button type="button" id="tabBtn_COMMITTEE" onclick="switchMainTab('COMMITTEE')">
+            <i data-lucide="file-check-2" class="w-4 h-4"></i>
+            <span>2. คณะกรรมการจัดทำเอกสาร</span>
+          </button>
+          <button type="button" id="tabBtn_INSTRUCTOR" onclick="switchMainTab('INSTRUCTOR')">
+            <i data-lucide="book-open-check" class="w-4 h-4"></i>
+            <span>3. ครูผู้สอน ป.6</span>
+          </button>
+          <button type="button" id="tabBtn_ACADEMIC" onclick="switchMainTab('ACADEMIC')">
+            <i data-lucide="clipboard-check" class="w-4 h-4"></i>
+            <span>4. ครูวิชาการ</span>
+          </button>
+          <button type="button" id="tabBtn_ADMIN" onclick="switchMainTab('ADMIN')">
+            <i data-lucide="shield-check" class="w-4 h-4"></i>
+            <span>5. ผู้ดูแลกลุ่มฯ</span>
+          </button>
+        </nav>
+      </div>
+
+      <!-- ================================================================
+           ADJUSTABLE GLASS APPEARANCE POPOVER (gw-material gw-glass)
+           ================================================================ -->
+      <aside id="gwMaterialPanel" class="gw-material hidden" aria-label="ตั้งค่ากระจกใส">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <i data-lucide="sparkles" class="w-4 h-4" style="color: var(--gw-accent);"></i>
+            <h2 class="text-base font-bold">ปรับแต่งกระจกใส (Glass UI)</h2>
+          </div>
+          <button type="button" class="gw-icon-button" aria-label="ปิดหน้าต่างปรับแต่งกระจกใส" title="ปิดหน้าต่างปรับแต่งกระจกใส" onclick="toggleGlassPanel(false)">
+            <i data-lucide="x" class="w-4 h-4"></i>
+          </button>
+        </div>
+        <p class="text-xs mt-1" style="color: var(--gw-muted);">ปรับได้อิสระเฉพาะเครื่องของคุณครู/นักเรียนแต่ละเครื่อง แล้วกดบันทึกสไตล์ที่ชอบไว้ใช้ตลอดได้เลยครับ</p>
+
+        <div class="gw-material-sample">
+          <img id="gwSampleBg" class="gw-sample-bg"
+               src="https://images.unsplash.com/photo-1513002749550-c59d786b8e6c?auto=format&fit=crop&w=2000&q=80"
+               alt="">
+          <div class="gw-sample-orbs" aria-hidden="true">
+            <span style="background: #15803d; color: #ffffff;">O-NET</span>
+            <span style="background: #0369a1; color: #ffffff;">2569</span>
+            <span style="background: #c2410c; color: #ffffff;">ป.6</span>
+          </div>
+          <div class="gw-sample-pane">
+            <i data-lucide="layers" class="w-4 h-4"></i>
+            <span>ตัวอย่างเนื้อกระจกใสแบบสด</span>
+          </div>
+        </div>
+
+        <div class="gw-presets">
+          <button type="button" onclick="applyGlassPreset('clear')">ใสบาง (เห็นความเบลอชัด)</button>
+          <button type="button" onclick="applyGlassPreset('frosted')">ละมุน (Frosted)</button>
+          <button type="button" onclick="applyGlassPreset('solid')">คมชัด (Solid)</button>
+          <button type="button" id="btnPresetFav" class="is-fav" onclick="applyFavoriteGlass()">⭐ สไตล์ที่ฉันชอบ</button>
+        </div>
+
+        <label class="gw-range">
+          <span>ขนาดตัวอักษร (Font Size) <output id="outFontScale">110%</output></span>
+          <input type="range" id="rngFontScale" min="0.85" max="1.45" step="0.05" value="1.10" oninput="updateGlassSetting('fontScale', this.value)">
+        </label>
+
+        <label class="gw-range">
+          <span>ความเบลอ (Blur) <output id="outBlur">31 px</output></span>
+          <input type="range" id="rngBlur" min="0" max="40" step="1" value="31" oninput="updateGlassSetting('blur', this.value)">
+        </label>
+        <p id="blurOpacityHint" class="text-[11px] -mt-1.5 mb-2 leading-snug" style="color: var(--gw-accent);"></p>
+
+        <label class="gw-range">
+          <span>ความทึบแสง (Opacity) <output id="outOpacity">90%</output></span>
+          <input type="range" id="rngOpacity" min="0.12" max="0.98" step="0.02" value="0.90" oninput="updateGlassSetting('opacity', this.value)">
+        </label>
+
+        <label class="gw-range">
+          <span>ความอิ่มสี (Saturation) <output id="outSaturation">145%</output></span>
+          <input type="range" id="rngSaturation" min="0.6" max="2.0" step="0.05" value="1.45" oninput="updateGlassSetting('saturation', this.value)">
+        </label>
+
+        <label class="gw-range">
+          <span>ขอบแสงสะท้อน (Edge Light) <output id="outEdge">60%</output></span>
+          <input type="range" id="rngEdge" min="0" max="1" step="0.05" value="0.60" oninput="updateGlassSetting('edge', this.value)">
+        </label>
+
+        <div class="flex items-center justify-between text-xs font-semibold mt-3">
+          <label for="inpTint">โทนสีเนื้อกระจก (Tint)</label>
+          <input type="color" id="inpTint" aria-label="เลือกโทนสีเนื้อกระจก" value="#eadbc7" oninput="updateGlassSetting('tint', this.value)"
+                 class="w-10 h-7 rounded cursor-pointer border" style="border-color: var(--gw-line); background: transparent;">
+        </div>
+
+        <div class="mt-3">
+          <label for="selWallpaper" class="block text-xs font-semibold mb-1.5">ภาพพื้นหลังบรรยากาศ (Wallpaper)</label>
+          <select id="selWallpaper" onchange="updateGlassSetting('wallpaper', this.value)" class="gw-input !py-1.5 text-xs">
+            <option value="https://images.unsplash.com/photo-1513002749550-c59d786b8e6c?auto=format&fit=crop&w=2000&q=80" selected>ท้องฟ้าพาสเทลสดใส (Pastel Sky)</option>
+            <option value="https://images.unsplash.com/photo-1507842217343-583bb7270b66?auto=format&fit=crop&w=2000&q=80">ห้องสมุดไม้อบอุ่น (Cozy Library)</option>
+            <option value="https://cdn.21st.dev/assets/mirror/4a/4a0ed73b8ab76bd427aa70ab124329127f3df27cc7f31223a832ed7d28b3dda4.jpg">ห้องทำงานมินิมอล (Warm Studio)</option>
+            <option value="https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=2000&q=80">ธรรมชาติป่าเขียวสบายตา (Calm Forest)</option>
+          </select>
+        </div>
+
+        <div class="mt-4 space-y-2">
+          <button type="button" onclick="saveMyFavoriteGlass()" class="gw-btn-primary w-full py-2.5 text-xs">
+            <i data-lucide="bookmark-check" class="w-4 h-4"></i>
+            <span>บันทึกเป็นสไตล์ที่ชอบประจำเครื่องนี้</span>
+          </button>
+          <p id="favSavedStatus" class="text-[11px] text-center font-bold hidden" style="color: var(--gw-accent);"></p>
+          <button type="button" onclick="resetDefaultGlass()" class="gw-btn-soft w-full py-2 text-xs">
+            รีเซ็ตกลับค่าเริ่มต้นของระบบ
+          </button>
+        </div>
+      </aside>
+
+      <!-- ================================================================
+           NOTIFICATIONS POPOVER (gw-notifications)
+           ================================================================ -->
+      <aside id="gwNotificationsPanel" class="gw-notifications hidden" aria-label="กำหนดการสำคัญ">
+        <div class="flex items-center justify-between mb-2">
+          <h2 class="text-sm font-bold">กำหนดการสำคัญและสถานะระบบ O-NET 2569</h2>
+          <button type="button" class="gw-icon-button" aria-label="ปิดหน้าต่างกำหนดการ" title="ปิดหน้าต่างกำหนดการ" onclick="toggleNotificationsPanel(false)">
+            <i data-lucide="x" class="w-4 h-4"></i>
+          </button>
+        </div>
+        <div id="gwNotificationsList" class="space-y-2 text-xs">
+          <div class="gw-subcard py-2 px-3">
+            <div class="font-bold">ส่งต้นฉบับเอกสารติว 15 สาระ</div>
+            <div style="color: var(--gw-muted);">จัดทำและส่งเข้าไดรฟ์ภายในวันปฏิบัติการทันที</div>
+          </div>
+          <div class="gw-subcard py-2 px-3">
+            <div class="font-bold">วันสอบ O-NET ป.6 จริง</div>
+            <div style="color: var(--gw-muted);">วันเสาร์ที่ 30 มกราคม พ.ศ. 2570</div>
+          </div>
+          <div class="gw-subcard py-2 px-3">
+            <div class="font-bold" style="color: var(--gw-accent);">✓ เชื่อมต่อ Google Drive แล้ว</div>
+            <div style="color: var(--gw-muted);">โฟลเดอร์รับงาน wkha@saraburi2.go.th (ครบ 4 วิชา)</div>
+          </div>
+        </div>
+      </aside>
+    </div>
+
+    <!-- Reusable Accessible Glass Modal -->
+    <div id="customActionModal" class="gw-modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="customModalTitle">
+      <div class="gw-modal-card space-y-3.5">
+        <div>
+          <h3 id="customModalTitle" class="text-base font-bold"></h3>
+          <p id="customModalSubtitle" class="text-xs mt-0.5" style="color: var(--gw-muted);"></p>
+        </div>
+        <div id="customModalBody" class="space-y-3 text-xs"></div>
+        <div class="flex items-center justify-end gap-2 pt-2 border-t" style="border-color: var(--gw-line);">
+          <button type="button" id="customModalCancelBtn" onclick="closeCustomModal()" class="gw-btn-soft text-xs">ยกเลิก</button>
+          <button type="button" id="customModalConfirmBtn" class="gw-btn-primary text-xs">ยืนยัน</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Floating Toast Alert -->
+    <div id="statusToast" class="gw-toast hidden" role="status" aria-live="polite" aria-atomic="true"></div>
+  </div>
+
+  <!-- Dedicated Print Wrapper for Official A4 Report (TH SarabunPSK ONLY) -->
+  <div id="printOnlyWrapper">
+    <div id="printArea" class="print-sheet"></div>
+  </div>
+
+    <script>window.ONET_GAS_API_URL = 'https://script.google.com/macros/s/AKfycbwG-eaNeRsZ9wmCWvcGfKNpzxHgUFJPckdbfNL3b7MamTFjrWexwkCFYR_ApLfqGtQG/exec';</script>
+  <script src="./app.js"></script>
+</body>
+</html>
