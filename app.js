@@ -3536,10 +3536,14 @@
       });
     }
     if (teacher.subjectCode && teacher.subjectCode !== 'ALL') {
-      const weakSub = document.getElementById('instWeakSubjectCode');
-      const pracSub = document.getElementById('instPracSubjectCode');
-      if (weakSub) weakSub.value = teacher.subjectCode;
-      if (pracSub) pracSub.value = teacher.subjectCode;
+      ['upSubjectCode', 'pbAutoSyncSubject', 'pbSubject', 'pbFilterSubject', 'iocSubject', 'instWeakSubjectCode', 'instPracSubjectCode'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el && Array.from(el.options || []).some(o => o.value === teacher.subjectCode)) {
+          el.value = teacher.subjectCode;
+        }
+      });
+      if (typeof onUploadSubjectChange === 'function') onUploadSubjectChange();
+      if (typeof onPbSubjectChange === 'function') onPbSubjectChange();
     }
 
     let defaultRoleTab = 'COMMITTEE';
