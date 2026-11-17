@@ -2042,6 +2042,35 @@
     return String(val || '').replace(/[^a-zA-Z0-9._-]/g, '_');
   }
 
+  function convertFloatingAnchorsToInline_(bodyXml = '') {
+    const MAX_EMU_W = 5274310;
+    return String(bodyXml || '').replace(/<w:p\b[\s\S]*?<\/w:p>/gi, (pXml) => {
+      if (!/<wp:anchor\b/i.test(pXml)) return pXml;
+      return pXml.replace(/<wp:anchor\b[^>]*>([\s\S]*?)<\/wp:anchor>/gi, (fullAnchor, inner) => {
+        const graphicM = /<a:graphic\b[\s\S]*?<\/a:graphic>/i.exec(inner);
+        if (!graphicM) return fullAnchor;
+        let extentXml = '<wp:extent cx="3600000" cy="2400000"/>';
+        const extM = /<wp:extent\b([^>]*?)\/?\s*>/i.exec(inner);
+        if (extM) {
+          const cxM = /\bcx\s*=\s*"(\d+)"/i.exec(extM[1]);
+          const cyM = /\bcy\s*=\s*"(\d+)"/i.exec(extM[1]);
+          let cx = cxM ? Number(cxM[1]) : 3600000;
+          let cy = cyM ? Number(cyM[1]) : 2400000;
+          if (cx > MAX_EMU_W && cx > 0) {
+            cy = Math.round(cy * (MAX_EMU_W / cx));
+            cx = MAX_EMU_W;
+          }
+          extentXml = `<wp:extent cx="${cx}" cy="${cy}"/>`;
+        }
+        const docPrM = /<wp:docPr\b[^>]*?(?:\/>|>[\s\S]*?<\/wp:docPr>)/i.exec(inner);
+        const docPrXml = docPrM ? docPrM[0] : '<wp:docPr id="1" name="Picture"/>';
+        const cNvM = /<wp:cNvGraphicFramePr\b[^>]*?(?:\/>|>[\s\S]*?<\/wp:cNvGraphicFramePr>)/i.exec(inner);
+        const cNvXml = cNvM ? cNvM[0] : '<wp:cNvGraphicFramePr><a:graphicFrameLocks xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" noChangeAspect="1"/></wp:cNvGraphicFramePr>';
+        return `<wp:inline distT="0" distB="0" distL="0" distR="0">${extentXml}<wp:effectExtent l="0" t="0" r="0" b="0"/>${docPrXml}${cNvXml}${graphicM[0]}</wp:inline>`;
+      });
+    });
+  }
+
   function sanitizeAndRemapDocxBodyForMerge(documentXml = '', relsXml = '', partIndex = 1, startRId = 20) {
     let nextRId = Number(startRId || 20);
     const idMap = {};
@@ -2105,6 +2134,12 @@
 
     bodyXml = bodyXml.replace(/\s(r:(?:embed|link|id))\s*=\s*"([^"]+)"/gi, (full, attrName, oldId) => {
       return idMap[oldId] ? ` ${attrName}="${idMap[oldId]}"` : '';
+    });
+
+    bodyXml = convertFloatingAnchorsToInline_(bodyXml);
+    bodyXml = bodyXml.replace(/(<w:p\b[\s\S]*?<\/w:p>)/gi, (pXml) => {
+      if (!/<w:drawing\b/i.test(pXml) || !/<w:t(?:\s[^>]*)?>[\s\S]*?\S[\s\S]*?<\/w:t>/i.test(pXml)) return pXml;
+      return pXml.replace(/(<w:r(?:\s[^>]*)?>\s*(?:<w:rPr>[\s\S]*?<\/w:rPr>\s*)?)(<w:drawing\b[\s\S]*?<\/w:drawing>)(\s*<\/w:r>)/gi, '$1<w:br/>$2<w:br/>$3');
     });
 
     let shapeSeq = 0;
