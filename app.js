@@ -1274,6 +1274,15 @@
     out.docCategory = String(out.docCategory || '').trim().toUpperCase() || 'TUTORING_STRAND';
     out.targetAudience = String(out.targetAudience || '').trim().toUpperCase() || 'TEACHER';
     out.examRound = String(out.examRound || '').trim().toUpperCase();
+    // Auto-correct strandNo when a teacher left the dropdown on default "1" but the uploaded filename explicitly specifies สาระที่ X (e.g. _สาระที่3_2569.docx)
+    const rawStr = String(out.strandNo || '').trim();
+    if (rawStr !== 'ทั้งวิชา') {
+      const origName = String(out.fileName || '').replace(/^\[[^\]]+\]_?/, '');
+      const fnM = /สาระ(?:ที่)?\s*([1-5])(?![0-9])/i.exec(origName);
+      if (fnM && fnM[1] !== rawStr) {
+        out.strandNo = fnM[1];
+      }
+    }
     return out;
   }
 
@@ -9562,7 +9571,7 @@
 
   async function assembleMergedDocxBlob_({ subjectCode, subjectName, sourceCategory, targetAudience, examRound = 'PRE', fileName, parts }) {
     if (typeof JSZip === 'undefined') throw new Error('ไลบรารี JSZip ยังไม่พร้อมทำงาน กรุณารีเฟรชหน้าเว็บ');
-    parts = Array.from(parts || []).sort((a, b) => {
+    parts = Array.from(parts || []).map(normalizeSubMetaClient_).sort((a, b) => {
       const sDiff = (Number(a.strandNo || 99) || 99) - (Number(b.strandNo || 99) || 99);
       if (sDiff !== 0) return sDiff;
       const aAll = !a.subStandard || /ครบทั้งสาระ|ALL/i.test(String(a.subStandard));
