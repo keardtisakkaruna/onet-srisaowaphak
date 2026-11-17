@@ -2516,6 +2516,22 @@
                   </div>
                 </div>
 
+                <!-- SMART UNIFIED AUTO-CLASSIFY DROPZONE (4-EDITION AUTO-ROUTER) -->
+                <div id="smartAutoUploadBox" class="gw-subcard space-y-2.5 border-2" style="border-color: var(--gw-accent); background: linear-gradient(135deg, rgba(16,185,129,0.08), rgba(59,130,246,0.06));">
+                  <div class="flex flex-wrap items-center justify-between gap-2">
+                    <div>
+                      <div class="font-bold text-sm" style="color: var(--gw-accent);">✨ ส่งแบบด่วนอัตโนมัติ (ไม่กลัวส่งผิดช่อง!) — ระบบตรวจแยกฉบับที่ 1, 2, 3, 4 ให้เอง</div>
+                      <div class="text-[11px]" style="color: var(--gw-muted);">เลือกไฟล์ Word (.docx) พร้อมกันกี่ไฟล์ก็ได้ (หรือเลือกใส่ช่องด้านล่างตามปกติก็ได้ — หากใส่ผิดช่องระบบจะย้ายไปช่องที่ถูกต้องให้อัตโนมัติทันทีครับ)</div>
+                    </div>
+                    <input type="file" id="upSmartAutoDocxInput" accept=".docx,application/vnd.openxmlformats-officedocument.wordprocessingml.document" multiple class="hidden" onchange="handleSmartAutoDocxFiles(this)">
+                    <button type="button" id="btnSmartAutoUploadPick" onclick="triggerSmartAutoUploadPicker()" class="gw-btn-primary text-xs !py-2 !px-3.5 !font-bold shrink-0">
+                      <i data-lucide="sparkles" aria-hidden="true" class="w-4 h-4"></i>
+                      <span>เลือกไฟล์ .docx แล้วให้ระบบแยก 1–4 ให้อัตโนมัติ</span>
+                    </button>
+                  </div>
+                  <div id="smartAutoRouteLog" class="hidden rounded-xl border p-2.5 text-xs space-y-1"></div>
+                </div>
+
                 <!-- SET 1: TUTORING_STRAND (Editions 3 & 4) -->
                 <div class="gw-subcard space-y-3" style="border-color: var(--gw-accent);">
                   <div class="flex flex-wrap items-center justify-between gap-2">
@@ -2702,7 +2718,7 @@
                       <span>ดึงโจทย์จากไฟล์ที่ครูส่งแล้วอัตโนมัติ</span>
                     </button>
                     <input type="file" id="pbQuickImportDocxInput" aria-label="เลือกไฟล์ Word (.docx) เพื่อดึงโจทย์เข้าคลัง" accept=".docx,application/vnd.openxmlformats-officedocument.wordprocessingml.document" multiple class="hidden" onchange="importPracticeFromLocalDocxFiles(this)">
-                    <button type="button" id="btnPbLocalDocxImport" onclick="document.getElementById('pbQuickImportDocxInput').click()" class="gw-btn-soft !py-2 !px-3 text-xs font-bold">
+                    <button type="button" id="btnPbLocalDocxImport" onclick="triggerPbQuickImportDocxPicker()" class="gw-btn-soft !py-2 !px-3 text-xs font-bold">
                       <i data-lucide="file-up" aria-hidden="true" class="w-4 h-4"></i>
                       <span>เลือกไฟล์ .docx จากเครื่อง</span>
                     </button>
@@ -3703,6 +3719,6 @@
   </div>
 
     <script>window.ONET_GAS_API_URL = 'https://script.google.com/macros/s/AKfycbwG-eaNeRsZ9wmCWvcGfKNpzxHgUFJPckdbfNL3b7MamTFjrWexwkCFYR_ApLfqGtQG/exec';</script>
-  <script src="./app.js?v=20261117_1794901953"></script>
+  <script src="./app.js?v=20261117_1794910942"></script>
 </body>
 </html>
