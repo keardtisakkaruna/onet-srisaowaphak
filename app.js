@@ -3759,6 +3759,7 @@
           await onStudentSchoolChange();
           if (stuSaved.studentId) {
             document.getElementById('stuNameSelect').value = stuSaved.studentId;
+            syncStudentNameChips();
             onStudentNameChange(false);
             document.getElementById('chkRememberStudent').checked = !!stuSaved.authToken;
           }
@@ -4112,15 +4113,21 @@
   async function onStudentSchoolChange() {
     const schoolId = document.getElementById('stuSchoolSelect').value;
     const sel = document.getElementById('stuNameSelect');
+    const chipsWrap = document.getElementById('stuNameChipsWrap');
+    const searchWrap = document.getElementById('stuNameSearchWrap');
+    const searchInp = document.getElementById('stuNameSearchInput');
     const selfWrap = document.getElementById('stuSelfAddWrap');
     const quickBox = document.getElementById('stuQuickAddBox');
     document.getElementById('stuPasswordBox').classList.add('hidden');
     document.getElementById('stuPasswordInput').value = '';
     quickBox.classList.add('hidden');
+    if (searchInp) searchInp.value = '';
 
     if (!schoolId) {
       selfWrap.classList.add('hidden');
+      if (searchWrap) searchWrap.classList.add('hidden');
       sel.innerHTML = '<option value="">-- กรุณาเลือกโรงเรียนก่อน --</option>';
+      if (chipsWrap) chipsWrap.innerHTML = '<span class="text-xs" style="color: var(--gw-muted);">-- กรุณาเลือกโรงเรียนด้านบนก่อน --</span>';
       return;
     }
 
@@ -4133,13 +4140,16 @@
         list = preloaded;
       } else {
         sel.innerHTML = '<option value="">กำลังโหลดรายชื่อนักเรียน...</option>';
+        if (chipsWrap) chipsWrap.innerHTML = '<span class="text-xs" style="color: var(--gw-muted);">กำลังโหลดรายชื่อนักเรียน...</span>';
         list = (await callGas('apiListStudentsBySchool', schoolId)) || [];
       }
       STATE.studentListCache[schoolId] = list;
     }
 
     if (!list.length) {
+      if (searchWrap) searchWrap.classList.add('hidden');
       sel.innerHTML = '<option value="">(ยังไม่มีรายชื่อนักเรียน — เพิ่มชื่อตนเองด้านล่างได้เลย)</option>';
+      if (chipsWrap) chipsWrap.innerHTML = '<span class="text-xs" style="color: var(--gw-muted);">(ยังไม่มีรายชื่อนักเรียนในโรงเรียนนี้ — เพิ่มชื่อตนเองด้านล่างได้เลย)</span>';
       document.getElementById('stuAddNo').value = '1';
       quickBox.classList.remove('hidden');
       return;
@@ -4149,6 +4159,56 @@
     sel.innerHTML = '<option value="">-- เลือกชื่อ-นามสกุลของตนเอง --</option>' + list.map(s =>
       `<option value="${escHtml(s.studentId)}" data-needs="${s.needsPasswordSetup ? '1' : '0'}">เลขที่ ${escHtml(s.studentNo)} ${escHtml(s.fullName)} (${escHtml(formatDisplayClass_(s.room))})</option>`
     ).join('');
+    if (searchWrap) searchWrap.classList.toggle('hidden', list.length < 6);
+    renderStudentNameChips(list);
+  }
+
+  function renderStudentNameChips(list) {
+    const chipsWrap = document.getElementById('stuNameChipsWrap');
+    const sel = document.getElementById('stuNameSelect');
+    if (!chipsWrap) return;
+    const activeId = sel ? sel.value : '';
+    const q = String((document.getElementById('stuNameSearchInput') && document.getElementById('stuNameSearchInput').value) || '').trim().toLowerCase();
+    const filtered = q
+      ? (list || []).filter(s =>
+          String(s.studentNo || '').toLowerCase().includes(q) ||
+          String(s.fullName || '').toLowerCase().includes(q)
+        )
+      : (list || []);
+    if (!filtered.length) {
+      chipsWrap.innerHTML = '<span class="text-xs" style="color: var(--gw-muted);">ไม่พบชื่อที่ตรงกับคำค้นหา</span>';
+      return;
+    }
+    chipsWrap.innerHTML = filtered.map(s => {
+      const isAct = s.studentId === activeId;
+      return `<button type="button" class="gw-school-chip${isAct ? ' is-active' : ''}" data-stu-id="${escHtml(s.studentId)}" aria-pressed="${isAct ? 'true' : 'false'}" onclick="selectStudentNamePill('${escHtml(s.studentId)}')">เลขที่ ${escHtml(s.studentNo)} ${escHtml(s.fullName)}</button>`;
+    }).join('');
+  }
+
+  function filterStudentNameChips() {
+    const schoolId = document.getElementById('stuSchoolSelect').value;
+    const list = (schoolId && STATE.studentListCache[schoolId]) || [];
+    renderStudentNameChips(list);
+  }
+
+  function syncStudentNameChips() {
+    const sel = document.getElementById('stuNameSelect');
+    const chipsWrap = document.getElementById('stuNameChipsWrap');
+    if (!sel || !chipsWrap) return;
+    const val = sel.value;
+    chipsWrap.querySelectorAll('.gw-school-chip').forEach(btn => {
+      const isAct = btn.getAttribute('data-stu-id') === val;
+      btn.classList.toggle('is-active', isAct);
+      btn.setAttribute('aria-pressed', isAct ? 'true' : 'false');
+    });
+  }
+
+  function selectStudentNamePill(studentId) {
+    const sel = document.getElementById('stuNameSelect');
+    if (!sel) return;
+    sel.value = studentId;
+    syncStudentNameChips();
+    onStudentNameChange(true);
   }
 
   async function submitStudentQuickAdd() {
@@ -4191,6 +4251,7 @@
         const targetId = (res.student && res.student.studentId) || (freshList[freshList.length - 1] && freshList[freshList.length - 1].studentId);
         if (targetId) {
           document.getElementById('stuNameSelect').value = targetId;
+          syncStudentNameChips();
           onStudentNameChange(true);
         }
         showToast('เพิ่มชื่อเข้าโรงเรียนสำเร็จ! ตั้งรหัสผ่านของตนเองแล้วเข้าเรียนได้เลยครับ', 'success');
@@ -9273,17 +9334,55 @@
     }
   }
 
+  function matchesAdminRevDocTab_(s, tabKey) {
+    if (!tabKey || tabKey === 'ALL') return true;
+    const isPre = !s.examRound || s.examRound === 'PRE' || s.examRound === 'PRE_POST';
+    const isPost = s.examRound === 'POST' || s.examRound === 'PRE_POST';
+    if (tabKey === 'EXAM_PRE_STUDENT') return s.docCategory === 'PREPOST_EXAM' && s.targetAudience === 'STUDENT' && isPre;
+    if (tabKey === 'EXAM_PRE_TEACHER') return s.docCategory === 'PREPOST_EXAM' && s.targetAudience === 'TEACHER' && isPre;
+    if (tabKey === 'TUTOR_STUDENT') return s.docCategory === 'TUTORING_STRAND' && s.targetAudience === 'STUDENT';
+    if (tabKey === 'TUTOR_TEACHER') return s.docCategory === 'TUTORING_STRAND' && s.targetAudience === 'TEACHER';
+    if (tabKey === 'EXAM_POST_STUDENT') return s.docCategory === 'PREPOST_EXAM' && s.targetAudience === 'STUDENT' && isPost;
+    if (tabKey === 'EXAM_POST_TEACHER') return s.docCategory === 'PREPOST_EXAM' && s.targetAudience === 'TEACHER' && isPost;
+    if (tabKey === 'MERGED_BOOK') return s.docCategory === 'MERGED_BOOK';
+    return true;
+  }
+
+  function setAdminRevDocTab(tabKey) {
+    STATE.adminRevDocTab = tabKey || 'ALL';
+    renderAdminReviewList();
+  }
+
   function renderAdminReviewList() {
     const box = document.getElementById('adminSubmissionsReviewList');
     if (!box) return;
     const rawSubs = ((STATE.adminData && STATE.adminData.submissions) || []).map(normalizeSubMetaClient_);
+    const activeDocTab = STATE.adminRevDocTab || 'ALL';
+    const tabsEl = document.getElementById('adminRevDocTabs');
+    if (tabsEl) {
+      const tabDefs = [
+        { key: 'ALL', label: 'ทั้งหมด' },
+        { key: 'EXAM_PRE_STUDENT', label: '1. ข้อสอบ Pre นักเรียน' },
+        { key: 'EXAM_PRE_TEACHER', label: '2. ข้อสอบ Pre ครู' },
+        { key: 'TUTOR_STUDENT', label: '3. เอกสารติว นักเรียน' },
+        { key: 'TUTOR_TEACHER', label: '4. เอกสารติว ครู' },
+        { key: 'EXAM_POST_STUDENT', label: '5. ข้อสอบ Post นักเรียน' },
+        { key: 'EXAM_POST_TEACHER', label: '6. ข้อสอบ Post ครู' },
+        { key: 'MERGED_BOOK', label: 'เล่มรวมแล้ว' }
+      ];
+      tabsEl.innerHTML = tabDefs.map(t => {
+        const cnt = rawSubs.filter(s => matchesAdminRevDocTab_(s, t.key)).length;
+        const isAct = activeDocTab === t.key;
+        return `<button type="button" role="tab" aria-selected="${isAct ? 'true' : 'false'}" class="gw-school-chip${isAct ? ' is-active' : ''}" onclick="setAdminRevDocTab('${t.key}')">${escHtml(t.label)} (${cnt})</button>`;
+      }).join('');
+    }
+
     const filterEl = document.getElementById('adminRevFilter');
     const fVal = filterEl ? filterEl.value : 'ALL';
     const filtered = rawSubs.filter(s => {
+      if (!matchesAdminRevDocTab_(s, activeDocTab)) return false;
       if (fVal === 'ALL') return true;
       if (fVal === 'รอตรวจ' || fVal === 'รอกรรมการตรวจ IOC' || fVal === 'ผ่านพร้อมรวมเล่ม' || fVal === 'ส่งแก้') return s.reviewStatus === fVal;
-      if (fVal === 'PREPOST_EXAM' || fVal === 'TUTORING_STRAND' || fVal === 'MERGED_BOOK') return s.docCategory === fVal;
-      if (fVal === 'STUDENT' || fVal === 'TEACHER') return s.targetAudience === fVal;
       return true;
     });
 
