@@ -3392,13 +3392,15 @@
             <div id="adminAutoMergeStudio" class="gw-panel gw-reveal space-y-3.5 border-2" style="border-color: var(--gw-accent-soft);">
               <div class="flex flex-wrap items-center justify-between gap-2 pb-2 border-b" style="border-color: var(--gw-line);">
                 <div>
-                  <h3 class="text-base font-bold">สตูดิโอรวมเล่มเอกสาร (.docx) อัตโนมัติ (หน้าปก สทศ. + สารบัญ + เรียงเลขข้อ/สาระ)</h3>
-                  <p class="text-xs" style="color: var(--gw-muted);">นำไฟล์ Word ที่ผ่านการอนุมัติแล้วมารวมเป็นเล่มเดียวอัตโนมัติ พร้อมปกข้อสอบ สทศ. (สำหรับ Pre-Post), เรียงลำดับข้อ 1..N ข้ามสาระ และล็อกรูปภาพ 8306 DXA</p>
+                  <h3 class="text-base font-bold">สตูดิโอรวมเล่มเอกสาร (.docx) อัจฉริยะ (แยกสาระ-ตัวชี้วัดตามผัง สทศ. + เรียงเลขข้อ + ล็อกรูป A4)</h3>
+                  <p class="text-xs" style="color: var(--gw-muted);">ตรวจจับรหัสสาระและตัวชี้วัดจากข้างในไฟล์ครูอัตโนมัติ (ไม่ต่อท้ายไฟล์ดิบ) ตัดกล่องหัวกระดาษซ้ำและตัวชี้วัดว่างออก พร้อมผังตรวจสอบตัวชี้วัดประจำเล่ม (และรองรับรวมเล่มจากไฟล์ในเครื่องไม่จำกัดขนาด MB)</p>
                 </div>
-                <button type="button" id="btnMergeDemoPreview" onclick="runSampleDemoAutoMergeDocx()" class="gw-btn-soft text-xs !font-bold border" style="border-color: var(--gw-accent);">
-                  <i data-lucide="flask-conical" aria-hidden="true" class="w-3.5 h-3.5"></i>
-                  <span>ทดลองสร้างไฟล์ตัวอย่าง & รวมเล่มจำลอง</span>
-                </button>
+                <div class="flex flex-wrap gap-2">
+                  <button type="button" id="btnMergeDemoPreview" onclick="runSampleDemoAutoMergeDocx()" class="gw-btn-soft text-xs !font-bold border" style="border-color: var(--gw-accent);">
+                    <i data-lucide="flask-conical" aria-hidden="true" class="w-3.5 h-3.5"></i>
+                    <span>ทดลองสร้างไฟล์ตัวอย่าง & รวมเล่มจำลอง</span>
+                  </button>
+                </div>
               </div>
 
               <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 items-end">
@@ -3440,11 +3442,19 @@
               <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <button type="button" id="btnMergeDownloadLocal" onclick="runAdminAutoMergeDocx(false)" class="gw-btn-soft w-full py-2.5 text-xs !font-bold border" style="border-color: var(--gw-accent);">
                   <i data-lucide="file-down" aria-hidden="true" class="w-4 h-4"></i>
-                  <span>รวมเล่มและดาวน์โหลด Word (.docx) ลงเครื่อง</span>
+                  <span>รวมเล่มจากระบบ (Drive) และดาวน์โหลด .docx</span>
                 </button>
                 <button type="button" id="btnMergePublishDrive" onclick="runAdminAutoMergeDocx(true)" class="gw-btn-primary w-full py-2.5 text-xs">
                   <i data-lucide="cloud-upload" aria-hidden="true" class="w-4 h-4"></i>
                   <span>รวมเล่ม + บันทึกขึ้น Google Drive เผยแพร่ทันที</span>
+                </button>
+              </div>
+
+              <div class="pt-1">
+                <input type="file" id="adminLocalMergeInput" accept=".docx" multiple class="hidden" onchange="runLocalFilesSmartMergeDocx(this)">
+                <button type="button" id="btnMergeFromLocalPc" onclick="triggerLocalFilesSmartMergePicker()" class="gw-btn-soft w-full py-2 text-xs !font-bold border border-dashed" style="border-color: var(--gw-line-strong);">
+                  <i data-lucide="folder-open" aria-hidden="true" class="w-4 h-4"></i>
+                  <span>📂 เลือกหลายไฟล์ .docx จากเครื่องมารวมเล่มอัจฉริยะโดยตรง (กรณีไฟล์ใหญ่เกิน 12 MB / ไม่จำกัดขนาดไฟล์ + ย่อรูปให้อัตโนมัติ)</span>
                 </button>
               </div>
               <div id="adminMergeLog" class="hidden rounded-xl border p-3 text-xs space-y-1"></div>
