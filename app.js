@@ -2343,7 +2343,7 @@
     if (hasMedia) return false;
     if (!txt) return true;
 
-    if (/แบบทดสอบคู่ขนาน Pre-Post O-NET|ฉบับนักเรียน\s*\(|ฉบับครูผู้สอน|\[ลับเฉพาะครู/i.test(txt)) return true;
+    if (/แบบทดสอบคู่ขนาน Pre-Post O-NET|ฉบับนักเรียน\s*\(|ฉบับครูผู้สอน|\[ลับเฉพาะครู|^ประกอบด้วย\s*ผังข้อสอบ|^ช่วงข้อสอบที่ล็อก/i.test(txt)) return true;
     if (/^รายวิชา:.*ชุดข้อสอบ:|^ขอบเขตและช่วงข้อที่รับผิดชอบ:|^ชื่อ-สกุล:\s*\.+/i.test(txt)) return true;
     if (/^คำชี้แจงสำหรับคณะกรรมการและนักเรียน/.test(txt)) return true;
     if (/^1\.\s*แบบทดสอบชุดนี้ล็อกหมายเลขข้อ|^2\.\s*ให้นักเรียนอ่านคำสั่งแต่ละตอน/.test(txt)) return true;
@@ -2753,8 +2753,13 @@
     ];
   }
 
-  function normalizeMathOrMediaChoiceParaXml_(pXml, isLastChoice = false) {
+  function normalizeMathOrMediaChoiceParaXml_(pXml, isLastChoice = false, stripAnswerColors = false) {
     let out = stripRegexesAcrossWT_(pXml, [/\s*\(\s*หมายเหตุ\s*สทศ\.[^)]*\)/gi]);
+    if (stripAnswerColors) {
+      out = out
+        .replace(/<w:color\b[^>]*\/>/gi, '')
+        .replace(/<w:highlight\b[^>]*\/>/gi, '');
+    }
     let replacedLabel = false;
     out = out.replace(/<w:t(\s[^>]*)?>([\s\S]*?)<\/w:t>/gi, (full, attrs, inner) => {
       if (replacedLabel) return full;
@@ -2845,16 +2850,24 @@
     }
 
     const working = [];
+    let inTeacherSolution = false;
     rawBlocks.forEach((blk) => {
       const xml = String(blk.xml || '');
       const txt = normalizeThaiDigits(String(blk.text || '')).replace(/\s+/g, ' ').trim();
       const blkHasMedia = /<w:drawing\b|<w:pict\b|<v:imagedata\b|<a:blip\b/i.test(xml);
-      if (isStudent && !blkHasMedia && /^เฉลย\s*ข้อ\s*\d+/i.test(txt)) return;
+      if (isStudent) {
+        if (/^(?:เฉลย(?:\s|[:=\-]|ข้อ|ตอบ|$)|วิธีคิด|วิธีทำ|แนวคิด|คำอธิบายเฉลย|สรุปคำตอบ)/i.test(txt)) {
+          inTeacherSolution = true;
+          return;
+        }
+        if (inTeacherSolution) return;
+      }
       if (!blkHasMedia && !/<m:oMath\b/i.test(xml) && !txt) return;
       working.push({
         tag: blk.tag,
         xml: blk.tag === 'w:p' ? stripRegexesAcrossWT_(xml, stripPatterns) : xml,
-        rawText: txt
+        rawText: txt,
+        origHasNumPr: blk.tag === 'w:p' && /<w:numPr\b/i.test(xml)
       });
     });
 
@@ -2867,6 +2880,10 @@
       const stemPlain = extractPlainTextFromDocxXml(firstDiagSplit.textParaXml).replace(/\s+/g, ' ').trim();
       const origAfterMatch = /^\s*ข้อ\s*[0-9๐-๙]{1,2}\s*[\.\):]?\s*(?:[0-9๐-๙]{1,2}\s*[\.\)]\s*)?/i.exec(stemPlain);
       let afterNoText = origAfterMatch ? stemPlain.slice(origAfterMatch[0].length).trim() : stemPlain;
+      afterNoText = afterNoText
+        .replace(/(^|\])\s*\[\s*(?![ทควต]\s*\d+\.\d+)([^\[\]]{4,})\s*\]\s*$/, '$1 $2')
+        .replace(/\s+/g, ' ')
+        .trim();
 
       if (!firstHasMathOrInlineImg) {
         if (!afterNoText && firstDiagSplit.diagramParasXml.length === 0 && working.length > 1) {
@@ -2957,10 +2974,42 @@
           }
 
           choiceBlocks.forEach((cb, cIdx) => {
-            formattedOut.push(normalizeMathOrMediaChoiceParaXml_(cb.block.xml, cIdx === choiceBlocks.length - 1 && isStudent));
+            formattedOut.push(normalizeMathOrMediaChoiceParaXml_(cb.block.xml, cIdx === choiceBlocks.length - 1 && isStudent, isStudent));
           });
           idx = j;
           continue;
+        }
+
+        if (
+          cur.origHasNumPr &&
+          idx + 3 < working.length &&
+          [0, 1, 2, 3].every((k) => {
+            const w = working[idx + k];
+            if (!w || w.tag !== 'w:p' || !w.origHasNumPr) return false;
+            const t = normalizeThaiDigits(extractPlainTextFromDocxXml(w.xml)).replace(/\s+/g, ' ').trim();
+            return Boolean(t) && !/^(?:เฉลย|วิธีคิด|วิธีทำ|ข้อ\s*\d+)/i.test(t);
+          })
+        ) {
+          const numPrBlocks = [working[idx], working[idx + 1], working[idx + 2], working[idx + 3]];
+          const anyRichNumPr = numPrBlocks.some((w) => /<m:oMath\b|<w:drawing\b|<w:pict\b/i.test(w.xml));
+          if (!anyRichNumPr) {
+            const choicesMap = {};
+            numPrBlocks.forEach((w, k) => {
+              choicesMap[String(k + 1)] = extractPlainTextFromDocxXml(w.xml).replace(/\s+/g, ' ').trim();
+            });
+            if (choicesMap['1'] && choicesMap['2'] && choicesMap['3'] && choicesMap['4']) {
+              formattedOut.push(...formatAlignedMc4ChoicesXml_(choicesMap, !isStudent));
+              idx += 4;
+              continue;
+            }
+          } else {
+            numPrBlocks.forEach((w, k) => {
+              const withNumXml = w.xml.replace(/<w:t(\s[^>]*)?>/i, `<w:t xml:space="preserve">${k + 1}. `);
+              formattedOut.push(normalizeMathOrMediaChoiceParaXml_(withNumXml, k === 3 && isStudent, isStudent));
+            });
+            idx += 4;
+            continue;
+          }
         }
       }
 
@@ -3012,9 +3061,18 @@
   function findAnswerCompletionIndexInRawItem_(rawBlocks = [], bpItem = null) {
     const iType = String((bpItem && bpItem.itemType) || 'MC4').toUpperCase();
     let completionIdx = -1;
+    let inSol = false;
+    let consecutiveNumPr = 0;
     rawBlocks.forEach((blk, idx) => {
+      const xml = String(blk.xml || '');
       const txt = normalizeThaiDigits(String(blk.text || '')).replace(/\s+/g, ' ').trim();
-      if (/^เฉลย\s*ข้อ\s*\d+/i.test(txt)) {
+      const hasMedia = /<w:drawing\b|<w:pict\b|<v:imagedata\b|<a:blip\b/i.test(xml);
+      if (/^(?:เฉลย(?:\s|[:=\-]|ข้อ|ตอบ|$)|วิธีคิด|วิธีทำ|แนวคิด|คำอธิบายเฉลย)/i.test(txt)) {
+        inSol = true;
+        completionIdx = idx;
+        return;
+      }
+      if (inSol && !hasMedia && !/^(?:อ่าน|พิจารณา|ใช้ข้อมูลต่อไปนี้)/.test(txt)) {
         completionIdx = idx;
         return;
       }
@@ -3022,6 +3080,12 @@
         const parsed = splitChoicesFromParagraphLine_(txt);
         if (parsed.some((p) => p.key === '4') || /(?:^|\s)(?:4[\.\)]|\(4\)|ง[\.\)]|[Dd][\.\)])/.test(txt)) {
           completionIdx = idx;
+          consecutiveNumPr = 0;
+        } else if (idx > 0 && /<w:numPr\b/i.test(xml) && txt && !/^ข้อ\s*\d+/i.test(txt)) {
+          consecutiveNumPr += 1;
+          if (consecutiveNumPr >= 4) completionIdx = idx;
+        } else {
+          consecutiveNumPr = 0;
         }
       } else if (iType === 'NUMERIC' && blk.tag === 'w:tbl') {
         if (/ช่องเขียน\/ระบายคำตอบ|\[\s*\]\s*\[\s*\]/.test(txt)) completionIdx = idx;
@@ -3113,6 +3177,7 @@
             itemNo: parentNo,
             seq: ++encounterSeq,
             authorLabel,
+            isCompanionRescue: Boolean(part.isCompanionRescue),
             groupIntroBlocks,
             rawBlocks: [blk, ...postHeaderStimulus]
           };
@@ -3145,26 +3210,43 @@
 
     const bestAuthoredByNo = new Map();
     const firstTemplateFallbackByNo = new Map();
+    const rescuedItemNos = [];
 
     Array.from(rawCandidatesByNo.entries()).forEach(([itemNo, cands]) => {
       const bpItem = bpByNo.get(itemNo) || null;
+      let bestPrimary = null;
+      let bestCompanion = null;
       cands.forEach((cand) => {
-        if (!firstTemplateFallbackByNo.has(itemNo)) firstTemplateFallbackByNo.set(itemNo, cand);
+        if (!firstTemplateFallbackByNo.has(itemNo) && !cand.isCompanionRescue) {
+          firstTemplateFallbackByNo.set(itemNo, cand);
+        } else if (!firstTemplateFallbackByNo.has(itemNo)) {
+          firstTemplateFallbackByNo.set(itemNo, cand);
+        }
         const scored = cleanAndScoreExamItemCandidate_(cand.rawBlocks, itemNo, bpItem, targetAudience);
         if (scored.hasRealContent) {
-          const prev = bestAuthoredByNo.get(itemNo);
-          if (!prev || scored.contentScore > prev.contentScore) {
-            bestAuthoredByNo.set(itemNo, {
-              itemNo,
-              seq: cand.seq,
-              authorLabel: cand.authorLabel,
-              contentScore: scored.contentScore,
-              blocks: cand.groupIntroBlocks.concat(scored.blocks)
-            });
+          const entry = {
+            itemNo,
+            seq: cand.seq,
+            authorLabel: cand.authorLabel,
+            isRescuedFromCompanion: Boolean(cand.isCompanionRescue),
+            contentScore: scored.contentScore,
+            blocks: cand.groupIntroBlocks.concat(scored.blocks)
+          };
+          if (!cand.isCompanionRescue) {
+            if (!bestPrimary || entry.contentScore > bestPrimary.contentScore) bestPrimary = entry;
+          } else {
+            if (!bestCompanion || entry.contentScore > bestCompanion.contentScore) bestCompanion = entry;
           }
         }
       });
+      if (bestPrimary) {
+        bestAuthoredByNo.set(itemNo, bestPrimary);
+      } else if (bestCompanion) {
+        bestAuthoredByNo.set(itemNo, bestCompanion);
+        rescuedItemNos.push(Number(itemNo));
+      }
     });
+    rescuedItemNos.sort((a, b) => a - b);
 
     const authoredItemNos = Array.from(bestAuthoredByNo.keys()).sort((a, b) => a - b);
     const examChecklist = bpItems.map((bp) => {
@@ -3264,6 +3346,7 @@
       authoredCount: authoredItemNos.length,
       sortedItemNos: authoredItemNos,
       authoredItemNos,
+      rescuedItemNos,
       missingItemNos: missingAuthoredNos,
       examChecklist,
       bodyXml: outParts.join('')
@@ -3322,7 +3405,7 @@
           fileName: part.fileName || '',
           teacherName: part.teacherName || '',
           schoolId: part.schoolId || '',
-          bodyXml: bodyMatch ? bodyMatch[1] : docXml
+          bodyXml: convertFloatingAnchorsToInline_(bodyMatch ? bodyMatch[1] : docXml)
         }],
         { subjectCode: sub, targetAudience: 'TEACHER', onlyExtractMeta: true }
       );
@@ -7471,12 +7554,28 @@
         ? `<div style="color: var(--gw-accent);">• บีบอัดรูปอัตโนมัติ: <b>✓ ย่อรูป ${optRes.compressedCount} ภาพ จาก ${origMb.toFixed(2)} MB → เหลือ ${finalMb.toFixed(2)} MB (คมชัดระดับพิมพ์ A4 ไม่ติดลิมิต 12 MB)</b></div>`
         : (finalMb > 11.8 ? `<div class="gw-text-warn font-bold">• ขนาดไฟล์ ${finalMb.toFixed(2)} MB (เกิน 12 MB สำหรับดึงรวมเล่มผ่านเซิร์ฟเวอร์ แนะนำกด Compress Pictures 220 ppi ใน Word หรือใช้ปุ่มรวมเล่มจากไฟล์ในเครื่องครับ)</div>` : '');
 
+      let emptyExamTemplateWarn = '';
+      let authoredExamScopeMsg = '';
+      if (finalDocCategory === 'PREPOST_EXAM' && typeof inferPartScopeFromXml_ === 'function') {
+        const examInf = inferPartScopeFromXml_(
+          { fileName: file.name, strandNo: detectedStrand || selectedStrandVal, subStandard: 'ALL', bodyXml: xmls.documentXml || '' },
+          effectiveSubjectCode,
+          'PREPOST_EXAM',
+          STATE.blueprint || []
+        );
+        if (examInf && Array.isArray(examInf.authoredItemNos) && examInf.authoredItemNos.length > 0) {
+          authoredExamScopeMsg = examInf.scopeSummary || `ข้อ ${examInf.authoredItemNos.join(', ')}`;
+        } else {
+          emptyExamTemplateWarn = 'ยังไม่พบโจทย์ข้อสอบที่พิมพ์เนื้อหาแล้ว (ไฟล์ยังเป็นแม่แบบว่างเปล่า กรุณาตรวจสอบว่าเลือกถูกไฟล์หรือไม่)';
+        }
+      }
+
       const summaryParts = [
         finalDocCategory === 'PREPOST_EXAM' ? `ข้อสอบ ${finalExamRound || 'Pre-Post'}` : 'เอกสารยกระดับฯ',
         finalEdition === 'STUDENT' ? 'ฉบับนักเรียน' : 'ฉบับครู',
         check.hasSarabunFont && check.otherFonts.length === 0 ? 'TH SarabunPSK' : `พบฟอนต์อื่น (${check.otherFonts.join(', ') || 'ไม่ระบุ'})`,
         indMsg,
-        check.missingSections.length === 0 ? 'องค์ประกอบครบ' : `ขาด (${check.missingSections.join(', ')})`,
+        emptyExamTemplateWarn ? '⚠️ แม่แบบว่างเปล่า (ยังไม่พิมพ์โจทย์)' : (authoredExamScopeMsg ? `พิมพ์โจทย์แล้ว (${authoredExamScopeMsg})` : (check.missingSections.length === 0 ? 'องค์ประกอบครบ' : `ขาด (${check.missingSections.join(', ')})`)),
         check.hasAnswerLeak ? 'พบการหลุดเฉลยในฉบับนักเรียน!' : (layoutClean ? 'หน้า A4 ปลอดภัย' : `เตือนจัดหน้า (${check.layoutWarnings.length} จุด)`)
       ];
 
@@ -7489,9 +7588,9 @@
         effectiveExamRound: finalExamRound,
         effectiveSubjectCode,
         effectiveStrandNo: (finalDocCategory === 'PREPOST_EXAM' && examScope === 'WHOLE_SUBJECT') ? 'ทั้งวิชา' : (detectedStrand || selectedStrandVal),
-        passed: check.passed && layoutClean && !mismatchWarn && !strandMismatch,
+        passed: check.passed && layoutClean && !mismatchWarn && !strandMismatch && !emptyExamTemplateWarn,
         hasAnswerLeak: Boolean(check.hasAnswerLeak),
-        mismatchWarn,
+        mismatchWarn: mismatchWarn || emptyExamTemplateWarn,
         strandMismatch,
         detectedStrand,
         wasRerouted,
@@ -7527,7 +7626,8 @@
         : (isSmartPicker ? `<div class="rounded-lg px-2.5 py-1.5 font-bold" style="background: rgba(16,185,129,0.16); color: var(--gw-accent); border: 1px solid rgba(16,185,129,0.4);">✨ ระบบคัดแยกอัตโนมัติวางเข้าช่อง "${escHtml(cls.editionTitle)}" เรียบร้อยแล้ว</div>` : '');
 
       const card = document.getElementById('preCheckCard_' + targetSlotKey);
-      const allGreen = check.passed && layoutClean && !mismatchWarn && !strandMismatch;
+      const effectiveMismatchMsg = mismatchWarn || emptyExamTemplateWarn;
+      const allGreen = check.passed && layoutClean && !effectiveMismatchMsg && !strandMismatch;
       if (card) {
         card.className = (check.hasAnswerLeak ? 'gw-alert-danger' : (allGreen ? 'gw-alert-success' : 'gw-alert-warn')) + ' rounded-xl border p-3 text-xs space-y-1';
         card.innerHTML = `
@@ -7535,11 +7635,12 @@
           <div class="font-bold">
             ${check.hasAnswerLeak
               ? '🚨 บล็อกอัปโหลด: พบคำว่า "เฉลย" หรือคำตอบของครูหลุดอยู่ในไฟล์ฉบับนักเรียน!'
-              : (mismatchWarn ? '⚠️ แจ้งเตือนวางไฟล์ผิดช่อง!' : (strandMismatch ? `⚠️ ไฟล์นี้คือ "สาระที่ ${escHtml(detectedStrand)}" แต่ด้านบนเลือกเป็น "สาระที่ ${escHtml(selectedStrandVal)}"` : (allGreen ? '✅ สแกนผ่าน 100% พร้อมส่ง' : '⚠️ พบจุดควรตรวจสอบก่อนส่ง')))}
+              : (emptyExamTemplateWarn ? '⚠️ ระวังส่งไฟล์แม่แบบว่างเปล่า: ยังไม่พบข้อสอบที่พิมพ์เนื้อหาแล้ว!' : (mismatchWarn ? '⚠️ แจ้งเตือนวางไฟล์ผิดช่อง!' : (strandMismatch ? `⚠️ ไฟล์นี้คือ "สาระที่ ${escHtml(detectedStrand)}" แต่ด้านบนเลือกเป็น "สาระที่ ${escHtml(selectedStrandVal)}"` : (allGreen ? '✅ สแกนผ่าน 100% พร้อมส่ง' : '⚠️ พบจุดควรตรวจสอบก่อนส่ง'))))}
           </div>
           <div>• ไฟล์ที่เลือก: <b>${escHtml(file.name)}</b> (จัดหมวด: <b>${escHtml(cls.editionTitle)}${finalExamRound ? ' • ' + escHtml(finalExamRound) : ''}</b>)</div>
+          ${authoredExamScopeMsg ? `<div style="color: var(--gw-accent);">• ข้อสอบที่พิมพ์เนื้อหาแล้วในไฟล์นี้: <b>✓ ${escHtml(authoredExamScopeMsg)}</b></div>` : ''}
           ${strandMismatch ? `<div class="flex flex-wrap items-center gap-2 pt-0.5"><span style="color:#b45309;">กรุณาเปลี่ยนสาระด้านบนให้ตรงกับไฟล์ก่อนกดอัปโหลด:</span><button type="button" onclick="switchUploadStrandTo('${escHtml(detectedStrand)}')" class="gw-btn-soft !py-1 !px-2.5 text-[11px] font-bold">🔄 ปรับเป็นสาระที่ ${escHtml(detectedStrand)} อัตโนมัติ</button></div>` : ''}
-          ${mismatchWarn ? `<div class="font-bold" style="color: #b45309;">${escHtml(mismatchWarn)}</div>` : ''}
+          ${effectiveMismatchMsg ? `<div class="font-bold" style="color: #b45309;">${escHtml(effectiveMismatchMsg)}</div>` : ''}
           ${check.hasAnswerLeak ? `<div class="font-bold gw-text-danger">จุดที่พบ: ${escHtml(check.answerLeakSnippets.join(' | '))}</div>` : ''}
           <div>• ฟอนต์ TH SarabunPSK: <b>${check.hasSarabunFont && check.otherFonts.length === 0 ? '✓ ผ่าน' : escHtml(check.otherFonts.join(', ') || 'ไม่พบฟอนต์สารบรรณ')}</b></div>
           <div>• ตัวชี้วัด: <b>${escHtml(indMsg)}</b></div>
@@ -11422,10 +11523,14 @@
       const p = normalizeSubMetaClient_(rawPart);
       const inferred = inferPartScopeFromXml_(p, subjectCode, sourceCategory, bpRowsForSubject);
       return Object.assign({}, p, {
+        isCompanionRescue: Boolean(rawPart.isCompanionRescue),
         strandNo: inferred.strandNo || p.strandNo,
         scopeSummary: inferred.scopeSummary || p.subStandard || p.fileName
       });
     }).sort((a, b) => {
+      if (Boolean(a.isCompanionRescue) !== Boolean(b.isCompanionRescue)) {
+        return a.isCompanionRescue ? 1 : -1;
+      }
       const sDiff = (Number(a.strandNo || 99) || 99) - (Number(b.strandNo || 99) || 99);
       if (sDiff !== 0) return sDiff;
       const aAll = !a.subStandard || /ครบทั้งสาระ|ALL/i.test(String(a.subStandard));
@@ -11444,14 +11549,42 @@
 
     const catLabel = sourceCategory === 'PREPOST_EXAM' ? 'ข้อสอบคู่ขนาน Pre-Post O-NET' : 'เอกสารยกระดับผลสัมฤทธิ์ตามสาระและตัวชี้วัด';
     const edLabel = targetAudience === 'STUDENT' ? 'ฉบับนักเรียน' : 'ฉบับครู (มีเฉลยและวิธีคิดละเอียด)';
-    const chapters = parts.map(p => ({
-      strandNo: p.strandNo,
-      strandLabel: p.strandNo === 'ทั้งวิชา' ? 'แบบทดสอบครบชุดทั้งรายวิชา' : `สาระที่ ${p.strandNo}`,
-      scopeSummary: p.scopeSummary || p.subStandard || p.fileName,
-      subStandard: p.subStandard || p.fileName,
-      fileName: p.fileName,
-      authorSchool: `${p.teacherName || 'คณะกรรมการ'}${p.schoolId ? ' (' + getSchoolShortName(p.schoolId) + ')' : ''}`
-    }));
+    const companionScopeByAuthor = new Map();
+    parts.filter(p => p.isCompanionRescue).forEach(p => {
+      const k = `${p.teacherId || p.teacherName || ''}__${p.schoolId || ''}`;
+      if (p.scopeSummary && !/ยังไม่พบข้อสอบ/.test(p.scopeSummary)) {
+        companionScopeByAuthor.set(k, p.scopeSummary);
+      }
+    });
+    const seenPrimaryAuthors = new Set();
+    const chapters = [];
+    parts.forEach(p => {
+      const authKey = `${p.teacherId || p.teacherName || ''}__${p.schoolId || ''}`;
+      if (!p.isCompanionRescue) {
+        seenPrimaryAuthors.add(authKey);
+        const effScope = (/ยังไม่พบข้อสอบ/.test(String(p.scopeSummary || '')) && companionScopeByAuthor.has(authKey))
+          ? companionScopeByAuthor.get(authKey)
+          : (p.scopeSummary || p.subStandard || p.fileName);
+        chapters.push({
+          strandNo: p.strandNo,
+          strandLabel: p.strandNo === 'ทั้งวิชา' ? 'แบบทดสอบครบชุดทั้งรายวิชา' : `สาระที่ ${p.strandNo}`,
+          scopeSummary: effScope,
+          subStandard: p.subStandard || p.fileName,
+          fileName: p.fileName,
+          authorSchool: `${p.teacherName || 'คณะกรรมการ'}${p.schoolId ? ' (' + getSchoolShortName(p.schoolId) + ')' : ''}`
+        });
+      } else if (!seenPrimaryAuthors.has(authKey)) {
+        seenPrimaryAuthors.add(authKey);
+        chapters.push({
+          strandNo: p.strandNo,
+          strandLabel: p.strandNo === 'ทั้งวิชา' ? 'แบบทดสอบครบชุดทั้งรายวิชา' : `สาระที่ ${p.strandNo}`,
+          scopeSummary: p.scopeSummary || p.subStandard || p.fileName,
+          subStandard: p.subStandard || p.fileName,
+          fileName: p.fileName,
+          authorSchool: `${p.teacherName || 'คณะกรรมการ'}${p.schoolId ? ' (' + getSchoolShortName(p.schoolId) + ')' : ''}`
+        });
+      }
+    });
 
     const isExam = sourceCategory === 'PREPOST_EXAM';
     const roundKey = String(examRound || 'PRE').toUpperCase() === 'POST' ? 'POST' : 'PRE';
@@ -11491,6 +11624,7 @@
       }
 
       remappedParts.push({
+        isCompanionRescue: Boolean(part.isCompanionRescue),
         strandNo: part.strandNo,
         subStandard: part.subStandard,
         scopeSummary: part.scopeSummary,
@@ -11529,6 +11663,7 @@
         authoredCount: smartRes.authoredCount != null ? smartRes.authoredCount : (smartRes.itemCount || 0),
         totalBlueprintItems: bpExpected.length,
         sortedItemNos: smartRes.sortedItemNos || [],
+        rescuedItemNos: smartRes.rescuedItemNos || [],
         missingItemNos
       };
     } else {
@@ -11599,7 +11734,7 @@
     return {
       blob: outBlob,
       base64Data: uint8ToBase64_(outBytes),
-      partCount: parts.length,
+      partCount: parts.filter(p => !p.isCompanionRescue).length || parts.length,
       mediaCount,
       fileName,
       smartSummary
@@ -11623,10 +11758,13 @@
     }
     const totEx = Number(smartSummary.totalBlueprintItems || smartSummary.itemCount || 0);
     const authEx = Number(smartSummary.authoredCount != null ? smartSummary.authoredCount : smartSummary.itemCount);
+    const rescuedHtml = (smartSummary.rescuedItemNos && smartSummary.rescuedItemNos.length)
+      ? ` <span class="gw-text-success font-bold">| ✨ กู้ข้อสอบที่ขาดจากไฟล์คู่ขนานอัตโนมัติ (ตัดเฉลย/ตัวชี้วัดออก 100%): ข้อ ${escHtml(smartSummary.rescuedItemNos.join(', '))}</span>`
+      : '';
     const missHtml = (smartSummary.missingItemNos && smartSummary.missingItemNos.length)
       ? ` <span class="gw-text-warn font-bold">| ยังรอต้นฉบับข้อสอบข้อที่: ${escHtml(smartSummary.missingItemNos.join(', '))}</span>`
       : ' <span class="gw-text-success font-bold">| ครบ 100% ทุกข้อตามผัง สทศ.</span>';
-    return `<div>• โหมดจัดรูปเล่มข้อสอบ: <b>SMART_SORTED v2 (ปก สทศ. + ตัดโจทย์ว่าง/ข้อซ้ำ + จัดแนวตัวเลือก 1–4 และกล่องระบายตัวเลขอัตโนมัติ)</b> — บรรจุข้อสอบจริงแล้ว <b>${authEx}${totEx ? '/' + totEx : ''}</b> ข้อ${missHtml}</div>`;
+    return `<div>• โหมดจัดรูปเล่มข้อสอบ: <b>SMART_SORTED v2 (ปก สทศ. + ตัดโจทย์ว่าง/ข้อซ้ำ + จัดแนวตัวเลือก 1–4 และกล่องระบายตัวเลขอัตโนมัติ)</b> — บรรจุข้อสอบจริงแล้ว <b>${authEx}${totEx ? '/' + totEx : ''}</b> ข้อ${missHtml}${rescuedHtml}</div>`;
   }
 
   async function runAdminAutoMergeDocx(publishToDrive = false) {
@@ -11752,6 +11890,84 @@
       if (!parsedParts.length) {
         setLog('gw-alert-warn', `ไฟล์ที่ดึงมา (${validDocs.length} ไฟล์) อยู่คนละหมวด/คนละฉบับกับที่เลือกไว้จึงถูกข้าม: ${escHtml(skippedMismatch.join(', '))}`);
         return;
+      }
+
+      // Cross-edition item rescue for PREPOST_EXAM: if any blueprint items are still missing in this edition (e.g. teacher uploaded blank Student template while typing items in Teacher edition, or vice versa), rescue ONLY the missing items from approved companion edition files and sanitize 100%!
+      if (docCategory === 'PREPOST_EXAM' && typeof assembleSmartExamBodyXml === 'function') {
+        const primaryMeta = assembleSmartExamBodyXml(
+          parsedParts.map(p => {
+            const bm = /<w:body\b[^>]*>([\s\S]*?)<\/w:body>/i.exec(String(p.documentXml || ''));
+            return { bodyXml: convertFloatingAnchorsToInline_(bm ? bm[1] : String(p.documentXml || '')) };
+          }),
+          { subjectCode: subCode, targetAudience, onlyExtractMeta: true }
+        );
+        const missingSet = new Set((primaryMeta && primaryMeta.missingItemNos) || []);
+        if (missingSet.size > 0) {
+          const companionAudience = targetAudience === 'STUDENT' ? 'TEACHER' : 'STUDENT';
+          setLog('gw-alert-warn', `พบข้อสอบขาดหาย ${missingSet.size} ข้อ (ข้อ ${Array.from(missingSet).join(', ')}) ในฉบับนี้ — กำลังค้นหาและกู้ต้นฉบับจากไฟล์คู่ขนานที่อนุมัติแล้วให้อัตโนมัติ...`);
+          const compRes = await callGas('apiGetApprovedDocsForMerge', {
+            authToken: STATE.authToken || '',
+            subjectCode: subCode,
+            docCategory: 'PREPOST_EXAM',
+            targetAudience: companionAudience,
+            examRound
+          });
+          const compDocsList = (compRes && compRes.ok && Array.isArray(compRes.docs)) ? compRes.docs.slice() : [];
+
+          const compRescuedIds = new Set(
+            allNormalizedSubs
+              .filter(s =>
+                String(s.subjectCode) === String(subCode) &&
+                isApprovedSubmissionStatus_(s.reviewStatus) &&
+                s.docCategory === 'PREPOST_EXAM' &&
+                s.targetAudience === companionAudience &&
+                s._rawDocCategory &&
+                s._rawDocCategory !== 'PREPOST_EXAM' &&
+                (examRound === 'ALL' || !s.examRound || s.examRound === examRound || s.examRound === 'PRE_POST')
+              )
+              .map(s => String(s.submissionId || '').trim())
+              .filter(Boolean)
+          );
+          if (compRescuedIds.size > 0) {
+            const compOppRes = await callGas('apiGetApprovedDocsForMerge', {
+              authToken: STATE.authToken || '',
+              subjectCode: subCode,
+              docCategory: 'TUTORING_STRAND',
+              targetAudience: companionAudience,
+              examRound: 'ALL'
+            });
+            if (compOppRes && compOppRes.ok && Array.isArray(compOppRes.docs)) {
+              compOppRes.docs.forEach(d => {
+                if (compRescuedIds.has(String(d.submissionId || '').trim())) compDocsList.push(d);
+              });
+            }
+          }
+
+          for (const cDoc of compDocsList) {
+            if (!cDoc.base64Data && !cDoc.base64) continue;
+            const binStr = atob(cDoc.base64Data || cDoc.base64);
+            const bytes = new Uint8Array(binStr.length);
+            for (let i = 0; i < binStr.length; i++) bytes[i] = binStr.charCodeAt(i);
+            const cz = await JSZip.loadAsync(bytes);
+            const cDocXml = cz.file('word/document.xml') ? await cz.file('word/document.xml').async('string') : '';
+            const cRelsXml = cz.file('word/_rels/document.xml.rels') ? await cz.file('word/_rels/document.xml.rels').async('string') : '';
+            const cInf = inferPartScopeFromXml_(
+              { fileName: cDoc.fileName || '', strandNo: cDoc.strandNo, subStandard: cDoc.subStandard, bodyXml: cDocXml },
+              subCode,
+              'PREPOST_EXAM',
+              bpRowsForSub
+            );
+            if (cInf && Array.isArray(cInf.authoredItemNos) && cInf.authoredItemNos.some(n => missingSet.has(Number(n)))) {
+              parsedParts.push(Object.assign({}, cDoc, {
+                isCompanionRescue: true,
+                strandNo: cInf.strandNo || cDoc.strandNo,
+                zip: cz,
+                documentXml: cDocXml,
+                relsXml: cRelsXml
+              }));
+            }
+          }
+        }
       }
 
       const subName = SUBJECT_NAMES[subCode] || subCode;
