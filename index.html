@@ -1677,12 +1677,8 @@
                             <input type="number" id="stuAddNo" value="1" min="1" class="gw-input !py-1.5 text-xs">
                           </div>
                           <div>
-                            <label for="stuAddRoom" class="text-[11px] font-bold block mb-1">ห้อง</label>
-                            <select id="stuAddRoom" class="gw-input !py-1.5 text-xs">
-                              <option value="ป.6/1">ป.6/1</option>
-                              <option value="ป.6/2">ป.6/2</option>
-                              <option value="ป.6/3">ป.6/3</option>
-                            </select>
+                            <label for="stuAddRoom" class="text-[11px] font-bold block mb-1">ระดับชั้น</label>
+                            <input type="text" id="stuAddRoom" value="ป.6" readonly class="gw-input !py-1.5 text-xs text-center font-bold bg-slate-50">
                           </div>
                           <div>
                             <label for="stuAddPrefix" class="text-[11px] font-bold block mb-1">คำนำหน้า</label>
@@ -3141,7 +3137,7 @@
                 <div>
                   <label for="bulkStudentsTextarea" class="gw-label">วิธีที่ 2: ก๊อปปี้ตารางจาก Excel มาวาง (หรือเพิ่มทีละบรรทัด)</label>
                   <textarea id="bulkStudentsTextarea" rows="4" oninput="previewBulkStudents()"
-                    placeholder="ก๊อปปี้จาก Excel มาวางได้เลย เช่น:&#10;1	เด็กชาย	กิตติ	ใจดี	ป.6/1&#10;2	ด.ญ.มานี มีสุข	ป.6/1"
+                    placeholder="ก๊อปปี้จาก Excel มาวางได้เลย เช่น:&#10;1	เด็กชาย	กิตติ	ใจดี	ป.6&#10;2	ด.ญ.มานี มีสุข	ป.6"
                     class="gw-input text-xs"></textarea>
                 </div>
 
