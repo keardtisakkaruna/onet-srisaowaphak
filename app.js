@@ -3729,7 +3729,7 @@
     document.getElementById('btnLogout').classList.remove('hidden');
     document.getElementById('studentLoginCard').classList.add('hidden');
     document.getElementById('studentWorkspace').classList.remove('hidden');
-    document.getElementById('stuWelcomeTitle').textContent = `สวัสดี ${student.fullName} (${student.room || 'ป.6/1'})`;
+    document.getElementById('stuWelcomeTitle').textContent = `สวัสดี ${student.fullName} (${formatDisplayClass_(student.room)})`;
     await refreshStudentWorkspace(STATE.studentSubFilter || 'ALL', preloadedPortalData);
     runGlassRevealAnimation(document.getElementById('studentWorkspace'));
     renderNotificationsPopover();
@@ -4065,7 +4065,7 @@
 
     document.getElementById('stuAddNo').value = String(list.length + 1);
     sel.innerHTML = '<option value="">-- เลือกชื่อ-นามสกุลของตนเอง --</option>' + list.map(s =>
-      `<option value="${escHtml(s.studentId)}" data-needs="${s.needsPasswordSetup ? '1' : '0'}">เลขที่ ${escHtml(s.studentNo)} ${escHtml(s.fullName)} (${escHtml(s.room)})</option>`
+      `<option value="${escHtml(s.studentId)}" data-needs="${s.needsPasswordSetup ? '1' : '0'}">เลขที่ ${escHtml(s.studentNo)} ${escHtml(s.fullName)} (${escHtml(formatDisplayClass_(s.room))})</option>`
     ).join('');
   }
 
@@ -4073,7 +4073,7 @@
     const schoolId = document.getElementById('stuSchoolSelect').value;
     const studentNo = document.getElementById('stuAddNo').value.trim() || '1';
     const roomEl = document.getElementById('stuAddRoom');
-    const room = roomEl ? roomEl.value : 'ป.6/1';
+    const room = (roomEl && roomEl.value) ? normalizeClientRoom(roomEl.value) : 'ป.6';
     const prefix = document.getElementById('stuAddPrefix').value;
     const firstName = document.getElementById('stuAddFirst').value.trim();
     const lastName = document.getElementById('stuAddLast').value.trim();
@@ -7346,7 +7346,7 @@
                   ${escHtml(st.fullName)}
                   ${schoolId === 'ALL' ? `<span class="text-[11px] opacity-70">(${escHtml(getSchoolShortName(st.schoolId))})</span>` : ''}
                 </td>
-                <td class="text-center">${escHtml(st.room)}</td>
+                <td class="text-center">${escHtml(formatDisplayClass_(st.room))}</td>
                 <td class="text-center font-bold gw-tabular" style="color: var(--gw-accent);">${st.doneCount} / ${st.totalItems} (${st.progressPct}%)</td>
                 <td class="text-center gw-tabular">${st.attemptCount} ครั้ง</td>
                 <td class="text-center font-bold gw-tabular">${st.attemptCount > 0 ? st.accuracyPct + '%' : '-'}</td>
@@ -8165,13 +8165,19 @@
     return { prefix: '', firstName: s, lastName: '' };
   }
 
+  function formatDisplayClass_(rawRoom) {
+    const r = String(rawRoom || '').trim();
+    if (!r || /^ป\.?\s*6(\/\d+)?$/i.test(r) || /^6\/\d+$/.test(r) || /^\d+$/.test(r)) return 'ป.6';
+    return r;
+  }
+
   function normalizeClientRoom(rawRoom) {
     const r = String(rawRoom || '').trim();
-    if (!r) return 'ป.6/1';
-    if (/^\d+$/.test(r)) return 'ป.6/' + r;
-    if (/^6\/\d+$/.test(r)) return 'ป.' + r;
-    if (/^ป\.?\s*6$/i.test(r)) return 'ป.6/1';
-    return r.replace(/^ป\.?\s*6\s*\/\s*(\d+)$/i, 'ป.6/$1');
+    if (!r) return 'ป.6';
+    if (/^\d+$/.test(r)) return 'ป.6';
+    if (/^6\/\d+$/.test(r)) return 'ป.6';
+    if (/^ป\.?\s*6(\/\d+)?$/i.test(r)) return 'ป.6';
+    return r;
   }
 
   function parseSmartStudentRows(rows2D) {
@@ -8213,7 +8219,7 @@
       let prefix = '';
       let firstName = '';
       let lastName = '';
-      let room = 'ป.6/1';
+      let room = 'ป.6';
 
       if (colMap && (colMap.first !== -1 || colMap.full !== -1)) {
         if (colMap.no !== -1 && rawRow[colMap.no]) studentNo = rawRow[colMap.no].replace(/[^\d]/g, '');
@@ -8345,7 +8351,7 @@
           <td class="text-center">${escHtml(st.prefix || '-')}</td>
           <td class="font-bold">${escHtml(st.firstName)}</td>
           <td class="font-bold">${escHtml(st.lastName)}</td>
-          <td class="text-center">${escHtml(st.room)}</td>
+          <td class="text-center">${escHtml(formatDisplayClass_(st.room))}</td>
         </tr>
       `).join('')}</tbody>
     </table>`;
@@ -8417,9 +8423,9 @@
     const schoolId = document.getElementById('rosterSchoolId').value || 'SCH01';
     const schoolShort = getSchoolShortName(schoolId);
     const aoa = [
-      ['เลขที่', 'คำนำหน้า', 'ชื่อ', 'นามสกุล', 'ห้องเรียน'],
-      ['1', 'เด็กชาย', 'กิตติ', 'ใจดี', 'ป.6/1'],
-      ['2', 'เด็กหญิง', 'มานี', 'มีสุข', 'ป.6/1']
+      ['เลขที่', 'คำนำหน้า', 'ชื่อ', 'นามสกุล', 'ระดับชั้น'],
+      ['1', 'เด็กชาย', 'กิตติ', 'ใจดี', 'ป.6'],
+      ['2', 'เด็กหญิง', 'มานี', 'มีสุข', 'ป.6']
     ];
     if (typeof JSZip !== 'undefined') {
       const zip = new JSZip();
@@ -8670,7 +8676,7 @@
         <tr>
           <td class="text-center gw-tabular">${escHtml(s.studentNo)}</td>
           <td class="font-bold">${escHtml(s.fullName)}</td>
-          <td class="text-center">${escHtml(s.room)}</td>
+          <td class="text-center">${escHtml(formatDisplayClass_(s.room))}</td>
           <td class="text-center">${s.needsPasswordSetup ? '<span class="gw-badge-warn">ยังไม่ตั้งรหัส</span>' : '<span class="gw-badge-success">ตั้งรหัสแล้ว</span>'}</td>
           <td class="text-center">
             <div class="flex flex-wrap justify-center gap-1.5">
@@ -8715,8 +8721,8 @@
               <input type="text" data-field="studentNo" value="${escHtml(stu.studentNo)}" class="gw-input !py-1.5 text-xs gw-tabular">
             </div>
             <div>
-              <label class="font-bold block mb-1">ห้อง</label>
-              <input type="text" data-field="room" value="${escHtml(stu.room || 'ป.6/1')}" class="gw-input !py-1.5 text-xs">
+              <label class="font-bold block mb-1">ระดับชั้น</label>
+              <input type="text" data-field="room" value="${escHtml(formatDisplayClass_(stu.room))}" class="gw-input !py-1.5 text-xs">
             </div>
           </div>
           <div>
