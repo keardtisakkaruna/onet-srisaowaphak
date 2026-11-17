@@ -9561,11 +9561,35 @@
       return `<span class="inline-block rounded-lg px-2 py-1 mr-1 mb-1 font-bold ${count > 0 ? 'gw-badge-success' : 'gw-badge-warn'}">${count > 0 ? '✓' : '⏳'} สาระที่ ${escHtml(no)} (${count})</span>`;
     }).join('');
 
+    const approvedIds = new Set(approved.map(a => a.submissionId));
+    const sameSubjectOther = allSubs.filter(s =>
+      String(s.subjectCode) === subCode &&
+      s.docCategory !== 'MERGED_BOOK' &&
+      !approvedIds.has(s.submissionId) &&
+      s.targetAudience === aud &&
+      (s.docCategory === docGroup || (docGroup === 'PREPOST_EXAM' && /ข้อสอบ|ฉบับที่\s*[12]|PRE|POST/i.test(s.fileName)))
+    );
+    const diagHtml = sameSubjectOther.length
+      ? `<div class="mt-2 pt-2 text-[11px] space-y-1" style="border-top: 1px dashed var(--gw-line-strong); color: #92400e;">
+          <div class="font-bold">⚠️ พบไฟล์ในวิชานี้ที่ส่งเข้ามาแล้ว แต่ยังไม่ถูกรวม (${sameSubjectOther.length} ไฟล์) — สาเหตุ:</div>
+          ${sameSubjectOther.slice(0, 6).map(x => {
+            const reasons = [];
+            if (!isApprovedSubmissionStatus_(x.reviewStatus)) reasons.push(`สถานะคือ "${x.reviewStatus || 'รอตรวจ'}" (ต้องกด "ผ่านพร้อมรวมเล่ม" ก่อน)`);
+            if (x.docCategory !== docGroup) reasons.push(`ถูกบันทึกเป็น "${x.docCategory === 'PREPOST_EXAM' ? 'ข้อสอบ Pre-Post' : 'เอกสารตามสาระฯ'}"`);
+            if (docGroup === 'PREPOST_EXAM' && examRound !== 'ALL' && x.examRound && x.examRound !== examRound && x.examRound !== 'PRE_POST') {
+              reasons.push(`ถูกบันทึกเป็นรอบ "${x.examRound}"`);
+            }
+            return `<div>• <b>${escHtml(x.fileName)}</b> (${escHtml(x.teacherName || '-')}) → ${escHtml(reasons.join(' | ') || 'ไม่ตรงเงื่อนไขตัวกรอง')}</div>`;
+          }).join('')}
+        </div>`
+      : '';
+
     const roundLabel = docGroup === 'PREPOST_EXAM' ? ` • ชุด ${examRound === 'ALL' ? 'ทุกรอบ' : examRound}` : '';
     box.innerHTML = `
       <div class="font-bold">ความพร้อมสำหรับการรวมเล่ม (${escHtml(SUBJECT_NAMES[subCode] || subCode)}${escHtml(roundLabel)} • ${aud === 'STUDENT' ? 'ฉบับนักเรียน' : 'ฉบับครู'} • อนุมัติแล้ว ${approved.length} ไฟล์)</div>
       <div>${strandPills || 'กำลังโหลดโครงสร้างสาระ...'}</div>
       ${approved.length ? `<div class="text-[11px]" style="color: var(--gw-muted);">ลำดับไฟล์ที่จะถูกรวม: ${approved.map((x, i) => `${i + 1}) ${escHtml(x.fileName)}`).join(' → ')}</div>` : '<div class="text-[11px]" style="color: var(--gw-muted);">ยังไม่มีไฟล์ที่อนุมัติแล้วในหมวดนี้ — คุณครูสามารถกดปุ่ม "🧪 ทดลองสร้างไฟล์ตัวอย่าง & รวมเล่มจำลอง" ด้านขวาบนเพื่อดูผลจริงทันทีครับ</div>'}
+      ${diagHtml}
     `;
   }
 
