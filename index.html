@@ -791,6 +791,43 @@
       box-shadow: 0 3px 8px var(--gw-soft-shadow);
     }
 
+    /* 8-School Pill Chips Picker */
+    .gw-school-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .gw-school-chip {
+      min-height: 36px;
+      padding: 6px 12px;
+      border-radius: 999px;
+      border: 1.5px solid var(--gw-line-strong);
+      background: var(--gw-surface);
+      color: var(--gw-ink);
+      font-size: 12px;
+      font-weight: 700;
+      line-height: 1.25;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      transition: background-color 0.16s ease, border-color 0.16s ease, color 0.16s ease, box-shadow 0.16s ease;
+    }
+
+    .gw-school-chip:hover {
+      border-color: var(--gw-accent);
+      background: var(--gw-accent-soft);
+      color: var(--gw-accent);
+    }
+
+    .gw-school-chip.is-active {
+      background: var(--gw-accent);
+      border-color: var(--gw-accent);
+      color: #ffffff;
+      box-shadow: 0 3px 8px rgba(15, 76, 58, 0.2);
+    }
+
     /* Dead-Center Floating Bottom Glass Dock */
     .gw-desktop-dock {
       position: fixed;
@@ -1651,10 +1688,11 @@
                     เลือกโรงเรียน | เลือกชื่อตนเอง | ครั้งแรกตั้งรหัสผ่านของตัวเองได้เลย ครั้งต่อไปกรอกรหัสเข้าเรียนได้ทันที
                   </p>
                   <div class="space-y-3.5">
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 items-end">
+                    <div class="space-y-3">
                       <div>
-                        <label for="stuSchoolSelect" class="gw-label">1. เลือกโรงเรียน (8 โรงเรียน)</label>
-                        <select id="stuSchoolSelect" onchange="onStudentSchoolChange()" class="gw-input"></select>
+                        <label for="stuSchoolSelect" class="gw-label">1. เลือกโรงเรียน (คลิกชื่อโรงเรียนได้เลย)</label>
+                        <div id="stuSchoolSelectChips" class="gw-school-chips" role="group" aria-label="เลือกโรงเรียน 8 โรงเรียน"></div>
+                        <select id="stuSchoolSelect" onchange="onStudentSchoolChange()" class="hidden"></select>
                       </div>
                       <div>
                         <label for="stuNameSelect" class="gw-label">2. เลือกชื่อ-นามสกุลตนเอง</label>
@@ -1871,10 +1909,11 @@
                       <div id="commQuickChips" class="flex flex-wrap gap-1.5"></div>
                     </div>
 
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 items-end">
+                    <div class="space-y-3">
                       <div>
-                        <label for="commFilterSchool" class="gw-label">1. กรองตามโรงเรียน</label>
-                        <select id="commFilterSchool" onchange="renderRoleTeacherSelect('COMMITTEE')" class="gw-input"></select>
+                        <label for="commFilterSchool" class="gw-label">1. กรองตามโรงเรียน (คลิกเลือกได้เลย)</label>
+                        <div id="commFilterSchoolChips" class="gw-school-chips" role="group" aria-label="กรองกรรมการตามโรงเรียน"></div>
+                        <select id="commFilterSchool" onchange="renderRoleTeacherSelect('COMMITTEE')" class="hidden"></select>
                       </div>
                       <div>
                         <label for="commSelectTeacher" class="gw-label">2. เลือกชื่อกรรมการจัดทำเอกสาร</label>
@@ -1939,9 +1978,10 @@
                       </div>
                     </div>
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 items-end">
-                      <div>
-                        <label for="commRegSchool" class="gw-label">1. โรงเรียนสังกัด (8 โรงเรียน)</label>
-                        <select id="commRegSchool" class="gw-input"></select>
+                      <div class="sm:col-span-2">
+                        <label for="commRegSchool" class="gw-label">1. โรงเรียนสังกัด (คลิกเลือก 1 จาก 8 โรงเรียน)</label>
+                        <div id="commRegSchoolChips" class="gw-school-chips" role="group" aria-label="เลือกโรงเรียนสังกัดกรรมการ"></div>
+                        <select id="commRegSchool" class="hidden"></select>
                       </div>
                       <div>
                         <label for="commRegSubject" class="gw-label">2. กลุ่มสาระวิชาที่ได้รับมอบหมาย / สอน</label>
@@ -2038,10 +2078,11 @@
                       <div id="instQuickChips" class="flex flex-wrap gap-1.5"></div>
                     </div>
 
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 items-end">
+                    <div class="space-y-3">
                       <div>
-                        <label for="instFilterSchool" class="gw-label">1. กรองตามโรงเรียน</label>
-                        <select id="instFilterSchool" onchange="renderRoleTeacherSelect('INSTRUCTOR')" class="gw-input"></select>
+                        <label for="instFilterSchool" class="gw-label">1. กรองตามโรงเรียน (คลิกเลือกได้เลย)</label>
+                        <div id="instFilterSchoolChips" class="gw-school-chips" role="group" aria-label="กรองครูผู้สอนตามโรงเรียน"></div>
+                        <select id="instFilterSchool" onchange="renderRoleTeacherSelect('INSTRUCTOR')" class="hidden"></select>
                       </div>
                       <div>
                         <label for="instSelectTeacher" class="gw-label">2. เลือกชื่อครูผู้สอน ป.6</label>
@@ -2105,10 +2146,11 @@
                         </label>
                       </div>
                     </div>
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 items-end">
+                    <div class="space-y-3">
                       <div>
-                        <label for="instRegSchool" class="gw-label">1. โรงเรียนสังกัด (8 โรงเรียน)</label>
-                        <select id="instRegSchool" class="gw-input"></select>
+                        <label for="instRegSchool" class="gw-label">1. โรงเรียนสังกัด (คลิกเลือก 1 จาก 8 โรงเรียน)</label>
+                        <div id="instRegSchoolChips" class="gw-school-chips" role="group" aria-label="เลือกโรงเรียนสังกัดครูผู้สอน"></div>
+                        <select id="instRegSchool" class="hidden"></select>
                       </div>
                       <div>
                         <label for="instRegSubject" class="gw-label">2. รายวิชาที่สอนชั้น ป.6 / ออกข้อสอบ</label>
@@ -2205,10 +2247,11 @@
                       <div id="acadQuickChips" class="flex flex-wrap gap-1.5"></div>
                     </div>
 
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 items-end">
+                    <div class="space-y-3">
                       <div>
-                        <label for="acadFilterSchool" class="gw-label">1. กรองตามโรงเรียน</label>
-                        <select id="acadFilterSchool" onchange="renderRoleTeacherSelect('ACADEMIC')" class="gw-input"></select>
+                        <label for="acadFilterSchool" class="gw-label">1. กรองตามโรงเรียน (คลิกเลือกได้เลย)</label>
+                        <div id="acadFilterSchoolChips" class="gw-school-chips" role="group" aria-label="กรองครูวิชาการตามโรงเรียน"></div>
+                        <select id="acadFilterSchool" onchange="renderRoleTeacherSelect('ACADEMIC')" class="hidden"></select>
                       </div>
                       <div>
                         <label for="acadSelectTeacher" class="gw-label">2. เลือกชื่อครูวิชาการ</label>
@@ -2272,10 +2315,11 @@
                         </label>
                       </div>
                     </div>
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 items-end">
+                    <div class="space-y-3">
                       <div>
-                        <label for="acadRegSchool" class="gw-label">1. โรงเรียนสังกัด (8 โรงเรียน)</label>
-                        <select id="acadRegSchool" class="gw-input"></select>
+                        <label for="acadRegSchool" class="gw-label">1. โรงเรียนสังกัด (คลิกเลือก 1 จาก 8 โรงเรียน)</label>
+                        <div id="acadRegSchoolChips" class="gw-school-chips" role="group" aria-label="เลือกโรงเรียนสังกัดครูวิชาการ"></div>
+                        <select id="acadRegSchool" class="hidden"></select>
                       </div>
                       <div>
                         <label for="acadRegSubject" class="gw-label">2. รายวิชาที่สอน / ออกข้อสอบ (กรณีควบตำแหน่ง)</label>
