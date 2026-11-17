@@ -739,9 +739,22 @@
   }
 
   function formatThaiDateFull(rawDate) {
+    if (rawDate instanceof Date && !isNaN(rawDate.getTime())) {
+      let y = rawDate.getFullYear();
+      while (y >= 2400) y -= 543;
+      return `${rawDate.getDate()} ${THAI_MONTHS[rawDate.getMonth()]} พ.ศ. ${y + 543}`;
+    }
     const iso = normalizeIsoDateBEtoCE(rawDate);
     const m = iso.match(/^(\d{4})-(\d{2})-(\d{2})/);
-    if (!m) return String(rawDate ?? '');
+    if (!m) {
+      const parsed = rawDate ? new Date(String(rawDate)) : null;
+      if (parsed && !isNaN(parsed.getTime())) {
+        let py = parsed.getFullYear();
+        while (py >= 2400) py -= 543;
+        return `${parsed.getDate()} ${THAI_MONTHS[parsed.getMonth()]} พ.ศ. ${py + 543}`;
+      }
+      return String(rawDate ?? '');
+    }
     const ceYear = parseInt(m[1], 10);
     const mIdx = parseInt(m[2], 10) - 1;
     const day = parseInt(m[3], 10);
@@ -1307,21 +1320,47 @@
     return `<w:rPr><w:rFonts w:ascii="TH SarabunPSK" w:hAnsi="TH SarabunPSK" w:cs="TH SarabunPSK"/>${bold}${italic}${color}<w:sz w:val="${sz}"/><w:szCs w:val="${sz}"/><w:noProof/><w:cs/><w:lang w:val="th-TH" w:bidi="th-TH"/></w:rPr>`;
   }
 
+  function buildIndXml_(opts = {}) {
+    const attrs = [];
+    if (opts.left != null) attrs.push(`w:left="${opts.left}"`);
+    if (opts.hanging != null) attrs.push(`w:hanging="${opts.hanging}"`);
+    else if (opts.firstLine) attrs.push(`w:firstLine="${opts.firstLine}"`);
+    return attrs.length ? `<w:ind ${attrs.join(' ')}/>` : '';
+  }
+
   function buildSarabunPara_(text, opts = {}) {
     const jc = opts.jc || 'thaiDistribute';
     const before = opts.before != null ? opts.before : 40;
     const after = opts.after != null ? opts.after : 80;
-    const firstLine = opts.firstLine ? `<w:ind w:firstLine="${opts.firstLine}"/>` : '';
+    const indXml = buildIndXml_(opts);
     const keepNext = opts.keepNext ? '<w:keepNext/>' : '';
     const rPr = buildSarabunRPr_(opts);
-    return `<w:p><w:pPr><w:spacing w:before="${before}" w:after="${after}" w:line="276" w:lineRule="auto"/>${firstLine}${keepNext}<w:jc w:val="${jc}"/></w:pPr><w:r>${rPr}<w:t xml:space="preserve">${escapeDocxXmlText(text)}</w:t></w:r></w:p>`;
+    return `<w:p><w:pPr><w:spacing w:before="${before}" w:after="${after}" w:line="276" w:lineRule="auto"/>${indXml}${keepNext}<w:jc w:val="${jc}"/></w:pPr><w:r>${rPr}<w:t xml:space="preserve">${escapeDocxXmlText(text)}</w:t></w:r></w:p>`;
+  }
+
+  function buildMixedRunsPara_(runs = [], opts = {}) {
+    const jc = opts.jc || 'thaiDistribute';
+    const before = opts.before != null ? opts.before : 40;
+    const after = opts.after != null ? opts.after : 80;
+    const indXml = buildIndXml_(opts);
+    const keepNext = opts.keepNext ? '<w:keepNext/>' : '';
+    const runsXml = runs.map((r) => `<w:r>${buildSarabunRPr_(r)}<w:t xml:space="preserve">${escapeDocxXmlText(r.text || '')}</w:t></w:r>`).join('');
+    return `<w:p><w:pPr><w:spacing w:before="${before}" w:after="${after}" w:line="276" w:lineRule="auto"/>${indXml}${keepNext}<w:jc w:val="${jc}"/></w:pPr>${runsXml}</w:p>`;
   }
 
   function buildFixedTable_(rows = [], colWidths = [], opts = {}) {
     const totalWidth = colWidths.reduce((s, w) => s + w, 0) || 8306;
     const borderColor = escapeDocxXmlText(opts.borderColor || '94A3B8');
-    const borderSz = Number(opts.borderSz || 6);
-    const tblBorders = `<w:tblBorders><w:top w:val="single" w:sz="${borderSz}" w:space="0" w:color="${borderColor}"/><w:left w:val="single" w:sz="${borderSz}" w:space="0" w:color="${borderColor}"/><w:bottom w:val="single" w:sz="${borderSz}" w:space="0" w:color="${borderColor}"/><w:right w:val="single" w:sz="${borderSz}" w:space="0" w:color="${borderColor}"/><w:insideH w:val="single" w:sz="${Math.max(4, borderSz - 2)}" w:space="0" w:color="${borderColor}"/><w:insideV w:val="single" w:sz="${Math.max(4, borderSz - 2)}" w:space="0" w:color="${borderColor}"/></w:tblBorders>`;
+    const borderSz = Number(opts.borderSz != null ? opts.borderSz : 6);
+    const tblBorders = opts.borderNone
+      ? '<w:tblBorders><w:top w:val="none" w:sz="0" w:space="0" w:color="auto"/><w:left w:val="none" w:sz="0" w:space="0" w:color="auto"/><w:bottom w:val="none" w:sz="0" w:space="0" w:color="auto"/><w:right w:val="none" w:sz="0" w:space="0" w:color="auto"/><w:insideH w:val="none" w:sz="0" w:space="0" w:color="auto"/><w:insideV w:val="none" w:sz="0" w:space="0" w:color="auto"/></w:tblBorders>'
+      : `<w:tblBorders><w:top w:val="single" w:sz="${borderSz}" w:space="0" w:color="${borderColor}"/><w:left w:val="single" w:sz="${borderSz}" w:space="0" w:color="${borderColor}"/><w:bottom w:val="single" w:sz="${borderSz}" w:space="0" w:color="${borderColor}"/><w:right w:val="single" w:sz="${borderSz}" w:space="0" w:color="${borderColor}"/><w:insideH w:val="single" w:sz="${Math.max(4, borderSz - 2)}" w:space="0" w:color="${borderColor}"/><w:insideV w:val="single" w:sz="${Math.max(4, borderSz - 2)}" w:space="0" w:color="${borderColor}"/></w:tblBorders>`;
+    const pad = opts.cellPad || {};
+    const padTop = pad.top != null ? pad.top : 90;
+    const padBottom = pad.bottom != null ? pad.bottom : 90;
+    const padLeft = pad.left != null ? pad.left : 120;
+    const padRight = pad.right != null ? pad.right : 120;
+    const tblIndXml = opts.tblInd != null ? `<w:tblInd w:w="${opts.tblInd}" w:type="dxa"/>` : '';
     const tblGrid = `<w:tblGrid>${colWidths.map((w) => `<w:gridCol w:w="${w}"/>`).join('')}</w:tblGrid>`;
     const trsXml = rows.map((row) => {
       const splitXml = (opts.allowRowSplit || row.allowRowSplit) ? '' : '<w:cantSplit/>';
@@ -1335,6 +1374,7 @@
           : buildSarabunPara_(cell.text != null ? String(cell.text) : '', {
               sz: cell.sz || 30,
               bold: !!cell.bold,
+              italic: !!cell.italic,
               color: cell.color || '',
               jc: cell.jc || 'left',
               before: cell.before != null ? cell.before : 30,
@@ -1344,7 +1384,7 @@
       }).join('');
       return `<w:tr>${trPr}${cellsXml}</w:tr>`;
     }).join('');
-    return `<w:tbl><w:tblPr><w:tblW w:w="${totalWidth}" w:type="dxa"/>${tblBorders}<w:tblLayout w:type="fixed"/><w:tblCellMar><w:top w:w="90" w:type="dxa"/><w:left w:w="120" w:type="dxa"/><w:bottom w:w="90" w:type="dxa"/><w:right w:w="120" w:type="dxa"/></w:tblCellMar></w:tblPr>${tblGrid}${trsXml}</w:tbl>`;
+    return `<w:tbl><w:tblPr><w:tblW w:w="${totalWidth}" w:type="dxa"/>${tblIndXml}${tblBorders}<w:tblLayout w:type="fixed"/><w:tblCellMar><w:top w:w="${padTop}" w:type="dxa"/><w:left w:w="${padLeft}" w:type="dxa"/><w:bottom w:w="${padBottom}" w:type="dxa"/><w:right w:w="${padRight}" w:type="dxa"/></w:tblCellMar></w:tblPr>${tblGrid}${trsXml}</w:tbl>`;
   }
 
   function buildLockedImageFrameBox_(captionText) {
@@ -1463,14 +1503,25 @@
     return { ok: true, normalized: v };
   }
 
+  function decodeDocxXmlEntities_(str) {
+    return String(str || '')
+      .replace(/&lt;/g, '<')
+      .replace(/&gt;/g, '>')
+      .replace(/&quot;/g, '"')
+      .replace(/&apos;/g, "'")
+      .replace(/&amp;/g, '&');
+  }
+
   function extractPlainTextFromDocxXml(xml) {
     if (!xml) return '';
-    return String(xml)
+    const raw = String(xml)
       .replace(/<\/w:p>/g, '\n')
-      .replace(/<w:tab\s*\/>/g, ' ')
+      .replace(/<w:br\b[^>]*\/?>/gi, ' ')
+      .replace(/<w:tab\b[^>]*\/?>/gi, ' ')
       .replace(/<[^>]+>/g, '')
       .replace(/[ \t]+/g, ' ')
       .trim();
+    return decodeDocxXmlEntities_(raw);
   }
 
   const NIETS_2569_EXAM_ITEMS = {
@@ -2193,6 +2244,14 @@
     });
 
     bodyXml = convertFloatingAnchorsToInline_(bodyXml);
+    bodyXml = bodyXml
+      .replace(/\s+w:eastAsia\s*=\s*"[^"]*"/gi, '')
+      .replace(/<w:rPr>([\s\S]*?)<\/w:rPr>/gi, (fullRPr, inner) => {
+        let next = inner;
+        if (!/<w:noProof\b/i.test(next)) next += '<w:noProof/>';
+        if (!/<w:cs\b/i.test(next)) next += '<w:cs/>';
+        return `<w:rPr>${next}</w:rPr>`;
+      });
     bodyXml = bodyXml.replace(/(<w:p\b[\s\S]*?<\/w:p>)/gi, (pXml) => {
       if (!/<w:drawing\b/i.test(pXml) || !/<w:t(?:\s[^>]*)?>[\s\S]*?\S[\s\S]*?<\/w:t>/i.test(pXml)) return pXml;
       return pXml.replace(/(<w:r(?:\s[^>]*)?>\s*(?:<w:rPr>[\s\S]*?<\/w:rPr>\s*)?)(<w:drawing\b[\s\S]*?<\/w:drawing>)(\s*<\/w:r>)/gi, '$1<w:br/>$2<w:br/>$3');
@@ -2369,37 +2428,130 @@
     const isTeacher = /ครู/.test(editionLabel) || String(params.targetAudience || '').toUpperCase() === 'TEACHER';
     const examCodeNo = examRound === 'POST' ? '200' : '100';
     const roundTitle = examRound === 'POST' ? 'Post O-NET (หลังติว)' : 'Pre O-NET (ก่อนติว)';
-    const totalItems = Number(params.totalItems || (NIETS_2569_EXAM_ITEMS[subjectCode] || []).length || 20);
+    const bpItems = NIETS_2569_EXAM_ITEMS[subjectCode] || [];
+    const totalItems = Number(params.totalItems || bpItems.length || 20);
     const schoolClusterName = String(params.schoolClusterName || 'กลุ่มโรงเรียนศรีเสาวภาค สพป.สระบุรี เขต 2 (8 โรงเรียน)');
     const generatedDateThai = String(params.generatedDateThai || formatThaiDateFull(new Date()));
     const chapters = Array.isArray(params.chapters) ? params.chapters : [];
-
-    const tocRows = [
-      {
-        isHeader: true,
-        cells: [
-          { text: 'ลำดับ', sz: 28, bold: true, fill: isTeacher ? 'FEF2F2' : 'ECFDF5', color: isTeacher ? '991B1B' : '1B4332', jc: 'center' },
-          { text: 'สาระการเรียนรู้', sz: 28, bold: true, fill: isTeacher ? 'FEF2F2' : 'ECFDF5', color: isTeacher ? '991B1B' : '1B4332', jc: 'center' },
-          { text: 'ช่วงข้อ / รายละเอียดไฟล์ต้นฉบับ', sz: 28, bold: true, fill: isTeacher ? 'FEF2F2' : 'ECFDF5', color: isTeacher ? '991B1B' : '1B4332', jc: 'center' },
-          { text: 'ผู้จัดทำ / โรงเรียน', sz: 28, bold: true, fill: isTeacher ? 'FEF2F2' : 'ECFDF5', color: isTeacher ? '991B1B' : '1B4332', jc: 'center' }
-        ]
-      }
-    ];
-    chapters.forEach((ch, idx) => {
-      const rawSub = String(ch.scopeSummary || ch.subStandard || ch.fileName || '-');
-      const cleanSub = /^ALL$/i.test(rawSub.trim()) ? 'ครบทั้งสาระ' : rawSub;
-      tocRows.push({
-        cells: [
-          { text: `${idx + 1}`, sz: 28, jc: 'center' },
-          { text: String(ch.strandLabel || `สาระที่ ${ch.strandNo || (idx + 1)}`), sz: 28, jc: 'left' },
-          { text: cleanSub, sz: 26, jc: 'left' },
-          { text: String(ch.authorSchool || '-'), sz: 26, jc: 'left' }
-        ]
-      });
-    });
+    const examChecklist = Array.isArray(params.examChecklist) ? params.examChecklist : [];
 
     const borderCol = isTeacher ? '991B1B' : '1E293B';
     const fillCol = isTeacher ? 'FEF2F2' : 'F8FAFC';
+    const accentCol = isTeacher ? '991B1B' : '1B4332';
+    const softHdrFill = isTeacher ? 'FEF2F2' : 'ECFDF5';
+
+    let itemSummaryText = `${totalItems} ข้อ | คะแนนเต็ม 100 คะแนน`;
+    let missingNotePara = '';
+    if (examChecklist.length > 0) {
+      const authoredCount = examChecklist.filter((x) => x.authored).length;
+      const missingNos = examChecklist.filter((x) => !x.authored).map((x) => x.itemNo);
+      if (authoredCount > 0 && missingNos.length > 0) {
+        itemSummaryText = `บรรจุข้อสอบจริงแล้ว ${authoredCount} จาก ${totalItems} ข้อ (รอต้นฉบับข้อ ${missingNos.join(', ')}) | คะแนนเต็มตามผัง 100 คะแนน`;
+        missingNotePara = buildSarabunPara_(
+          `หมายเหตุสถานะชุดข้อสอบ: ขณะนี้มีข้อสอบที่พิมพ์เนื้อหาสมบูรณ์แล้ว ${authoredCount}/${totalItems} ข้อ (ยังรอต้นฉบับเพิ่มเติมในข้อที่ ${missingNos.join(', ')})`,
+          { sz: 28, bold: true, color: 'B45309', jc: 'left', before: 40, after: 40 }
+        );
+      } else if (authoredCount === totalItems) {
+        itemSummaryText = `${totalItems} ข้อ (ครบ 100% ตามผัง สทศ.) | คะแนนเต็ม 100 คะแนน`;
+      }
+    }
+
+    const secMap = new Map();
+    bpItems.forEach((it) => {
+      const sNo = Number(it.sectionNo || 1);
+      if (!secMap.has(sNo)) {
+        secMap.set(sNo, { sectionNo: sNo, itemType: it.itemType, items: [], totalPts: 0 });
+      }
+      const g = secMap.get(sNo);
+      g.items.push(it);
+      g.totalPts = roundScore(g.totalPts + Number(it.weight || 0));
+    });
+
+    let page2TablesXml = '';
+    if (!isTeacher && secMap.size > 0) {
+      const structRows = [{
+        isHeader: true,
+        cells: [
+          { text: 'ตอนที่', sz: 28, bold: true, fill: softHdrFill, color: accentCol, jc: 'center' },
+          { text: 'รูปแบบข้อสอบตามผัง สทศ. 2569', sz: 28, bold: true, fill: softHdrFill, color: accentCol, jc: 'center' },
+          { text: 'ช่วงข้อสอบ (จำนวนข้อ)', sz: 28, bold: true, fill: softHdrFill, color: accentCol, jc: 'center' },
+          { text: 'คะแนนรวม', sz: 28, bold: true, fill: softHdrFill, color: accentCol, jc: 'center' }
+        ]
+      }];
+      Array.from(secMap.values()).forEach((sec) => {
+        structRows.push({
+          cells: [
+            { text: `ตอนที่ ${sec.sectionNo}`, sz: 28, bold: true, jc: 'center' },
+            { text: formatExamItemTypeLabel_(sec.itemType), sz: 28, jc: 'left' },
+            { text: `${formatLockedRangeSummary_(sec.items)} (รวม ${sec.items.length} ข้อ)`, sz: 28, jc: 'center' },
+            { text: `${sec.totalPts} คะแนน`, sz: 28, bold: true, jc: 'center' }
+          ]
+        });
+      });
+      structRows.push({
+        cells: [
+          { text: 'รวมทั้งฉบับ', sz: 28, bold: true, fill: 'F8FAFC', jc: 'center' },
+          { text: 'แบบทดสอบวัดผลสัมฤทธิ์ตามมาตรฐาน สทศ. (สอบกระดาษ)', sz: 28, bold: true, fill: 'F8FAFC', jc: 'left' },
+          { text: `ข้อ 1–${totalItems} (${totalItems} ข้อ)`, sz: 28, bold: true, fill: 'F8FAFC', jc: 'center' },
+          { text: '100 คะแนน', sz: 28, bold: true, fill: 'F8FAFC', color: accentCol, jc: 'center' }
+        ]
+      });
+      page2TablesXml = buildFixedTable_(structRows, [1100, 3306, 2300, 1600], { borderColor: borderCol, borderSz: 6 }) + missingNotePara;
+    } else {
+      const tocRows = [{
+        isHeader: true,
+        cells: [
+          { text: 'ลำดับ', sz: 28, bold: true, fill: softHdrFill, color: accentCol, jc: 'center' },
+          { text: 'สาระการเรียนรู้', sz: 28, bold: true, fill: softHdrFill, color: accentCol, jc: 'center' },
+          { text: 'ช่วงข้อสอบที่จัดทำจริง', sz: 28, bold: true, fill: softHdrFill, color: accentCol, jc: 'center' },
+          { text: 'ผู้จัดทำ / โรงเรียน', sz: 28, bold: true, fill: softHdrFill, color: accentCol, jc: 'center' }
+        ]
+      }];
+      chapters.forEach((ch, idx) => {
+        const rawSub = String(ch.scopeSummary || ch.subStandard || ch.fileName || '-');
+        const cleanSub = /^ALL$/i.test(rawSub.trim()) ? 'ครบทั้งสาระ' : rawSub;
+        tocRows.push({
+          cells: [
+            { text: `${idx + 1}`, sz: 28, jc: 'center' },
+            { text: String(ch.strandLabel || `สาระที่ ${ch.strandNo || (idx + 1)}`), sz: 28, jc: 'left' },
+            { text: cleanSub, sz: 26, jc: 'left' },
+            { text: String(ch.authorSchool || '-'), sz: 26, jc: 'left' }
+          ]
+        });
+      });
+      page2TablesXml = buildFixedTable_(tocRows, [900, 2200, 2906, 2300], { borderColor: borderCol, borderSz: 6 }) + missingNotePara;
+
+      if (examChecklist.length > 0) {
+        const chkRows = [{
+          isHeader: true,
+          cells: [
+            { text: 'ข้อที่', sz: 26, bold: true, fill: softHdrFill, color: accentCol, jc: 'center' },
+            { text: 'สาระ / ตัวชี้วัด', sz: 26, bold: true, fill: softHdrFill, color: accentCol, jc: 'center' },
+            { text: 'รูปแบบข้อสอบ', sz: 26, bold: true, fill: softHdrFill, color: accentCol, jc: 'center' },
+            { text: 'สถานะในเล่ม / ผู้จัดทำต้นฉบับ', sz: 26, bold: true, fill: softHdrFill, color: accentCol, jc: 'center' }
+          ]
+        }];
+        examChecklist.forEach((chk) => {
+          chkRows.push({
+            cells: [
+              { text: `ข้อ ${chk.itemNo}`, sz: 26, bold: true, jc: 'center' },
+              { text: `สาระที่ ${chk.strandNo} (${chk.indicatorCode})`, sz: 26, jc: 'left' },
+              { text: formatExamItemTypeLabel_(chk.itemType), sz: 24, jc: 'left' },
+              {
+                text: chk.authored ? `✓ พร้อมสอบ — ${chk.authorLabel || 'คณะกรรมการ'}` : '⏳ รอต้นฉบับข้อสอบ',
+                sz: 26, bold: !!chk.authored, fill: chk.authored ? softHdrFill : 'F8FAFC', color: chk.authored ? accentCol : 'B45309', jc: 'left'
+              }
+            ]
+          });
+        });
+        page2TablesXml += buildSarabunPara_('ตารางตรวจสอบความครบถ้วนรายข้อตามผัง สทศ. 2569', { sz: 32, bold: true, color: accentCol, jc: 'left', before: 120, after: 40, keepNext: true }) +
+          buildFixedTable_(chkRows, [950, 2350, 2306, 2700], { borderColor: borderCol, borderSz: 6 });
+      }
+    }
+
+    const page2Title = isTeacher
+      ? 'คำชี้แจงในการทำแบบทดสอบ และผังตรวจสอบต้นฉบับชุดข้อสอบ'
+      : 'คำชี้แจงในการทำแบบทดสอบ และโครงสร้างข้อสอบประจำวิชา';
 
     return [
       buildFixedTable_(
@@ -2409,7 +2561,7 @@
             paras: [
               buildSarabunPara_('การทดสอบระดับกลุ่มโรงเรียนศรีเสาวภาค คู่ขนาน O-NET ชั้นประถมศึกษาปีที่ 6 ปีการศึกษา 2569', { sz: 36, bold: true, color: '0F172A', jc: 'center', before: 120, after: 40 }),
               buildSarabunPara_(schoolClusterName, { sz: 32, bold: true, color: '334155', jc: 'center', before: 0, after: 60 }),
-              buildSarabunPara_(`รหัสวิชา ${subjectCode}  รายวิชา ${subjectName}`, { sz: 46, bold: true, color: isTeacher ? '991B1B' : '1B4332', jc: 'center', before: 60, after: 40 }),
+              buildSarabunPara_(`รหัสวิชา ${subjectCode}  รายวิชา ${subjectName}`, { sz: 46, bold: true, color: accentCol, jc: 'center', before: 60, after: 40 }),
               buildSarabunPara_(`[  รหัสชุดข้อสอบ ${examCodeNo}  |  ${roundTitle}  |  ${editionLabel}  ]`, { sz: 36, bold: true, color: isTeacher ? '991B1B' : '0F172A', jc: 'center', before: 20, after: 120 })
             ]
           }]
@@ -2420,8 +2572,8 @@
       buildSarabunPara_('', { sz: 24, before: 120, after: 120 }),
       buildFixedTable_(
         [
-          { cells: [{ text: 'ระดับชั้นที่ทดสอบ', sz: 30, bold: true, fill: 'F8FAFC' }, { text: 'ประถมศึกษาปีที่ 6 (ตามโครงสร้างข้อสอบ สทศ. 2569)', sz: 30 }] },
-          { cells: [{ text: 'จำนวนข้อสอบทั้งฉบับ', sz: 30, bold: true, fill: 'F8FAFC' }, { text: `${totalItems} ข้อ | คะแนนเต็ม 100 คะแนน`, sz: 30, bold: true }] },
+          { cells: [{ text: 'ระดับชั้นที่ทดสอบ', sz: 30, bold: true, fill: 'F8FAFC' }, { text: 'ประถมศึกษาปีที่ 6 (ตามโครงสร้างข้อสอบ สทศ. ปีการศึกษา 2569)', sz: 30 }] },
+          { cells: [{ text: 'จำนวนข้อสอบทั้งฉบับ', sz: 30, bold: true, fill: 'F8FAFC' }, { text: itemSummaryText, sz: 30, bold: true }] },
           { cells: [{ text: 'วันที่จัดทำรูปเล่ม', sz: 30, bold: true, fill: 'F8FAFC' }, { text: generatedDateThai, sz: 30 }] }
         ],
         [2800, 5506],
@@ -2443,33 +2595,474 @@
         { borderColor: 'CA8A04', borderSz: 8 }
       ),
       '<w:p><w:r><w:br w:type="page"/></w:r></w:p>',
-      buildSarabunPara_('คำชี้แจงในการทำแบบทดสอบ และสารบัญชุดข้อสอบ', { sz: 38, bold: true, color: isTeacher ? '991B1B' : '1B4332', jc: 'center', before: 60, after: 80, keepNext: true }),
-      buildSarabunPara_('1. แบบทดสอบฉบับนี้จัดเรียงข้อสอบตามลำดับผังการสร้างข้อสอบ (Test Blueprint) ของสถาบันทดสอบทางการศึกษาแห่งชาติ (สทศ.) ครบทุกสาระการเรียนรู้', { sz: 30, firstLine: 720, before: 20, after: 40 }),
-      buildSarabunPara_('2. ให้นักเรียนตรวจนับจำนวนหน้าและหมายเลขข้อให้ครบถ้วนตั้งแต่ข้อที่ 1 ถึงข้อสุดท้าย ก่อนลงมือทำข้อสอบ และระบายคำตอบลงในกระดาษคำตอบอย่างรอบคอบ', { sz: 30, firstLine: 720, before: 10, after: 80 }),
-      buildFixedTable_(tocRows, [900, 2200, 2906, 2300], { borderColor: borderCol, borderSz: 6 }),
+      buildSarabunPara_(page2Title, { sz: 38, bold: true, color: accentCol, jc: 'center', before: 60, after: 60, keepNext: true }),
+      buildSarabunPara_('1. แบบทดสอบฉบับนี้จัดเรียงข้อสอบตามลำดับผังการสร้างข้อสอบ (Test Blueprint) ของสถาบันทดสอบทางการศึกษาแห่งชาติ (สทศ.) ครบทุกสาระการเรียนรู้', { sz: 30, firstLine: 720, before: 16, after: 30 }),
+      buildSarabunPara_('2. ให้นักเรียนตรวจนับจำนวนหน้าและหมายเลขข้อให้ครบถ้วนตั้งแต่ข้อที่ 1 ถึงข้อสุดท้าย ก่อนลงมือทำข้อสอบ และระบายคำตอบลงในกระดาษคำตอบอย่างรอบคอบ', { sz: 30, firstLine: 720, before: 10, after: 60 }),
+      page2TablesXml,
       '<w:p><w:r><w:br w:type="page"/></w:r></w:p>'
     ].join('');
+  }
+
+  function stripRegexesAcrossWT_(pXml, regexList = []) {
+    if (!pXml || !regexList.length) return pXml;
+    const wtRe = /<w:t(\s[^>]*)?>([\s\S]*?)<\/w:t>/gi;
+    const nodes = [];
+    let fullDecoded = '';
+    let m;
+    while ((m = wtRe.exec(pXml)) !== null) {
+      const dec = decodeDocxXmlEntities_(m[2]);
+      nodes.push({
+        fullMatchStart: m.index,
+        fullMatchEnd: m.index + m[0].length,
+        attrs: m[1] || '',
+        decoded: dec,
+        charStart: fullDecoded.length,
+        charEnd: fullDecoded.length + dec.length
+      });
+      fullDecoded += dec;
+    }
+    if (!nodes.length || !fullDecoded) return pXml;
+
+    const keep = new Uint8Array(fullDecoded.length);
+    keep.fill(1);
+    let changed = false;
+
+    regexList.forEach((rx) => {
+      const flags = rx.flags.includes('g') ? rx.flags : rx.flags + 'g';
+      const localRx = new RegExp(rx.source, flags);
+      let rm;
+      while ((rm = localRx.exec(fullDecoded)) !== null) {
+        if (!rm[0]) {
+          localRx.lastIndex += 1;
+          continue;
+        }
+        for (let k = rm.index; k < rm.index + rm[0].length; k++) {
+          keep[k] = 0;
+          changed = true;
+        }
+      }
+    });
+
+    if (!changed) return pXml;
+
+    let outXml = '';
+    let cursor = 0;
+    nodes.forEach((nd) => {
+      outXml += pXml.slice(cursor, nd.fullMatchStart);
+      let nextStr = '';
+      for (let i = nd.charStart; i < nd.charEnd; i++) {
+        if (keep[i]) nextStr += fullDecoded[i];
+      }
+      const spaceAttr = /\bxml:space\s*=/.test(nd.attrs) ? nd.attrs : `${nd.attrs} xml:space="preserve"`;
+      outXml += `<w:t${spaceAttr}>${escapeDocxXmlText(nextStr)}</w:t>`;
+      cursor = nd.fullMatchEnd;
+    });
+    outXml += pXml.slice(cursor);
+    return outXml;
+  }
+
+  function extractLargeDiagramRunsFromPara_(pXml) {
+    const s = String(pXml || '');
+    if (!/<w:drawing\b|<w:pict\b/i.test(s)) {
+      return { textParaXml: s, diagramParasXml: [] };
+    }
+    const diagramParasXml = [];
+    const cleanedPara = s.replace(/<w:r(?:\s[^>]*)?>(?:(?!<\/w:r>)[\s\S])*?(?:<mc:AlternateContent\b[\s\S]*?<\/mc:AlternateContent>|<w:drawing\b[\s\S]*?<\/w:drawing>|<w:pict\b[\s\S]*?<\/w:pict>)(?:(?!<\/w:r>)[\s\S])*?<\/w:r>/gi, (runXml) => {
+      const extM = /<wp:extent\b[^>]*?\bcx\s*=\s*"(\d+)"[^>]*?\bcy\s*=\s*"(\d+)"/i.exec(runXml) ||
+                   /<wp:extent\b[^>]*?\bcy\s*=\s*"(\d+)"[^>]*?\bcx\s*=\s*"(\d+)"/i.exec(runXml);
+      if (extM && Math.max(Number(extM[1]), Number(extM[2])) < 1050000) {
+        return runXml;
+      }
+      if (/<w:t(?:\s[^>]*)?>[\s\S]*?\S[\s\S]*?<\/w:t>/i.test(runXml)) {
+        return runXml;
+      }
+      const cleanRun = runXml.replace(/<w:br\b[^>]*\/?>/gi, '');
+      diagramParasXml.push(`<w:p><w:pPr><w:spacing w:before="40" w:after="40"/><w:keepNext/><w:jc w:val="center"/></w:pPr>${cleanRun}</w:p>`);
+      return '';
+    });
+    return { textParaXml: cleanedPara, diagramParasXml };
+  }
+
+  function buildStandardNumericAnswerBox_(itemNo) {
+    return buildFixedTable_(
+      [{
+        cells: [{
+          fill: 'F8FAFC',
+          text: `ช่องเขียน/ระบายคำตอบข้อที่ ${itemNo}:    [       ]  [       ]  [       ]    (คำตอบเป็นจำนวนเต็ม 000–999 : หลักร้อย-หลักสิบ-หลักหน่วย)`,
+          sz: 28, bold: true, color: '1E293B', jc: 'left', before: 24, after: 24
+        }]
+      }],
+      [8306],
+      { borderColor: '94A3B8', borderSz: 4, cellPad: { top: 50, bottom: 50, left: 140, right: 120 } }
+    );
+  }
+
+  function formatAlignedMc4ChoicesXml_(choicesMap, isTeacher = false) {
+    const c1 = String(choicesMap['1'] || '').trim();
+    const c2 = String(choicesMap['2'] || '').trim();
+    const c3 = String(choicesMap['3'] || '').trim();
+    const c4 = String(choicesMap['4'] || '').trim();
+    const maxLen = Math.max(c1.length, c2.length, c3.length, c4.length);
+
+    if (maxLen <= 34) {
+      return [
+        buildFixedTable_(
+          [
+            {
+              cells: [
+                { text: `1. ${c1}`, sz: 32, jc: 'left', before: 12, after: 12 },
+                { text: `2. ${c2}`, sz: 32, jc: 'left', before: 12, after: 12 }
+              ]
+            },
+            {
+              cells: [
+                { text: `3. ${c3}`, sz: 32, jc: 'left', before: 12, after: isTeacher ? 16 : 36 },
+                { text: `4. ${c4}`, sz: 32, jc: 'left', before: 12, after: isTeacher ? 16 : 36 }
+              ]
+            }
+          ],
+          [4153, 4153],
+          { borderNone: true, cellPad: { top: 16, bottom: 16, left: 360, right: 80 } }
+        )
+      ];
+    }
+
+    return [
+      buildSarabunPara_(`1. ${c1}`, { sz: 32, jc: 'left', left: 680, hanging: 320, before: 12, after: 12 }),
+      buildSarabunPara_(`2. ${c2}`, { sz: 32, jc: 'left', left: 680, hanging: 320, before: 12, after: 12 }),
+      buildSarabunPara_(`3. ${c3}`, { sz: 32, jc: 'left', left: 680, hanging: 320, before: 12, after: 12 }),
+      buildSarabunPara_(`4. ${c4}`, { sz: 32, jc: 'left', left: 680, hanging: 320, before: 12, after: isTeacher ? 20 : 50 })
+    ];
+  }
+
+  function normalizeMathOrMediaChoiceParaXml_(pXml, isLastChoice = false) {
+    let out = stripRegexesAcrossWT_(pXml, [/\s*\(\s*หมายเหตุ\s*สทศ\.[^)]*\)/gi]);
+    let replacedLabel = false;
+    out = out.replace(/<w:t(\s[^>]*)?>([\s\S]*?)<\/w:t>/gi, (full, attrs, inner) => {
+      if (replacedLabel) return full;
+      const dec = decodeDocxXmlEntities_(inner);
+      if (!dec.trim()) return `<w:t${attrs || ''}></w:t>`;
+      replacedLabel = true;
+      const map = { 'ก': '1', 'ข': '2', 'ค': '3', 'ง': '4', 'A': '1', 'B': '2', 'C': '3', 'D': '4', 'a': '1', 'b': '2', 'c': '3', 'd': '4' };
+      const nextDec = dec.replace(/^\s*(?:([กขคงA-Da-d])[\.\)]\s*|\(([1-4])\)\s*|([1-4])[\.\)]\s*)/, (_, thLet, pNum, dNum) => {
+        const n = thLet ? map[thLet] : (pNum || dNum);
+        return `${n}. `;
+      });
+      const spaceAttr = /\bxml:space\s*=/.test(attrs || '') ? (attrs || '') : `${attrs || ''} xml:space="preserve"`;
+      return `<w:t${spaceAttr}>${escapeDocxXmlText(nextDec)}</w:t>`;
+    });
+
+    const afterSpacing = isLastChoice ? 48 : 16;
+    const cleanPPr = `<w:pPr><w:spacing w:before="14" w:after="${afterSpacing}" w:line="276" w:lineRule="auto"/><w:ind w:left="360"/><w:jc w:val="left"/></w:pPr>`;
+    if (/<w:pPr\b[\s\S]*?<\/w:pPr>/i.test(out)) {
+      out = out.replace(/<w:pPr\b[\s\S]*?<\/w:pPr>/i, cleanPPr);
+    } else {
+      out = out.replace(/^<w:p(\s[^>]*)?>/i, `<w:p$1>${cleanPPr}`);
+    }
+    return out;
+  }
+
+  function isExamBlockBoilerplateOnly_(txt) {
+    const s = normalizeThaiDigits(String(txt || '')).replace(/\s+/g, ' ').trim();
+    if (!s) return true;
+    const withoutHint = s
+      .replace(/\(\s*หมายเหตุ\s*สทศ\.[^)]*\)/gi, '')
+      .replace(/\[\s*[ทควต]\s*\d+\.\d+\s*ป\.\s*\d+\/\d+\s*\]/gi, '')
+      .replace(/^\s*ข้อ\s*\d{1,2}(?:\.\d{1,2})?\s*[\.\):]?\s*/i, '')
+      .trim();
+    if (!withoutHint) return true;
+    if (isUneditedPlaceholderText_(withoutHint)) return true;
+    if (/^\[(?:โจทย์อัตนัย|พิมพ์โจทย์|กรอบวาง|พื้นที่สำหรับ)[^\]]*\]$/i.test(withoutHint)) return true;
+    if (/^ช่องเขียน\/ระบายคำตอบสำหรับข้อที่\s*\d+/i.test(s)) return true;
+    if (/^คำสั่ง\s*:\s*(?:พิจารณาข้อความต่อไปนี้แล้วทำเครื่องหมาย|อ่านเรื่องหรือดูภาพที่กำหนด)/i.test(s)) return true;
+    if (/^จงเรียงหมายเลขคำต่อไปนี้ให้เป็นประโยคที่ถูกต้องสมบูรณ์/i.test(withoutHint)) return true;
+    if (/^(?:คำที่กำหนด|ลำดับคำตอบข้อ|บรรทัดที่\s*[123])\s*:/i.test(s) && /\.{4,}/.test(s)) return true;
+    if (/ข้อความย่อย\s*\(ข้อ\s*\d+\.1/.test(s) && /\.{5,}/.test(s)) return true;
+    if (/^[1-4กขคง][\.\)]\s*\.+(?:\s+[1-4กขคง][\.\)]\s*\.+)*$/i.test(withoutHint)) return true;
+    if (/^เฉลย\s*ข้อ\s*\d+/i.test(s) && /\[อธิบาย|\[ระบุประโยคเต็ม|\[แสดงวิธีทำละเอียด|แนวคำตอบและเกณฑ์การให้คะแนนรูบริก\s*สทศ\./i.test(s)) {
+      return true;
+    }
+    return false;
+  }
+
+  function cleanAndScoreExamItemCandidate_(rawBlocks = [], itemNo = 1, bpItem = null, targetAudience = 'STUDENT') {
+    const isStudent = String(targetAudience || 'STUDENT').toUpperCase() === 'STUDENT';
+    const itemType = String((bpItem && bpItem.itemType) || 'MC4').toUpperCase();
+
+    let mediaCount = 0;
+    let authoredChars = 0;
+
+    rawBlocks.forEach((blk) => {
+      const xml = String(blk.xml || '');
+      mediaCount += (xml.match(/<w:drawing\b|<w:pict\b|<v:imagedata\b|<a:blip\b/gi) || []).length;
+      if (/<m:oMath\b/i.test(xml)) authoredChars += 25;
+
+      const normTxt = normalizeThaiDigits(String(blk.text || '')).replace(/\s+/g, ' ').trim();
+      if (!isExamBlockBoilerplateOnly_(normTxt)) {
+        const stripped = normTxt
+          .replace(/^\s*ข้อ\s*\d{1,2}(?:\.\d{1,2})?\s*[\.\):]?\s*/i, '')
+          .replace(/\[\s*[ทควต]\s*\d+\.\d+\s*ป\.\s*\d+\/\d+\s*\]/gi, '')
+          .replace(/\(\s*หมายเหตุ\s*สทศ\.[^)]*\)/gi, '')
+          .replace(/\s+/g, '');
+        authoredChars += stripped.length;
+      }
+    });
+
+    const hasRealContent = mediaCount > 0 || authoredChars >= 6;
+    const contentScore = (mediaCount * 350) + authoredChars;
+    if (!hasRealContent) {
+      return { hasRealContent: false, contentScore: 0, blocks: [] };
+    }
+
+    const stripPatterns = [
+      /\s*\(\s*หมายเหตุ\s*สทศ\.[^)]*\)/gi,
+      /\s*\[พิมพ์โจทย์[^\]]*\]/gi,
+      /\s*\[(?:โจทย์อัตนัย|กรอบวาง|พื้นที่สำหรับ)[^\]]*\]/gi
+    ];
+    if (isStudent) {
+      stripPatterns.push(
+        /\s*\[\s*[ทควต]\s*\d+\.\d+\s*ป\.\s*\d+\/\d+\s*\]/gi,
+        /\s*\(\s*(?:มาตรฐาน\s*)?[ทควต]\s*\d+\.\d+\s*ป\.\s*\d+\/\d+\s*\)/gi
+      );
+    }
+
+    const working = [];
+    rawBlocks.forEach((blk) => {
+      const xml = String(blk.xml || '');
+      const txt = normalizeThaiDigits(String(blk.text || '')).replace(/\s+/g, ' ').trim();
+      const blkHasMedia = /<w:drawing\b|<w:pict\b|<v:imagedata\b|<a:blip\b/i.test(xml);
+      if (isStudent && !blkHasMedia && /^เฉลย\s*ข้อ\s*\d+/i.test(txt)) return;
+      if (!blkHasMedia && !/<m:oMath\b/i.test(xml) && !txt) return;
+      working.push({
+        tag: blk.tag,
+        xml: blk.tag === 'w:p' ? stripRegexesAcrossWT_(xml, stripPatterns) : xml,
+        rawText: txt
+      });
+    });
+
+    const formattedOut = [];
+    let idx = 0;
+
+    if (working.length > 0 && working[0].tag === 'w:p') {
+      const firstDiagSplit = extractLargeDiagramRunsFromPara_(working[0].xml);
+      const firstHasMathOrInlineImg = /<m:oMath\b|<w:drawing\b|<w:pict\b/i.test(firstDiagSplit.textParaXml);
+      const stemPlain = extractPlainTextFromDocxXml(firstDiagSplit.textParaXml).replace(/\s+/g, ' ').trim();
+      const origAfterMatch = /^\s*ข้อ\s*[0-9๐-๙]{1,2}\s*[\.\):]?\s*(?:[0-9๐-๙]{1,2}\s*[\.\)]\s*)?/i.exec(stemPlain);
+      let afterNoText = origAfterMatch ? stemPlain.slice(origAfterMatch[0].length).trim() : stemPlain;
+
+      if (!firstHasMathOrInlineImg) {
+        if (!afterNoText && firstDiagSplit.diagramParasXml.length === 0 && working.length > 1) {
+          const b1 = working[1];
+          const b1Txt = extractPlainTextFromDocxXml(b1.xml).replace(/\s+/g, ' ').trim();
+          const b1HasMediaOrMath = /<m:oMath\b|<w:drawing\b|<w:pict\b/i.test(b1.xml);
+          const b1IsAnsBox = /ช่องเขียน\/ระบายคำตอบ|\[\s*\]\s*\[\s*\]|ข้อความย่อย|บรรทัดที่\s*1/.test(b1Txt);
+          const b1CellCount = b1.tag === 'w:tbl' ? (b1.xml.match(/<w:tc\b/gi) || []).length : 0;
+
+          if (b1.tag === 'w:tbl' && b1CellCount === 1 && !b1HasMediaOrMath && !b1IsAnsBox && b1Txt) {
+            afterNoText = b1Txt
+              .replace(/\s*\(\s*หมายเหตุ\s*สทศ\.[^)]*\)/gi, '')
+              .replace(isStudent ? /\s*[\[\(]\s*(?:มาตรฐาน\s*)?[ทควต]\s*\d+\.\d+\s*ป\.\s*\d+\/\d+\s*[\]\)]/gi : /$^/, '')
+              .trim();
+            idx = 2;
+          } else if (b1.tag === 'w:p' && !b1HasMediaOrMath && b1Txt && splitChoicesFromParagraphLine_(b1Txt).length === 0 && !/^ข้อ\s*\d+/.test(normalizeThaiDigits(b1Txt))) {
+            afterNoText = b1Txt;
+            idx = 2;
+          } else {
+            idx = 1;
+          }
+        } else {
+          idx = 1;
+        }
+
+        const stemRuns = [{ text: `ข้อ ${itemNo}.`, sz: 32, bold: true }];
+        if (afterNoText) stemRuns.push({ text: `  ${afterNoText}`, sz: 32, bold: false });
+        formattedOut.push(buildMixedRunsPara_(stemRuns, {
+          jc: 'left',
+          before: 100,
+          after: firstDiagSplit.diagramParasXml.length ? 20 : 28,
+          keepNext: true
+        }));
+        formattedOut.push(...firstDiagSplit.diagramParasXml);
+      } else {
+        let preservedP = firstDiagSplit.textParaXml;
+        const cleanStemPPr = '<w:pPr><w:spacing w:before="100" w:after="28" w:line="276" w:lineRule="auto"/><w:keepNext/><w:jc w:val="left"/></w:pPr>';
+        if (/<w:pPr\b[\s\S]*?<\/w:pPr>/i.test(preservedP)) {
+          preservedP = preservedP.replace(/<w:pPr\b[\s\S]*?<\/w:pPr>/i, cleanStemPPr);
+        } else {
+          preservedP = preservedP.replace(/^<w:p(\s[^>]*)?>/i, `<w:p$1>${cleanStemPPr}`);
+        }
+        formattedOut.push(preservedP, ...firstDiagSplit.diagramParasXml);
+        idx = 1;
+      }
+    }
+
+    let hasNumericBox = false;
+    while (idx < working.length) {
+      const cur = working[idx];
+
+      if (itemType === 'MC4' && cur.tag === 'w:p') {
+        const curPlain = extractPlainTextFromDocxXml(cur.xml).replace(/\s+/g, ' ').trim();
+        const parsedFirst = splitChoicesFromParagraphLine_(curPlain);
+        const looksMathChoice = /<m:oMath\b|<w:drawing\b|<w:pict\b/i.test(cur.xml) &&
+          /^\s*(?:[1-4กขคงA-Da-d][\.\)]|\([1-4]\))/.test(normalizeThaiDigits(curPlain));
+
+        if (parsedFirst.length > 0 || looksMathChoice) {
+          const choiceBlocks = [];
+          let j = idx;
+          while (j < working.length && working[j].tag === 'w:p') {
+            const jPlain = extractPlainTextFromDocxXml(working[j].xml).replace(/\s+/g, ' ').trim();
+            if (/^เฉลย\s*ข้อ/i.test(normalizeThaiDigits(jPlain))) break;
+            const jParsed = splitChoicesFromParagraphLine_(jPlain);
+            const jMathChoice = /<m:oMath\b|<w:drawing\b|<w:pict\b/i.test(working[j].xml) &&
+              /^\s*(?:[1-4กขคงA-Da-d][\.\)]|\([1-4]\))/.test(normalizeThaiDigits(jPlain));
+            if (jParsed.length > 0 || jMathChoice) {
+              choiceBlocks.push({ block: working[j], parsed: jParsed, hasRichXml: /<m:oMath\b|<w:drawing\b|<w:pict\b/i.test(working[j].xml) });
+              j++;
+            } else {
+              break;
+            }
+          }
+
+          const anyRichXml = choiceBlocks.some((x) => x.hasRichXml);
+          if (!anyRichXml) {
+            const choicesMap = {};
+            choiceBlocks.forEach((cb) => {
+              cb.parsed.forEach((ch) => {
+                choicesMap[ch.key] = ch.text.replace(/\s+/g, ' ').trim();
+              });
+            });
+            if (choicesMap['1'] && choicesMap['2'] && choicesMap['3'] && choicesMap['4']) {
+              formattedOut.push(...formatAlignedMc4ChoicesXml_(choicesMap, !isStudent));
+              idx = j;
+              continue;
+            }
+          }
+
+          choiceBlocks.forEach((cb, cIdx) => {
+            formattedOut.push(normalizeMathOrMediaChoiceParaXml_(cb.block.xml, cIdx === choiceBlocks.length - 1 && isStudent));
+          });
+          idx = j;
+          continue;
+        }
+      }
+
+      if (cur.tag === 'w:tbl') {
+        const tblPlain = normalizeThaiDigits(extractPlainTextFromDocxXml(cur.xml)).replace(/\s+/g, ' ').trim();
+        if (itemType === 'NUMERIC' && (/ช่องเขียน\/ระบายคำตอบ/.test(tblPlain) || /\[\s*\]\s*\[\s*\]/.test(tblPlain))) {
+          hasNumericBox = true;
+          formattedOut.push(buildStandardNumericAnswerBox_(itemNo));
+          idx++;
+          continue;
+        }
+        formattedOut.push(cur.xml);
+        idx++;
+        continue;
+      }
+
+      const diagSplit = extractLargeDiagramRunsFromPara_(cur.xml);
+      const remPlain = extractPlainTextFromDocxXml(diagSplit.textParaXml).replace(/\s+/g, ' ').trim();
+      const remHasRich = /<m:oMath\b|<w:drawing\b|<w:pict\b/i.test(diagSplit.textParaXml);
+
+      if (diagSplit.diagramParasXml.length > 0) {
+        formattedOut.push(...diagSplit.diagramParasXml);
+      }
+      if (remHasRich) {
+        formattedOut.push(diagSplit.textParaXml);
+      } else if (remPlain) {
+        const isTeacherAns = /^เฉลย\s*ข้อ/i.test(normalizeThaiDigits(remPlain));
+        formattedOut.push(buildSarabunPara_(remPlain, {
+          sz: isTeacherAns ? 30 : 32,
+          bold: isTeacherAns,
+          color: isTeacherAns ? '991B1B' : '',
+          jc: 'left',
+          firstLine: isTeacherAns ? 360 : 0,
+          before: 16,
+          after: isTeacherAns ? 50 : 24,
+          keepNext: !isTeacherAns
+        }));
+      }
+      idx++;
+    }
+
+    if (itemType === 'NUMERIC' && !hasNumericBox) {
+      formattedOut.push(buildStandardNumericAnswerBox_(itemNo));
+    }
+
+    return { hasRealContent: true, contentScore, blocks: formattedOut };
+  }
+
+  function findAnswerCompletionIndexInRawItem_(rawBlocks = [], bpItem = null) {
+    const iType = String((bpItem && bpItem.itemType) || 'MC4').toUpperCase();
+    let completionIdx = -1;
+    rawBlocks.forEach((blk, idx) => {
+      const txt = normalizeThaiDigits(String(blk.text || '')).replace(/\s+/g, ' ').trim();
+      if (/^เฉลย\s*ข้อ\s*\d+/i.test(txt)) {
+        completionIdx = idx;
+        return;
+      }
+      if (iType === 'MC4' && blk.tag === 'w:p') {
+        const parsed = splitChoicesFromParagraphLine_(txt);
+        if (parsed.some((p) => p.key === '4') || /(?:^|\s)(?:4[\.\)]|\(4\)|ง[\.\)]|[Dd][\.\)])/.test(txt)) {
+          completionIdx = idx;
+        }
+      } else if (iType === 'NUMERIC' && blk.tag === 'w:tbl') {
+        if (/ช่องเขียน\/ระบายคำตอบ|\[\s*\]\s*\[\s*\]/.test(txt)) completionIdx = idx;
+      } else if (iType === 'COMPLEX_MC' && blk.tag === 'w:tbl') {
+        if (/ใช่/.test(txt) && /ไม่ใช่/.test(txt)) completionIdx = idx;
+      } else if (iType === 'ESSAY' && blk.tag === 'w:tbl') {
+        if (/บรรทัดที่\s*3/.test(txt)) completionIdx = idx;
+      }
+    });
+    return completionIdx;
+  }
+
+  function detachTrailingStimulusForNextItem_(prevCandidate, bpByNo) {
+    if (!prevCandidate || !prevCandidate.rawBlocks || prevCandidate.rawBlocks.length < 2) return [];
+    const bpItem = bpByNo.get(prevCandidate.itemNo) || null;
+    const doneIdx = findAnswerCompletionIndexInRawItem_(prevCandidate.rawBlocks, bpItem);
+    if (doneIdx < 0 || doneIdx >= prevCandidate.rawBlocks.length - 1) return [];
+
+    const trailing = prevCandidate.rawBlocks.slice(doneIdx + 1);
+    const hasStimulusOrMedia = trailing.some((b) => {
+      const xml = String(b.xml || '');
+      const txt = normalizeThaiDigits(String(b.text || '')).trim();
+      return /<w:drawing\b|<w:pict\b|<v:imagedata\b|<a:blip\b/i.test(xml) ||
+        /(?:อ่าน|พิจารณา|จากแผนภูมิ|จากกราฟ|จากตาราง|จากภาพ|แผนภูมิ|กราฟแสดง)/i.test(txt);
+    });
+    if (!hasStimulusOrMedia) return [];
+
+    prevCandidate.rawBlocks = prevCandidate.rawBlocks.slice(0, doneIdx + 1);
+    return trailing;
   }
 
   function assembleSmartExamBodyXml(partEntries = [], params = {}) {
     const subjectCode = String(params.subjectCode || '61');
     const targetAudience = String(params.targetAudience || 'STUDENT').toUpperCase();
+    const isTeacher = targetAudience === 'TEACHER';
     const bpItems = NIETS_2569_EXAM_ITEMS[subjectCode] || [];
+    const bpByNo = new Map();
     const sectionByItem = new Map();
-    bpItems.forEach((it) => sectionByItem.set(Number(it.itemNo), { no: it.sectionNo, title: it.sectionTitle }));
+    bpItems.forEach((it) => {
+      const no = Number(it.itemNo);
+      bpByNo.set(no, it);
+      sectionByItem.set(no, { no: it.sectionNo, title: it.sectionTitle });
+    });
 
-    const itemBuckets = new Map();
+    const rawCandidatesByNo = new Map();
     let encounterSeq = 0;
 
     partEntries.forEach((part) => {
+      const authorLabel = part.authorSchool ||
+        `${part.teacherName || 'คณะกรรมการ'}${part.schoolId ? ' (' + getSchoolShortName(part.schoolId) + ')' : ''}`;
       const blocks = extractWordTopLevelBlocks_(part.bodyXml || '');
-      let currentItemNo = null;
-      let leadingBlocks = [];
+      let currentCand = null;
+      let pendingLeading = [];
 
       blocks.forEach((blk) => {
         if (isPlaceholderOrChromeBlock_(blk, { targetAudience })) return;
         const cleanTxt = normalizeThaiDigits(blk.text || '').trim();
-        if (targetAudience === 'STUDENT' && /^เฉลย\s*ข้อ\s*\d+/i.test(cleanTxt)) return;
+        const blkHasMedia = /<w:drawing\b|<w:pict\b|<v:imagedata\b|<a:blip\b/i.test(blk.xml || '');
+        if (!isTeacher && !blkHasMedia && /^เฉลย\s*ข้อ\s*\d+/i.test(cleanTxt)) return;
 
         const itemM = blk.tag === 'w:p'
           ? /^\s*ข้อ\s*(\d{1,2})(?:\.(\d{1,2}))?(?:\s*[.\):]|(?=\s+\[|\s+จง|\s+ข้อ|\s|$))/.exec(cleanTxt)
@@ -2478,32 +3071,44 @@
         if (itemM) {
           const parentNo = Number(itemM[1]);
           const subNo = itemM[2] ? Number(itemM[2]) : null;
-          if (subNo && currentItemNo === parentNo) {
-            itemBuckets.get(parentNo).blocks.push(blk.xml);
+          if (subNo && currentCand && currentCand.itemNo === parentNo) {
+            currentCand.rawBlocks.push(blk);
             return;
           }
-          currentItemNo = parentNo;
-          if (!itemBuckets.has(parentNo)) {
-            itemBuckets.set(parentNo, {
-              itemNo: parentNo,
-              seq: ++encounterSeq,
-              blocks: []
-            });
-          }
-          if (leadingBlocks.length > 0) {
-            itemBuckets.get(parentNo).blocks.push(...leadingBlocks);
-            leadingBlocks = [];
-          }
-          itemBuckets.get(parentNo).blocks.push(blk.xml);
-        } else if (currentItemNo !== null) {
-          itemBuckets.get(currentItemNo).blocks.push(blk.xml);
+
+          const detachedFromPrev = detachTrailingStimulusForNextItem_(currentCand, bpByNo);
+          const allLeading = pendingLeading.concat(detachedFromPrev);
+          pendingLeading = [];
+
+          const groupIntroBlocks = [];
+          const postHeaderStimulus = [];
+          allLeading.forEach((lb) => {
+            const lbTxt = normalizeThaiDigits(String(lb.text || '')).trim();
+            if (/(?:ข้อ\s*\d+\s*[–\-]\s*\d+|items?\s*\d+\s*[–\-]\s*\d+)/i.test(lbTxt)) {
+              groupIntroBlocks.push(lb.xml);
+            } else {
+              postHeaderStimulus.push(lb);
+            }
+          });
+
+          currentCand = {
+            itemNo: parentNo,
+            seq: ++encounterSeq,
+            authorLabel,
+            groupIntroBlocks,
+            rawBlocks: [blk, ...postHeaderStimulus]
+          };
+          if (!rawCandidatesByNo.has(parentNo)) rawCandidatesByNo.set(parentNo, []);
+          rawCandidatesByNo.get(parentNo).push(currentCand);
+        } else if (currentCand) {
+          currentCand.rawBlocks.push(blk);
         } else {
-          leadingBlocks.push(blk.xml);
+          pendingLeading.push(blk);
         }
       });
     });
 
-    if (itemBuckets.size === 0) {
+    if (rawCandidatesByNo.size === 0) {
       const fallbackXml = partEntries.map((p, idx) => {
         const divider = idx > 0 ? '<w:p><w:r><w:br w:type="page"/></w:r></w:p>' : '';
         return divider + String(p.bodyXml || '');
@@ -2511,36 +3116,138 @@
       return {
         usedFallback: true,
         itemCount: 0,
+        authoredCount: 0,
         sortedItemNos: [],
+        authoredItemNos: [],
+        missingItemNos: bpItems.map((x) => Number(x.itemNo)),
+        examChecklist: [],
         bodyXml: fallbackXml
       };
     }
 
-    const sortedItems = Array.from(itemBuckets.values()).sort((a, b) => (a.itemNo - b.itemNo) || (a.seq - b.seq));
+    const bestAuthoredByNo = new Map();
+    const firstTemplateFallbackByNo = new Map();
+
+    Array.from(rawCandidatesByNo.entries()).forEach(([itemNo, cands]) => {
+      const bpItem = bpByNo.get(itemNo) || null;
+      cands.forEach((cand) => {
+        if (!firstTemplateFallbackByNo.has(itemNo)) firstTemplateFallbackByNo.set(itemNo, cand);
+        const scored = cleanAndScoreExamItemCandidate_(cand.rawBlocks, itemNo, bpItem, targetAudience);
+        if (scored.hasRealContent) {
+          const prev = bestAuthoredByNo.get(itemNo);
+          if (!prev || scored.contentScore > prev.contentScore) {
+            bestAuthoredByNo.set(itemNo, {
+              itemNo,
+              seq: cand.seq,
+              authorLabel: cand.authorLabel,
+              contentScore: scored.contentScore,
+              blocks: cand.groupIntroBlocks.concat(scored.blocks)
+            });
+          }
+        }
+      });
+    });
+
+    const authoredItemNos = Array.from(bestAuthoredByNo.keys()).sort((a, b) => a - b);
+    const examChecklist = bpItems.map((bp) => {
+      const no = Number(bp.itemNo);
+      const hit = bestAuthoredByNo.get(no);
+      return {
+        itemNo: no,
+        strandNo: bp.strandNo,
+        indicatorCode: bp.indicatorCode,
+        itemType: bp.itemType,
+        authored: Boolean(hit),
+        authorLabel: hit ? hit.authorLabel : ''
+      };
+    });
+    const missingAuthoredNos = bpItems.map((bp) => Number(bp.itemNo)).filter((no) => !bestAuthoredByNo.has(no));
+
+    if (params.onlyExtractMeta) {
+      return {
+        usedFallback: false,
+        itemCount: authoredItemNos.length,
+        authoredCount: authoredItemNos.length,
+        sortedItemNos: authoredItemNos,
+        authoredItemNos,
+        missingItemNos: missingAuthoredNos,
+        examChecklist,
+        bodyXml: ''
+      };
+    }
+
+    if (authoredItemNos.length === 0) {
+      const templateNos = Array.from(firstTemplateFallbackByNo.keys()).sort((a, b) => a - b);
+      const outTemplateParts = [];
+      let lastSecNo = -1;
+      templateNos.forEach((no) => {
+        const sec = sectionByItem.get(no);
+        if (sec && sec.no !== lastSecNo) {
+          lastSecNo = sec.no;
+          outTemplateParts.push(buildSarabunPara_(sec.title, {
+            sz: 34, bold: true, color: isTeacher ? '991B1B' : '1B4332', jc: 'left', before: outTemplateParts.length ? 160 : 40, after: 60, keepNext: true
+          }));
+        }
+        const cand = firstTemplateFallbackByNo.get(no);
+        outTemplateParts.push(...cand.groupIntroBlocks, ...cand.rawBlocks.map((b) => b.xml));
+      });
+      return {
+        usedFallback: false,
+        itemCount: templateNos.length,
+        authoredCount: 0,
+        sortedItemNos: templateNos,
+        authoredItemNos: [],
+        missingItemNos: missingAuthoredNos,
+        examChecklist,
+        bodyXml: outTemplateParts.join('')
+      };
+    }
+
+    const allTargetNos = bpItems.length > 0 ? bpItems.map((b) => Number(b.itemNo)) : authoredItemNos;
     const outParts = [];
     let lastSecNo = -1;
 
-    sortedItems.forEach((entry) => {
-      const sec = sectionByItem.get(entry.itemNo);
+    allTargetNos.forEach((no) => {
+      const sec = sectionByItem.get(no);
       if (sec && sec.no !== lastSecNo) {
         lastSecNo = sec.no;
         outParts.push(buildSarabunPara_(sec.title, {
-          sz: 34,
-          bold: true,
-          color: targetAudience === 'TEACHER' ? '991B1B' : '1B4332',
-          jc: 'left',
-          before: outParts.length ? 160 : 40,
-          after: 60,
-          keepNext: true
+          sz: 34, bold: true, color: isTeacher ? '991B1B' : '1B4332', jc: 'left', before: outParts.length ? 160 : 40, after: 50, keepNext: true
         }));
       }
-      outParts.push(...entry.blocks);
+
+      const authored = bestAuthoredByNo.get(no);
+      if (authored) {
+        outParts.push(...authored.blocks);
+      } else {
+        const bp = bpByNo.get(no);
+        const missScope = bp
+          ? (isTeacher ? `สาระที่ ${bp.strandNo} — ตัวชี้วัด ${bp.indicatorCode}` : `สาระที่ ${bp.strandNo}`)
+          : 'ตามผังข้อสอบ';
+        outParts.push(
+          buildFixedTable_(
+            [{
+              cells: [{
+                fill: 'FFFBEB',
+                text: `ข้อ ${no}.   [ อยู่ระหว่างรอต้นฉบับข้อสอบจากคณะกรรมการ (${missScope}) ]`,
+                sz: 28, italic: true, color: '92400E', jc: 'left', before: 16, after: 16
+              }]
+            }],
+            [8306],
+            { borderColor: 'FCD34D', borderSz: 4, cellPad: { top: 36, bottom: 36, left: 120, right: 120 } }
+          )
+        );
+      }
     });
 
     return {
       usedFallback: false,
-      itemCount: sortedItems.length,
-      sortedItemNos: sortedItems.map((x) => x.itemNo),
+      itemCount: authoredItemNos.length,
+      authoredCount: authoredItemNos.length,
+      sortedItemNos: authoredItemNos,
+      authoredItemNos,
+      missingItemNos: missingAuthoredNos,
+      examChecklist,
       bodyXml: outParts.join('')
     };
   }
@@ -2590,18 +3297,18 @@
       bpItems.forEach((it) => bpByNo.set(Number(it.itemNo), it));
 
       const bodyMatch = /<w:body\b[^>]*>([\s\S]*?)<\/w:body>/i.exec(docXml);
-      const blocks = extractWordTopLevelBlocks_(bodyMatch ? bodyMatch[1] : docXml);
-      const authoredNos = [];
-      blocks.forEach((blk) => {
-        if (isPlaceholderOrChromeBlock_(blk, {})) return;
-        const cleanTxt = normalizeThaiDigits(blk.text || '').trim();
-        if (!cleanTxt || isUneditedPlaceholderText_(cleanTxt)) return;
-        const m = blk.tag === 'w:p' ? /^\s*ข้อ\s*(\d{1,2})\b/.exec(cleanTxt) : null;
-        if (m) {
-          const no = Number(m[1]);
-          if (bpByNo.has(no) && !authoredNos.includes(no)) authoredNos.push(no);
-        }
-      });
+      const metaRes = assembleSmartExamBodyXml(
+        [{
+          strandNo,
+          subStandard: rawSubStd,
+          fileName: part.fileName || '',
+          teacherName: part.teacherName || '',
+          schoolId: part.schoolId || '',
+          bodyXml: bodyMatch ? bodyMatch[1] : docXml
+        }],
+        { subjectCode: sub, targetAudience: 'TEACHER', onlyExtractMeta: true }
+      );
+      const authoredNos = (metaRes.authoredItemNos || []).filter((no) => bpByNo.has(no));
 
       if (authoredNos.length > 0) {
         const strandsFound = Array.from(new Set(authoredNos.map((n) => String(bpByNo.get(n).strandNo))));
@@ -2616,7 +3323,7 @@
         return { strandNo, scopeSummary, authoredItemNos: authoredNos };
       }
 
-      const fallbackScope = (!rawSubStd || /^ALL$/i.test(rawSubStd)) ? 'ครบทั้งสาระ' : rawSubStd;
+      const fallbackScope = (!rawSubStd || /^ALL$/i.test(rawSubStd)) ? 'ยังไม่พบข้อสอบที่พิมพ์เนื้อหาแล้ว' : rawSubStd;
       return { strandNo, scopeSummary: fallbackScope, authoredItemNos: [] };
     }
 
@@ -3402,11 +4109,11 @@
   function splitChoicesFromParagraphLine_(rawLine) {
     const line = normalizeThaiDigits(String(rawLine || '')).replace(/\u00A0/g, ' ').trim();
     if (!line) return [];
-    const markerRe = /(?:^|\s+)(?:([1-4])[\.\)]\s+|\(([1-4])\)\s*|([กขคง])[\.\)]\s+|([A-Da-d])[\.\)]\s+)/g;
+    const markerRe = /(?:^|\s+)(?:([1-4])\.\s+|([1-4])\)\s*|\(([1-4])\)\s*|([กขคง])[\.\)]\s*|([A-Da-d])[\.\)]\s+)/g;
     const rawMatches = [];
     let m;
     while ((m = markerRe.exec(line)) !== null) {
-      const rawKey = m[1] || m[2] || m[3] || m[4];
+      const rawKey = m[1] || m[2] || m[3] || m[4] || m[5];
       const numKey = normalizeChoiceTokenTo14_(rawKey);
       if (!numKey) continue;
       const prefixWs = /^\s+/.exec(m[0]);
@@ -10465,23 +11172,27 @@
     let smartSummary = null;
 
     if (isExam) {
+      const smartRes = assembleSmartExamBodyXml(remappedParts, { subjectCode, targetAudience });
       frontMatterXml = buildNietsExamBookletFrontMatterXml({
         subjectCode,
         subjectName,
         examRound: roundKey,
         editionLabel: edLabel,
         targetAudience,
-        chapters
+        chapters,
+        examChecklist: smartRes.examChecklist
       });
-      const smartRes = assembleSmartExamBodyXml(remappedParts, { subjectCode, targetAudience });
       compiledBodyXml = smartRes.bodyXml;
       const bpExpected = (NIETS_2569_EXAM_ITEMS[String(subjectCode)] || []).map(x => Number(x.itemNo));
-      const sortedSet = new Set(smartRes.sortedItemNos || []);
-      const missingItemNos = bpExpected.filter(n => !sortedSet.has(n));
+      const missingItemNos = Array.isArray(smartRes.missingItemNos)
+        ? smartRes.missingItemNos
+        : bpExpected.filter(n => !(smartRes.sortedItemNos || []).includes(n));
       smartSummary = {
         mode: smartRes.usedFallback ? 'RAW_FALLBACK' : 'SMART_SORTED',
         usedFallback: !!smartRes.usedFallback,
         itemCount: smartRes.itemCount || 0,
+        authoredCount: smartRes.authoredCount != null ? smartRes.authoredCount : (smartRes.itemCount || 0),
+        totalBlueprintItems: bpExpected.length,
         sortedItemNos: smartRes.sortedItemNos || [],
         missingItemNos
       };
@@ -10575,10 +11286,12 @@
     if (smartSummary.usedFallback) {
       return '<div>• โหมดจัดรูปเล่ม: <b>RAW_FALLBACK</b> (ไม่พบรหัสตัวชี้วัดหรือเลขข้อชัดเจน จึงคงลำดับหน้าตามไฟล์ต้นฉบับ)</div>';
     }
+    const totEx = Number(smartSummary.totalBlueprintItems || smartSummary.itemCount || 0);
+    const authEx = Number(smartSummary.authoredCount != null ? smartSummary.authoredCount : smartSummary.itemCount);
     const missHtml = (smartSummary.missingItemNos && smartSummary.missingItemNos.length)
-      ? ` <span class="gw-text-warn font-bold">| ยังขาดข้อ: ${escHtml(smartSummary.missingItemNos.join(', '))}</span>`
-      : ' <span class="gw-text-success font-bold">| ครบทุกข้อตามผัง สทศ.</span>';
-    return `<div>• โหมดจัดรูปเล่มข้อสอบ: <b>SMART_SORTED (ปก สทศ. + จัดเรียงข้อ 1..N อัตโนมัติ)</b> — พบ <b>${smartSummary.itemCount}</b> ข้อ${missHtml}</div>`;
+      ? ` <span class="gw-text-warn font-bold">| ยังรอต้นฉบับข้อสอบข้อที่: ${escHtml(smartSummary.missingItemNos.join(', '))}</span>`
+      : ' <span class="gw-text-success font-bold">| ครบ 100% ทุกข้อตามผัง สทศ.</span>';
+    return `<div>• โหมดจัดรูปเล่มข้อสอบ: <b>SMART_SORTED v2 (ปก สทศ. + ตัดโจทย์ว่าง/ข้อซ้ำ + จัดแนวตัวเลือก 1–4 และกล่องระบายตัวเลขอัตโนมัติ)</b> — บรรจุข้อสอบจริงแล้ว <b>${authEx}${totEx ? '/' + totEx : ''}</b> ข้อ${missHtml}</div>`;
   }
 
   async function runAdminAutoMergeDocx(publishToDrive = false) {
@@ -11367,6 +12080,3 @@
     showToast(`บันทึกเฉลยสำเร็จ ${res.updatedCount} ข้อ${regradeNote}`, 'success');
     refreshSuperAdminDashboard();
   }
-
-                                                              
-
