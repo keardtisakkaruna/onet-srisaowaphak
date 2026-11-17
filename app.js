@@ -2005,44 +2005,91 @@
     const subjectName = String(params.subjectName || 'รายวิชา O-NET ป.6');
     const docCategoryLabel = String(params.docCategoryLabel || 'เอกสารยกระดับผลสัมฤทธิ์ตามสาระและตัวชี้วัด');
     const editionLabel = String(params.editionLabel || 'ฉบับนักเรียน');
+    const isTeacher = /ครู/.test(editionLabel) || String(params.targetAudience || '').toUpperCase() === 'TEACHER';
     const docTitle = String(params.docTitle || `รวมเล่ม${docCategoryLabel} — ${subjectName} (${editionLabel})`);
     const schoolClusterName = String(params.schoolClusterName || 'กลุ่มโรงเรียนศรีเสาวภาค สพป.สระบุรี เขต 2 (8 โรงเรียน)');
     const academicYearBE = String(params.academicYearBE || '2569');
     const generatedDateThai = String(params.generatedDateThai || formatThaiDateFull(new Date()));
     const chapters = Array.isArray(params.chapters) ? params.chapters : [];
+    const blueprintChecklist = Array.isArray(params.blueprintChecklist) ? params.blueprintChecklist : [];
 
-    const tocRows = [{ isHeader: true, cells: [
-      { text: 'ลำดับ', sz: 30, bold: true, fill: 'ECFDF5', color: '1B4332', jc: 'center' },
-      { text: 'สาระ / ชุดเอกสาร', sz: 30, bold: true, fill: 'ECFDF5', color: '1B4332', jc: 'center' },
-      { text: 'รายละเอียดไฟล์ต้นฉบับ', sz: 30, bold: true, fill: 'ECFDF5', color: '1B4332', jc: 'center' },
-      { text: 'ผู้จัดทำ / โรงเรียน', sz: 30, bold: true, fill: 'ECFDF5', color: '1B4332', jc: 'center' }
-    ] }];
-    chapters.forEach((ch, idx) => {
-      tocRows.push({ cells: [
-        { text: `${idx + 1}`, sz: 30, jc: 'center' },
-        { text: String(ch.strandLabel || `สาระที่ ${ch.strandNo || (idx + 1)}`), sz: 30, jc: 'left' },
-        { text: String(ch.subStandard || ch.fileName || '-'), sz: 28, jc: 'left' },
-        { text: String(ch.authorSchool || '-'), sz: 28, jc: 'left' }
-      ] });
-    });
+    const accentColor = isTeacher ? '991B1B' : '1B4332';
+    const softFill = isTeacher ? 'FEF2F2' : 'ECFDF5';
+    const coverFill = isTeacher ? 'FFF5F5' : 'F0FDF4';
+
+    let coverageRowText = `${chapters.length} ชุดเอกสาร (จัดเรียงลำดับตามสาระและตัวชี้วัดอัตโนมัติ)`;
+    let tocTableXml = '';
+    let tocTitle = 'สารบัญเอกสารรวมเล่มอัตโนมัติ';
+
+    if (blueprintChecklist.length > 0) {
+      const coveredCount = blueprintChecklist.filter(x => x.covered).length;
+      const totalCount = blueprintChecklist.length;
+      const pct = totalCount > 0 ? Math.round((coveredCount * 100) / totalCount) : 0;
+      coverageRowText = `บรรจุเนื้อหาพร้อมติวแล้ว ${coveredCount} จาก ${totalCount} ตัวชี้วัด (${pct}%) — เรียงตามผัง สทศ. ปีการศึกษา ${academicYearBE}`;
+      tocTitle = `สารบัญและผังตรวจสอบตัวชี้วัดประจำเล่ม (${coveredCount}/${totalCount} ตัวชี้วัด)`;
+
+      const bpRows = [
+        {
+          isHeader: true,
+          cells: [
+            { text: 'ลำดับ', sz: 28, bold: true, fill: softFill, color: accentColor, jc: 'center' },
+            { text: 'สาระ / ตัวชี้วัด', sz: 28, bold: true, fill: softFill, color: accentColor, jc: 'center' },
+            { text: 'คำอธิบายตัวชี้วัดตามผัง O-NET 2569', sz: 28, bold: true, fill: softFill, color: accentColor, jc: 'center' },
+            { text: 'สถานะในเล่ม / ผู้จัดทำ', sz: 28, bold: true, fill: softFill, color: accentColor, jc: 'center' }
+          ]
+        }
+      ];
+      blueprintChecklist.forEach((item, idx) => {
+        const statusText = item.covered
+          ? `✓ พร้อมติว — ${item.authorLabel || 'คณะกรรมการ'}`
+          : '⏳ รอต้นฉบับเพิ่มเติม';
+        bpRows.push({
+          cells: [
+            { text: `${item.bpIndex || (idx + 1)}`, sz: 26, jc: 'center', bold: !!item.covered },
+            { text: `สาระที่ ${item.strandNo}\n${item.indicatorCode}`, sz: 26, bold: true, color: item.covered ? accentColor : '64748B', jc: 'left' },
+            { text: String(item.indicatorDesc || '-'), sz: 26, color: item.covered ? '0F172A' : '64748B', jc: 'left' },
+            { text: statusText, sz: 26, bold: !!item.covered, fill: item.covered ? softFill : 'F8FAFC', color: item.covered ? accentColor : '64748B', jc: 'left' }
+          ]
+        });
+      });
+      tocTableXml = buildFixedTable_(bpRows, [700, 1750, 3556, 2300], { borderColor: accentColor, borderSz: 6 });
+    } else {
+      const tocRows = [{ isHeader: true, cells: [
+        { text: 'ลำดับ', sz: 30, bold: true, fill: softFill, color: accentColor, jc: 'center' },
+        { text: 'สาระ / ชุดเอกสาร', sz: 30, bold: true, fill: softFill, color: accentColor, jc: 'center' },
+        { text: 'ขอบเขตตัวชี้วัด', sz: 30, bold: true, fill: softFill, color: accentColor, jc: 'center' },
+        { text: 'ผู้จัดทำ / โรงเรียน', sz: 30, bold: true, fill: softFill, color: accentColor, jc: 'center' }
+      ] }];
+      chapters.forEach((ch, idx) => {
+        const rawSub = String(ch.scopeSummary || ch.subStandard || ch.fileName || '-');
+        const cleanSub = /^ALL$/i.test(rawSub.trim()) ? 'ครบทั้งสาระ' : rawSub;
+        tocRows.push({ cells: [
+          { text: `${idx + 1}`, sz: 30, jc: 'center' },
+          { text: String(ch.strandLabel || `สาระที่ ${ch.strandNo || (idx + 1)}`), sz: 30, jc: 'left' },
+          { text: cleanSub, sz: 28, jc: 'left' },
+          { text: String(ch.authorSchool || '-'), sz: 28, jc: 'left' }
+        ] });
+      });
+      tocTableXml = buildFixedTable_(tocRows, [900, 2200, 2906, 2300], { borderColor: accentColor, borderSz: 6 });
+    }
 
     return [
-      buildSarabunPara_('', { sz: 32, before: 240, after: 240 }),
-      buildFixedTable_([{ cells: [{ fill: 'F0FDF4', paras: [
-        buildSarabunPara_('โครงการยกระดับผลสัมฤทธิ์ผลการทดสอบทางการศึกษาระดับชาติขั้นพื้นฐาน (O-NET)', { sz: 34, bold: true, color: '1B4332', jc: 'center', before: 140, after: 24 }),
+      buildSarabunPara_('', { sz: 32, before: 200, after: 200 }),
+      buildFixedTable_([{ cells: [{ fill: coverFill, paras: [
+        buildSarabunPara_('โครงการยกระดับผลสัมฤทธิ์ผลการทดสอบทางการศึกษาระดับชาติขั้นพื้นฐาน (O-NET)', { sz: 34, bold: true, color: accentColor, jc: 'center', before: 140, after: 24 }),
         buildSarabunPara_(`ชั้นประถมศึกษาปีที่ 6 — ${schoolClusterName}`, { sz: 32, bold: true, color: '334155', jc: 'center', before: 0, after: 80 }),
-        buildSarabunPara_(docTitle, { sz: 44, bold: true, color: '0F172A', jc: 'center', before: 80, after: 80 }),
-        buildSarabunPara_(`${docCategoryLabel} | ${editionLabel} | ปีการศึกษา ${academicYearBE}`, { sz: 32, bold: true, color: '166534', jc: 'center', before: 20, after: 140 })
-      ] }] }], [8306], { borderColor: '1B4332', borderSz: 10 }),
-      buildSarabunPara_('', { sz: 24, before: 180, after: 180 }),
+        buildSarabunPara_(docTitle, { sz: 42, bold: true, color: '0F172A', jc: 'center', before: 80, after: 80 }),
+        buildSarabunPara_(`${docCategoryLabel} | ${editionLabel} | ปีการศึกษา ${academicYearBE}`, { sz: 32, bold: true, color: accentColor, jc: 'center', before: 20, after: 140 })
+      ] }] }], [8306], { borderColor: accentColor, borderSz: 10 }),
+      buildSarabunPara_('', { sz: 24, before: 140, after: 140 }),
       buildFixedTable_([
         { cells: [{ text: 'กลุ่มรายวิชา', sz: 30, bold: true, fill: 'F8FAFC' }, { text: subjectName, sz: 30, bold: true }] },
-        { cells: [{ text: 'จำนวนตอนที่รวมเล่ม', sz: 30, bold: true, fill: 'F8FAFC' }, { text: `${chapters.length} ชุดเอกสาร (จัดเรียงลำดับตามสาระ/ชุดและมาตรฐานตัวชี้วัดอัตโนมัติ)`, sz: 30 }] },
+        { cells: [{ text: 'ความครบถ้วนของเล่มนี้', sz: 30, bold: true, fill: 'F8FAFC' }, { text: coverageRowText, sz: 30, bold: true, color: accentColor }] },
         { cells: [{ text: 'วันที่จัดทำรูปเล่ม', sz: 30, bold: true, fill: 'F8FAFC' }, { text: generatedDateThai, sz: 30 }] }
       ], [2800, 5506], { borderColor: '94A3B8', borderSz: 6 }),
       '<w:p><w:r><w:br w:type="page"/></w:r></w:p>',
-      buildSarabunPara_('สารบัญเอกสารรวมเล่มอัตโนมัติ', { sz: 38, bold: true, color: '1B4332', jc: 'center', before: 60, after: 80, keepNext: true }),
-      buildFixedTable_(tocRows, [900, 2200, 2906, 2300], { borderColor: '1B4332', borderSz: 6 }),
+      buildSarabunPara_(tocTitle, { sz: 36, bold: true, color: accentColor, jc: 'center', before: 60, after: 80, keepNext: true }),
+      tocTableXml,
       '<w:p><w:r><w:br w:type="page"/></w:r></w:p>'
     ].join('');
   }
@@ -2339,11 +2386,13 @@
       }
     ];
     chapters.forEach((ch, idx) => {
+      const rawSub = String(ch.scopeSummary || ch.subStandard || ch.fileName || '-');
+      const cleanSub = /^ALL$/i.test(rawSub.trim()) ? 'ครบทั้งสาระ' : rawSub;
       tocRows.push({
         cells: [
           { text: `${idx + 1}`, sz: 28, jc: 'center' },
           { text: String(ch.strandLabel || `สาระที่ ${ch.strandNo || (idx + 1)}`), sz: 28, jc: 'left' },
-          { text: String(ch.subStandard || ch.fileName || '-'), sz: 26, jc: 'left' },
+          { text: cleanSub, sz: 26, jc: 'left' },
           { text: String(ch.authorSchool || '-'), sz: 26, jc: 'left' }
         ]
       });
@@ -2396,7 +2445,7 @@
       '<w:p><w:r><w:br w:type="page"/></w:r></w:p>',
       buildSarabunPara_('คำชี้แจงในการทำแบบทดสอบ และสารบัญชุดข้อสอบ', { sz: 38, bold: true, color: isTeacher ? '991B1B' : '1B4332', jc: 'center', before: 60, after: 80, keepNext: true }),
       buildSarabunPara_('1. แบบทดสอบฉบับนี้จัดเรียงข้อสอบตามลำดับผังการสร้างข้อสอบ (Test Blueprint) ของสถาบันทดสอบทางการศึกษาแห่งชาติ (สทศ.) ครบทุกสาระการเรียนรู้', { sz: 30, firstLine: 720, before: 20, after: 40 }),
-      buildSarabunPara_('2. ให้นักเรียนตรวจนับจำนวนหน้าและหมายเลขข้อให้ครบถ้วนตั้งแต่ข้อที่ 1 ถึงข้อสุดท้าย ก่อนลงมือทำข้อสอบ และระบายคำตอบลงในกระดาษคำตอบหรือระบบสอบดิจิทัลอย่างรอบคอบ', { sz: 30, firstLine: 720, before: 10, after: 80 }),
+      buildSarabunPara_('2. ให้นักเรียนตรวจนับจำนวนหน้าและหมายเลขข้อให้ครบถ้วนตั้งแต่ข้อที่ 1 ถึงข้อสุดท้าย ก่อนลงมือทำข้อสอบ และระบายคำตอบลงในกระดาษคำตอบอย่างรอบคอบ', { sz: 30, firstLine: 720, before: 10, after: 80 }),
       buildFixedTable_(tocRows, [900, 2200, 2906, 2300], { borderColor: borderCol, borderSz: 6 }),
       '<w:p><w:r><w:br w:type="page"/></w:r></w:p>'
     ].join('');
@@ -2493,6 +2542,579 @@
       itemCount: sortedItems.length,
       sortedItemNos: sortedItems.map((x) => x.itemNo),
       bodyXml: outParts.join('')
+    };
+  }
+
+  function normIndCodeKey_(rawCode) {
+    const c = extractIndicatorCodeFromText_(rawCode) || normalizeThaiDigits(String(rawCode || ''));
+    return c.replace(/\s+/g, '').toUpperCase();
+  }
+
+  function extractAllIndicatorCodesFromText_(txt) {
+    const norm = normalizeThaiDigits(String(txt || '')).replace(/\s+/g, ' ');
+    const re = /([ทควต]\s*\d+\.\d+\s*ป\.\s*\d+\/\d+)/gi;
+    const seen = new Set();
+    const list = [];
+    let m;
+    while ((m = re.exec(norm)) !== null) {
+      const clean = m[1]
+        .replace(/^([ทควต])\s*(\d)/i, '$1 $2')
+        .replace(/\s*ป\.\s*/i, ' ป.')
+        .replace(/\s+/g, ' ')
+        .trim();
+      const k = clean.replace(/\s+/g, '').toUpperCase();
+      if (!seen.has(k)) {
+        seen.add(k);
+        list.push(clean);
+      }
+    }
+    return list;
+  }
+
+  function inferPartScopeFromXml_(part = {}, subjectCode = '61', sourceCategory = 'TUTORING_STRAND', blueprintRows = []) {
+    const sub = String(subjectCode || '61');
+    const cat = String(sourceCategory || 'TUTORING_STRAND').toUpperCase();
+    const docXml = String(part.documentXml || part.bodyXml || '');
+    const origName = String(part.fileName || '').replace(/^\[[^\]]+\]_?/, '');
+    const rawSubStd = String(part.subStandard || '').trim();
+
+    let strandNo = String(part.strandNo || '1').trim();
+    const fnStrandM = /สาระ(?:ที่)?\s*([1-5])(?![0-9])/i.exec(normalizeThaiDigits(origName));
+    if (fnStrandM && strandNo !== 'ทั้งวิชา') {
+      strandNo = fnStrandM[1];
+    }
+
+    if (cat === 'PREPOST_EXAM') {
+      const bpItems = NIETS_2569_EXAM_ITEMS[sub] || [];
+      const bpByNo = new Map();
+      bpItems.forEach((it) => bpByNo.set(Number(it.itemNo), it));
+
+      const bodyMatch = /<w:body\b[^>]*>([\s\S]*?)<\/w:body>/i.exec(docXml);
+      const blocks = extractWordTopLevelBlocks_(bodyMatch ? bodyMatch[1] : docXml);
+      const authoredNos = [];
+      blocks.forEach((blk) => {
+        if (isPlaceholderOrChromeBlock_(blk, {})) return;
+        const cleanTxt = normalizeThaiDigits(blk.text || '').trim();
+        if (!cleanTxt || isUneditedPlaceholderText_(cleanTxt)) return;
+        const m = blk.tag === 'w:p' ? /^\s*ข้อ\s*(\d{1,2})\b/.exec(cleanTxt) : null;
+        if (m) {
+          const no = Number(m[1]);
+          if (bpByNo.has(no) && !authoredNos.includes(no)) authoredNos.push(no);
+        }
+      });
+
+      if (authoredNos.length > 0) {
+        const strandsFound = Array.from(new Set(authoredNos.map((n) => String(bpByNo.get(n).strandNo))));
+        if (strandsFound.length === 1) {
+          strandNo = strandsFound[0];
+        } else if (strandsFound.length > 1 && authoredNos.length >= Math.max(8, Math.floor(bpItems.length * 0.7))) {
+          strandNo = 'ทั้งวิชา';
+        }
+        const stdsFound = Array.from(new Set(authoredNos.map((n) => bpByNo.get(n).standardCode).filter(Boolean)));
+        const rangeSummary = formatLockedRangeSummary_(authoredNos.map((n) => ({ itemNo: n })));
+        const scopeSummary = `${rangeSummary}${stdsFound.length ? ' (' + stdsFound.join(', ') + ')' : ''}`;
+        return { strandNo, scopeSummary, authoredItemNos: authoredNos };
+      }
+
+      const fallbackScope = (!rawSubStd || /^ALL$/i.test(rawSubStd)) ? 'ครบทั้งสาระ' : rawSubStd;
+      return { strandNo, scopeSummary: fallbackScope, authoredItemNos: [] };
+    }
+
+    const bpMap = new Map();
+    (blueprintRows || []).forEach((r) => {
+      if (r && r.indicatorCode) bpMap.set(normIndCodeKey_(r.indicatorCode), r);
+    });
+
+    const smartSingle = assembleSmartTutoringBodyXml(
+      [{
+        strandNo,
+        subStandard: rawSubStd,
+        fileName: part.fileName || '',
+        teacherName: part.teacherName || '',
+        schoolId: part.schoolId || '',
+        bodyXml: (() => {
+          const bm = /<w:body\b[^>]*>([\s\S]*?)<\/w:body>/i.exec(docXml);
+          return bm ? bm[1] : docXml;
+        })()
+      }],
+      { subjectCode: sub, blueprintRows, onlyExtractMeta: true }
+    );
+
+    if (smartSingle.coveredIndicators && smartSingle.coveredIndicators.length > 0) {
+      const strandsFound = Array.from(new Set(
+        smartSingle.coveredIndicators
+          .map((ic) => bpMap.get(normIndCodeKey_(ic)))
+          .filter(Boolean)
+          .map((r) => String(r.strandNo))
+      ));
+      if (strandsFound.length === 1) {
+        strandNo = strandsFound[0];
+      }
+      const inds = smartSingle.coveredIndicators;
+      const scopeSummary = inds.length <= 4
+        ? inds.join(', ')
+        : `${inds.slice(0, 3).join(', ')} และอีก ${inds.length - 3} ตัวชี้วัด`;
+      return { strandNo, scopeSummary, coveredIndicators: inds };
+    }
+
+    const fallbackScope = (!rawSubStd || /^ALL$/i.test(rawSubStd)) ? 'ครบทั้งสาระ' : rawSubStd;
+    return { strandNo, scopeSummary: fallbackScope, coveredIndicators: [] };
+  }
+
+  function isTutoringTopFileChromeBlock_(blk) {
+    const txt = normalizeThaiDigits(String((blk && blk.text) || '')).replace(/\s+/g, ' ').trim();
+    const xml = String((blk && blk.xml) || '');
+    const hasMedia = /<w:drawing\b|<w:pict\b|<v:imagedata\b|<a:blip\b/i.test(xml);
+    if (hasMedia) return false;
+    if (!txt) return true;
+
+    if (blk.tag === 'w:tbl') {
+      if (/โครงการยกระดับผลสัมฤทธิ์|ฉบับที่\s*[34]\s*:|เอกสารยกระดับตามสาระและตัวชี้วัด/i.test(txt)) return true;
+      if (/รายวิชา\s*:/.test(txt) && (/ตัวชี้วัดในเอกสารชุดนี้|ตัวชี้วัดที่รับผิดชอบ|ตัวชี้วัดที่มุ่งพัฒนา|ชื่อ-สกุลนักเรียน|โครงสร้างคู่ขนานฉบับนักเรียน|แนวทางแบ่งงานกรณีมีครูหลายท่าน/.test(txt))) return true;
+      if (/^พื้นที่ให้นักเรียนฝึก(?:ทดเลข|แสดงวิธีทำ)/i.test(txt) && isUneditedPlaceholderText_(txt)) return true;
+    }
+
+    if (/^คำชี้แจง\s*:\s*(?:เอกสารชุดนี้จัดเรียงเนื้อหาแยกเป็นรายตัวชี้วัด|ให้นักเรียนศึกษาสรุปหลักการสำคัญ)/i.test(txt)) return true;
+    if (/^แนวทางสำหรับครูผู้จัดทำและครูผู้สอน\s*:/i.test(txt)) return true;
+    if (/^ส่วนที่\s*3\s*[:\-]?\s*ตารางสรุปเฉลย/i.test(txt)) return false;
+    return false;
+  }
+
+  function cleanSummaryFrameTableXml_(tblXml) {
+    const hasMedia = /<w:drawing\b|<w:pict\b|<v:imagedata\b|<a:blip\b/i.test(tblXml);
+    return String(tblXml || '').replace(/<w:tc\b([^>]*)>([\s\S]*?)<\/w:tc>/gi, (fullTc, tcAttrs, tcInner) => {
+      const pList = [];
+      const pRe = /<w:p\b[\s\S]*?<\/w:p>/gi;
+      let m;
+      while ((m = pRe.exec(tcInner)) !== null) {
+        pList.push(m[0]);
+      }
+      if (pList.length <= 1) return fullTc;
+
+      const kept = pList.filter((pXml) => {
+        if (/<w:drawing\b|<w:pict\b|<v:imagedata\b|<a:blip\b/i.test(pXml)) return true;
+        const pTxt = normalizeThaiDigits(extractPlainTextFromDocxXml(pXml)).replace(/\s+/g, ' ').trim();
+        if (!pTxt) return false;
+        if (/^\[พื้นที่(?:ใส่สรุปความรู้|สำหรับครูใส่สรุปความรู้|วางแผนภาพ)/i.test(pTxt)) return false;
+        if (/^•?\s*แทรกรูปภาพ(?:ประกอบ|หรืออินโฟกราฟิก)/i.test(pTxt)) return false;
+        if (/^คำแนะนำสำหรับผู้จัดทำ\s*:/i.test(pTxt)) return false;
+        if (/^•?\s*(?:พิมพ์สรุปเนื้อหาสำคัญ|จุดเน้นการสอนเพิ่มเติม|สรุปหลักการสำคัญ)/i.test(pTxt) && isUneditedPlaceholderText_(pTxt)) return false;
+        return true;
+      });
+
+      if (kept.length === 0) {
+        return hasMedia ? fullTc : `<w:tc${tcAttrs}>${pList[0]}</w:tc>`;
+      }
+      const tcPrM = /<w:tcPr\b[\s\S]*?<\/w:tcPr>/i.exec(tcInner);
+      const tcPrXml = tcPrM ? tcPrM[0] : '';
+      return `<w:tc${tcAttrs}>${tcPrXml}${kept.join('')}</w:tc>`;
+    });
+  }
+
+  function cleanAndScoreTutoringModule_(rawBlocks = [], targetAudience = 'STUDENT', canonicalIndCode = '') {
+    const isStudent = String(targetAudience || 'STUDENT').toUpperCase() === 'STUDENT';
+    const cleanedBlocks = [];
+    let mediaCount = 0;
+    let authoredChars = 0;
+    let skippingPlaceholderQuestion = false;
+
+    rawBlocks.forEach((blk, idx) => {
+      const xml = String(blk.xml || '');
+      const normTxt = normalizeThaiDigits(String(blk.text || '')).replace(/\s+/g, ' ').trim();
+      const blkMedia = (xml.match(/<w:drawing\b|<w:pict\b|<v:imagedata\b|<a:blip\b/gi) || []).length;
+
+      if (idx === 0 && /^(?:หน่วยย่อย|ตัวชี้วัด)(?:ที่\s*\d{1,3})?\s*[:\-—]/i.test(normTxt) && blkMedia === 0 && normTxt.length <= 240) {
+        return;
+      }
+
+      const qStartM = blk.tag === 'w:p' ? /^ข้อ(?:ที่)?\s*(\d{1,3})\s*[\.\):]?\s*(.*)$/i.exec(normTxt) : null;
+      if (qStartM) {
+        const restStem = qStartM[2].replace(/^\[[^\]]+\]\s*/, '').trim();
+        if (blkMedia === 0 && (!restStem || isUneditedPlaceholderText_(restStem))) {
+          skippingPlaceholderQuestion = true;
+          return;
+        }
+        skippingPlaceholderQuestion = false;
+      } else if (skippingPlaceholderQuestion) {
+        if (blkMedia === 0) {
+          if (!normTxt || isUneditedPlaceholderText_(normTxt)) return;
+          if (/^[1-4กขคง][\.\)]\s*\.+/i.test(normTxt)) return;
+          if (/^(?:เฉลย|คำตอบ)(?:\s*ข้อ(?:ที่)?\s*\d+)?\s*[:=\-]?\s*(?:ตอบ(?:ตัวเลือก|ข้อ)?\s*)?1\s*$/i.test(normTxt)) return;
+          if (/^(?:วิธีคิด|คำอธิบาย).*?:\s*\.+$/i.test(normTxt)) return;
+        }
+        skippingPlaceholderQuestion = false;
+      }
+
+      if (isStudent && blkMedia === 0 && /^(?:เฉลย(?:ข้อ(?:ที่)?)?\s*\d*\s*[:=\-]|วิธีคิดและคำอธิบายอย่างละเอียด)/i.test(normTxt)) {
+        return;
+      }
+
+      if (blkMedia === 0 && /ครูผู้จัดทำ(?:สามารถ)?ใส่ข้อสอบ\s*2[–\-]5\s*ข้อ|หากใช้ไม่ถึง\s*5\s*ข้อ\s*ลบข้อที่เกินออกได้|^คำแนะนำ\s*:\s*ใส่ข้อสอบ\s*2[–\-]5\s*ข้อ/i.test(normTxt)) {
+        return;
+      }
+
+      if (blk.tag === 'w:tbl' && blkMedia === 0) {
+        const lines = normalizeThaiDigits(String(blk.text || '')).split('\n').map(l => l.trim()).filter(Boolean);
+        const realLines = lines.filter(l => !isTutoringBoilerplateLine_(l));
+        if (realLines.length === 0) return;
+      }
+
+      let finalXml = xml;
+      if (blk.tag === 'w:tbl') {
+        finalXml = cleanSummaryFrameTableXml_(finalXml);
+      } else if (blk.tag === 'w:p' && canonicalIndCode) {
+        if (/^1\s*[\.\)]\s*สรุป(?:ความรู้|เนื้อหา)ตัวชี้วัดที่\s*\d+/i.test(normTxt)) {
+          finalXml = buildSarabunPara_(`1. สรุปความรู้ประจำตัวชี้วัด (${canonicalIndCode})`, {
+            sz: 32, bold: true, color: isStudent ? '1B4332' : '991B1B', jc: 'left', before: 90, after: 30, keepNext: true
+          });
+        } else if (/^2\s*[\.\)]\s*แบบฝึก(?:ย่อย|ทักษะ)ตัวชี้วัดที่\s*\d+/i.test(normTxt)) {
+          const suffix = isStudent ? '' : ' (พร้อมเฉลยและวิธีคิดละเอียดรายข้อ)';
+          finalXml = buildSarabunPara_(`2. แบบฝึกย่อยประจำตัวชี้วัด (${canonicalIndCode})${suffix}`, {
+            sz: 32, bold: true, color: isStudent ? '1B4332' : '991B1B', jc: 'left', before: 100, after: 24, keepNext: true
+          });
+        }
+      }
+
+      mediaCount += blkMedia;
+      if (!/^1\s*[\.\)]\s*สรุป|^2\s*[\.\)]\s*แบบฝึก|^คำสั่ง\s*:/i.test(normTxt) && !isTutoringBoilerplateLine_(normTxt)) {
+        if (!/^(?:เฉลย|คำตอบ)(?:\s*ข้อ(?:ที่)?\s*\d+)?\s*[:=\-]?\s*(?:ตอบ(?:ตัวเลือก|ข้อ)?\s*)?1\s*$/i.test(normTxt)) {
+          authoredChars += normTxt.replace(/\s+/g, '').length;
+        }
+      }
+
+      cleanedBlocks.push(finalXml);
+    });
+
+    const hasRealContent = mediaCount > 0 || authoredChars >= 12;
+    const contentScore = (mediaCount * 350) + authoredChars;
+    return { hasRealContent, mediaCount, authoredChars, contentScore, blocks: cleanedBlocks };
+  }
+
+  function assembleSmartTutoringBodyXml(partEntries = [], params = {}) {
+    const targetAudience = String(params.targetAudience || 'STUDENT').toUpperCase();
+    const isTeacher = targetAudience === 'TEACHER';
+    const blueprintRows = Array.isArray(params.blueprintRows) ? params.blueprintRows : [];
+
+    const bpList = [];
+    const bpByNorm = new Map();
+    const strandOrder = [];
+    const strandMetaMap = new Map();
+
+    blueprintRows.forEach((r) => {
+      if (!r || !r.indicatorCode) return;
+      const norm = normIndCodeKey_(r.indicatorCode);
+      if (bpByNorm.has(norm)) return;
+      const sNo = String(r.strandNo || '1');
+      const entry = {
+        bpIndex: bpList.length + 1,
+        strandNo: sNo,
+        strandName: String(r.strandName || `สาระที่ ${sNo}`),
+        standardCode: String(r.standardCode || ''),
+        indicatorCode: String(r.indicatorCode).trim(),
+        indicatorDesc: String(r.indicatorDesc || '').trim(),
+        normKey: norm
+      };
+      bpList.push(entry);
+      bpByNorm.set(norm, entry);
+      if (!strandMetaMap.has(sNo)) {
+        strandOrder.push(sNo);
+        strandMetaMap.set(sNo, { strandNo: sNo, strandName: entry.strandName, indicators: [] });
+      }
+      strandMetaMap.get(sNo).indicators.push(entry);
+    });
+
+    const indicatorBuckets = new Map();
+    const strandFallbackBuckets = new Map();
+
+    partEntries.forEach((part) => {
+      const authorLabel = part.authorSchool ||
+        `${part.teacherName || 'คณะกรรมการ'}${part.schoolId ? ' (' + getSchoolShortName(part.schoolId) + ')' : ''}`;
+      const allBlocks = extractWordTopLevelBlocks_(part.bodyXml || '');
+      const contentBlocks = allBlocks.filter((b) => !isTutoringTopFileChromeBlock_(b));
+      if (!contentBlocks.length) return;
+
+      const fullBodyPlain = contentBlocks.map((b) => b.text || '').join('\n');
+      const hasLegacySplitSections = /^ส่วนที่\s*2\s*[:\-]?\s*(?:แบบฝึก|ข้อสอบ)/im.test(normalizeThaiDigits(fullBodyPlain));
+
+      const rawSegments = [];
+      let curSeg = null;
+
+      contentBlocks.forEach((blk) => {
+        const flat = normalizeThaiDigits(String(blk.text || '')).replace(/\s+/g, ' ').trim();
+        let headerInd = '';
+
+        const unitM = /^(?:หน่วยย่อย|ตัวชี้วัด)(?:ที่\s*\d{1,3})?\s*[:\-—]?\s*(.*)$/i.exec(flat);
+        if (unitM && !/^ตัวชี้วัด(?:ในเอกสารชุดนี้|ที่รับผิดชอบ|ที่มุ่งพัฒนา)/i.test(flat)) {
+          headerInd = extractIndicatorCodeFromText_(flat);
+        } else if (/^1\s*[\.\)]\s*สรุป(?:ความรู้|เนื้อหา)(?:ประจำ)?ตัวชี้วัด/i.test(flat)) {
+          headerInd = extractIndicatorCodeFromText_(flat);
+        } else if (!hasLegacySplitSections && blk.tag === 'w:p' && flat.length <= 165 && !/^(?:ข้อ|เฉลย|คำตอบ|2\s*[\.\)])/i.test(flat)) {
+          const leadM = /^(?:มาตรฐาน[^\n]*?\s+)?([ทควต]\s*\d+\.\d+\s*ป\.\s*\d+\/\d+)\b/i.exec(flat);
+          if (leadM) headerInd = extractIndicatorCodeFromText_(leadM[1]);
+        }
+
+        if (headerInd) {
+          const nKey = normIndCodeKey_(headerInd);
+          if (curSeg && curSeg.normKey === nKey && curSeg.blocks.length <= 1) {
+            curSeg.blocks.push(blk);
+            return;
+          }
+          curSeg = { indCode: headerInd, normKey: nKey, blocks: [blk] };
+          rawSegments.push(curSeg);
+        } else if (curSeg) {
+          curSeg.blocks.push(blk);
+        } else {
+          curSeg = { indCode: '', normKey: '', blocks: [blk] };
+          rawSegments.push(curSeg);
+        }
+      });
+
+      const namedSegs = rawSegments.filter((s) => s.normKey);
+      if (namedSegs.length > 0) {
+        if (!rawSegments[0].normKey && rawSegments.length > 1 && rawSegments[1].normKey) {
+          rawSegments[1].blocks = rawSegments[0].blocks.concat(rawSegments[1].blocks);
+        }
+        namedSegs.forEach((seg) => {
+          const bpEntry = bpByNorm.get(seg.normKey);
+          const canonicalCode = bpEntry ? bpEntry.indicatorCode : seg.indCode;
+          const cleaned = cleanAndScoreTutoringModule_(seg.blocks, targetAudience, canonicalCode);
+          if (!cleaned.hasRealContent) return;
+
+          const prev = indicatorBuckets.get(seg.normKey);
+          if (!prev || cleaned.contentScore >= prev.contentScore) {
+            indicatorBuckets.set(seg.normKey, {
+              normKey: seg.normKey,
+              indCode: canonicalCode,
+              bpEntry: bpEntry || null,
+              blocks: cleaned.blocks,
+              contentScore: cleaned.contentScore,
+              authorLabel
+            });
+          }
+        });
+        return;
+      }
+
+      const subStdInd = extractIndicatorCodeFromText_(part.subStandard || '');
+      const bodyInds = extractAllIndicatorCodesFromText_(fullBodyPlain).filter((ic) => bpByNorm.size === 0 || bpByNorm.has(normIndCodeKey_(ic)));
+      const singleInd = subStdInd || (bodyInds.length === 1 ? bodyInds[0] : '');
+
+      if (singleInd) {
+        const nKey = normIndCodeKey_(singleInd);
+        const bpEntry = bpByNorm.get(nKey);
+        const canonicalCode = bpEntry ? bpEntry.indicatorCode : singleInd;
+        const cleaned = cleanAndScoreTutoringModule_(contentBlocks, targetAudience, canonicalCode);
+        if (cleaned.hasRealContent) {
+          const prev = indicatorBuckets.get(nKey);
+          if (!prev || cleaned.contentScore >= prev.contentScore) {
+            indicatorBuckets.set(nKey, {
+              normKey: nKey,
+              indCode: canonicalCode,
+              bpEntry: bpEntry || null,
+              blocks: cleaned.blocks,
+              contentScore: cleaned.contentScore,
+              authorLabel
+            });
+          }
+        }
+        return;
+      }
+
+      const cleanedWhole = cleanAndScoreTutoringModule_(contentBlocks, targetAudience, '');
+      if (!cleanedWhole.hasRealContent) return;
+
+      let inferredStrand = String(part.strandNo || '1').trim();
+      if (bodyInds.length > 0 && bpByNorm.size > 0) {
+        const sCounts = {};
+        bodyInds.forEach((ic) => {
+          const b = bpByNorm.get(normIndCodeKey_(ic));
+          if (b) sCounts[b.strandNo] = (sCounts[b.strandNo] || 0) + 1;
+        });
+        const bestS = Object.keys(sCounts).sort((a, b) => sCounts[b] - sCounts[a])[0];
+        if (bestS) inferredStrand = bestS;
+        bodyInds.forEach((ic) => {
+          const nk = normIndCodeKey_(ic);
+          if (!indicatorBuckets.has(nk) && bpByNorm.has(nk)) {
+            indicatorBuckets.set(nk, {
+              normKey: nk,
+              indCode: bpByNorm.get(nk).indicatorCode,
+              bpEntry: bpByNorm.get(nk),
+              blocks: [],
+              coveredViaWholeStrand: true,
+              contentScore: 1,
+              authorLabel
+            });
+          }
+        });
+      }
+      if (!strandFallbackBuckets.has(inferredStrand)) strandFallbackBuckets.set(inferredStrand, []);
+      strandFallbackBuckets.get(inferredStrand).push({ authorLabel, blocks: cleanedWhole.blocks });
+    });
+
+    const coveredIndicators = [];
+    const missingIndicators = [];
+    const blueprintChecklist = bpList.map((bp) => {
+      const hit = indicatorBuckets.get(bp.normKey);
+      if (hit) coveredIndicators.push(bp.indicatorCode);
+      else missingIndicators.push(bp.indicatorCode);
+      return {
+        bpIndex: bp.bpIndex,
+        strandNo: bp.strandNo,
+        strandName: bp.strandName,
+        indicatorCode: bp.indicatorCode,
+        indicatorDesc: bp.indicatorDesc,
+        covered: Boolean(hit),
+        authorLabel: hit ? hit.authorLabel : ''
+      };
+    });
+
+    if (bpList.length === 0) {
+      Array.from(indicatorBuckets.values()).forEach((v) => coveredIndicators.push(v.indCode));
+    }
+
+    if (params.onlyExtractMeta) {
+      return {
+        usedFallback: false,
+        coveredCount: coveredIndicators.length,
+        totalBlueprintCount: bpList.length,
+        coveredIndicators,
+        missingIndicators,
+        blueprintChecklist,
+        bodyXml: ''
+      };
+    }
+
+    if (indicatorBuckets.size === 0 && strandFallbackBuckets.size === 0) {
+      const fallbackXml = partEntries.map((p, idx) => {
+        const divider = idx > 0 ? '<w:p><w:r><w:br w:type="page"/></w:r></w:p>' : '';
+        return divider + String(p.bodyXml || '');
+      }).join('');
+      return {
+        usedFallback: true,
+        coveredCount: 0,
+        totalBlueprintCount: bpList.length,
+        coveredIndicators: [],
+        missingIndicators: bpList.map((x) => x.indicatorCode),
+        blueprintChecklist,
+        bodyXml: fallbackXml
+      };
+    }
+
+    const accentColor = isTeacher ? '991B1B' : '1B4332';
+    const softFill = isTeacher ? 'FEF2F2' : 'ECFDF5';
+    const chapterFill = isTeacher ? 'FEE2E2' : 'D1FAE5';
+    const outXmlParts = [];
+    let emittedAnyStrand = false;
+
+    const effectiveStrands = strandOrder.length > 0
+      ? strandOrder
+      : Array.from(new Set(['1', '2', '3', '4', '5'].filter((s) => strandFallbackBuckets.has(s)))).concat(
+          bpList.length === 0 ? ['1'] : []
+        );
+
+    if (bpList.length > 0) {
+      effectiveStrands.forEach((sNo) => {
+        const sMeta = strandMetaMap.get(sNo);
+        const sInds = (sMeta && sMeta.indicators) || [];
+        const activeMods = sInds
+          .map((bp) => ({ bp, mod: indicatorBuckets.get(bp.normKey) }))
+          .filter((x) => x.mod && !x.mod.coveredViaWholeStrand && x.mod.blocks.length > 0);
+        const fallbacks = strandFallbackBuckets.get(sNo) || [];
+
+        if (activeMods.length === 0 && fallbacks.length === 0) return;
+
+        if (emittedAnyStrand) {
+          outXmlParts.push('<w:p><w:r><w:br w:type="page"/></w:r></w:p>');
+        }
+        emittedAnyStrand = true;
+
+        const strandTitleClean = String((sMeta && sMeta.strandName) || '').replace(/^สาระที่\s*\d+\s*/, '').trim();
+        const coveredInStrand = sInds.filter((bp) => indicatorBuckets.has(bp.normKey)).length;
+
+        outXmlParts.push(
+          buildFixedTable_(
+            [{
+              cells: [{
+                fill: chapterFill,
+                paras: [
+                  buildSarabunPara_(`สาระที่ ${sNo}${strandTitleClean ? ' : ' + strandTitleClean : ''}`, { sz: 36, bold: true, color: accentColor, jc: 'left', before: 50, after: 16, keepNext: true }),
+                  buildSarabunPara_(`บรรจุเนื้อหาและแบบฝึกย่อยแล้ว ${coveredInStrand} จาก ${sInds.length} ตัวชี้วัดตามผัง O-NET 2569`, { sz: 28, bold: true, color: '334155', jc: 'left', before: 0, after: 40, keepNext: true })
+                ]
+              }]
+            }],
+            [8306],
+            { borderColor: accentColor, borderSz: 10 }
+          )
+        );
+
+        activeMods.forEach(({ bp, mod }, mIdx) => {
+          outXmlParts.push(
+            buildSarabunPara_('', { sz: 18, before: mIdx === 0 ? 60 : 120, after: 20 }),
+            buildFixedTable_(
+              [{
+                cells: [{
+                  fill: softFill,
+                  paras: [
+                    buildSarabunPara_(`ตัวชี้วัดที่ ${bp.bpIndex}: ${bp.indicatorCode}${bp.indicatorDesc ? ' — ' + bp.indicatorDesc : ''}`, { sz: 32, bold: true, color: accentColor, jc: 'left', before: 30, after: 12, keepNext: true }),
+                    buildSarabunPara_(`ผู้เรียบเรียงต้นฉบับ: ${mod.authorLabel}`, { sz: 26, italic: true, color: '475569', jc: 'left', before: 0, after: 26, keepNext: true })
+                  ]
+                }]
+              }],
+              [8306],
+              { borderColor: accentColor, borderSz: 6 }
+            ),
+            ...mod.blocks
+          );
+        });
+
+        fallbacks.forEach((fb) => {
+          outXmlParts.push(
+            buildSarabunPara_(`เอกสารสรุปประจำสาระที่ ${sNo} — ผู้เรียบเรียง: ${fb.authorLabel}`, { sz: 30, bold: true, color: accentColor, jc: 'left', before: 100, after: 30, keepNext: true }),
+            ...fb.blocks
+          );
+        });
+      });
+    } else {
+      let seq = 0;
+      Array.from(indicatorBuckets.values()).forEach((mod) => {
+        if (!mod.blocks || !mod.blocks.length) return;
+        seq += 1;
+        outXmlParts.push(
+          buildSarabunPara_('', { sz: 18, before: seq === 1 ? 40 : 120, after: 20 }),
+          buildFixedTable_(
+            [{
+              cells: [{
+                fill: softFill,
+                paras: [
+                  buildSarabunPara_(`ตัวชี้วัดที่ ${seq}: ${mod.indCode}`, { sz: 32, bold: true, color: accentColor, jc: 'left', before: 30, after: 12, keepNext: true }),
+                  buildSarabunPara_(`ผู้เรียบเรียงต้นฉบับ: ${mod.authorLabel}`, { sz: 26, italic: true, color: '475569', jc: 'left', before: 0, after: 26, keepNext: true })
+                ]
+              }]
+            }],
+            [8306],
+            { borderColor: accentColor, borderSz: 6 }
+          ),
+          ...mod.blocks
+        );
+      });
+      Array.from(strandFallbackBuckets.entries()).forEach(([sNo, fbs]) => {
+        fbs.forEach((fb) => {
+          outXmlParts.push(
+            buildSarabunPara_(`สาระที่ ${sNo} — ผู้เรียบเรียง: ${fb.authorLabel}`, { sz: 32, bold: true, color: accentColor, jc: 'left', before: 100, after: 30, keepNext: true }),
+            ...fb.blocks
+          );
+        });
+      });
+    }
+
+    return {
+      usedFallback: false,
+      coveredCount: coveredIndicators.length,
+      totalBlueprintCount: bpList.length,
+      coveredIndicators,
+      missingIndicators,
+      blueprintChecklist,
+      bodyXml: outXmlParts.join('')
     };
   }
 
@@ -5656,6 +6278,141 @@
     }
   }
 
+  function loadImageFromBlobClient_(blob) {
+    if (typeof createImageBitmap === 'function') {
+      return createImageBitmap(blob);
+    }
+    return new Promise((resolve, reject) => {
+      const url = URL.createObjectURL(blob);
+      const img = new Image();
+      img.onload = () => {
+        URL.revokeObjectURL(url);
+        resolve(img);
+      };
+      img.onerror = (err) => {
+        URL.revokeObjectURL(url);
+        reject(err);
+      };
+      img.src = url;
+    });
+  }
+
+  async function optimizeDocxImagesInBrowser_(arrayBuffer) {
+    const origBytes = arrayBuffer.byteLength || 0;
+    if (origBytes < 2.2 * 1024 * 1024 || typeof JSZip === 'undefined' || typeof document === 'undefined') {
+      return { arrayBuffer, compressedCount: 0, origBytes, newBytes: origBytes };
+    }
+    try {
+      const zip = await JSZip.loadAsync(arrayBuffer);
+      const minImgThreshold = origBytes > 8 * 1024 * 1024 ? 120 * 1024 : 260 * 1024;
+      const MAX_DIM = 1550; // ~268 DPI across full 14.65 cm A4 printable width
+      const mediaNames = Object.keys(zip.files).filter((n) => /^word\/media\/.+\.(png|jpe?g)$/i.test(n) && !zip.files[n].dir);
+      if (!mediaNames.length) {
+        return { arrayBuffer, compressedCount: 0, origBytes, newBytes: origBytes };
+      }
+
+      let compressedCount = 0;
+      const renameTargetMap = new Map(); // oldMediaFileName -> newMediaFileName
+
+      for (const mediaPath of mediaNames) {
+        try {
+          const imgBytes = await zip.file(mediaPath).async('uint8array');
+          if (imgBytes.byteLength < minImgThreshold) continue;
+
+          const isPng = /\.png$/i.test(mediaPath);
+          const mimeIn = isPng ? 'image/png' : 'image/jpeg';
+          const srcBlob = new Blob([imgBytes], { type: mimeIn });
+          const bmp = await loadImageFromBlobClient_(srcBlob);
+          const srcW = Number(bmp.width || bmp.naturalWidth || 0);
+          const srcH = Number(bmp.height || bmp.naturalHeight || 0);
+          if (!srcW || !srcH) continue;
+
+          const scale = Math.min(1, MAX_DIM / Math.max(srcW, srcH));
+          const dstW = Math.max(1, Math.round(srcW * scale));
+          const dstH = Math.max(1, Math.round(srcH * scale));
+
+          const canvas = document.createElement('canvas');
+          canvas.width = dstW;
+          canvas.height = dstH;
+          const ctx = canvas.getContext('2d', { willReadFrequently: isPng });
+          if (!ctx) continue;
+          ctx.drawImage(bmp, 0, 0, dstW, dstH);
+          if (bmp && typeof bmp.close === 'function') bmp.close();
+
+          let hasAlpha = false;
+          if (isPng) {
+            const imgData = ctx.getImageData(0, 0, dstW, dstH).data;
+            const step = Math.max(4, Math.floor((imgData.length / 4) / 4000) * 4);
+            for (let p = 3; p < imgData.length; p += step) {
+              if (imgData[p] < 250) {
+                hasAlpha = true;
+                break;
+              }
+            }
+          }
+
+          const outMime = (isPng && hasAlpha) ? 'image/png' : 'image/jpeg';
+          const outQuality = outMime === 'image/jpeg' ? 0.84 : undefined;
+          const outBlob = await new Promise((res) => canvas.toBlob(res, outMime, outQuality));
+          if (!outBlob) continue;
+          const outImgBytes = new Uint8Array(await outBlob.arrayBuffer());
+
+          if (outImgBytes.byteLength >= imgBytes.byteLength * 0.88) continue;
+
+          if (isPng && outMime === 'image/jpeg') {
+            const oldBase = mediaPath.split('/').pop();
+            const newBase = oldBase.replace(/\.png$/i, '_opt.jpg');
+            const newMediaPath = `word/media/${newBase}`;
+            zip.remove(mediaPath);
+            zip.file(newMediaPath, outImgBytes);
+            renameTargetMap.set(oldBase, newBase);
+          } else {
+            zip.file(mediaPath, outImgBytes);
+          }
+          compressedCount += 1;
+        } catch (_imgErr) {
+          // Skip un-decodable image formats gracefully
+        }
+      }
+
+      if (compressedCount === 0) {
+        return { arrayBuffer, compressedCount: 0, origBytes, newBytes: origBytes };
+      }
+
+      if (renameTargetMap.size > 0) {
+        const relFiles = Object.keys(zip.files).filter((n) => /^word\/_rels\/.+\.rels$/i.test(n) && !zip.files[n].dir);
+        for (const rf of relFiles) {
+          let rXml = await zip.file(rf).async('string');
+          let changed = false;
+          renameTargetMap.forEach((newBase, oldBase) => {
+            const escOld = oldBase.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+            const re = new RegExp(`(Target\\s*=\\s*"[^"]*?media\\/)${escOld}(")`, 'gi');
+            if (re.test(rXml)) {
+              rXml = rXml.replace(re, `$1${newBase}$2`);
+              changed = true;
+            }
+          });
+          if (changed) zip.file(rf, rXml);
+        }
+        if (zip.file('[Content_Types].xml')) {
+          let ctXml = await zip.file('[Content_Types].xml').async('string');
+          if (!/Extension\s*=\s*"jpg"/i.test(ctXml)) {
+            ctXml = ctXml.replace('</Types>', '<Default ContentType="image/jpeg" Extension="jpg"/></Types>');
+            zip.file('[Content_Types].xml', ctXml);
+          }
+        }
+      }
+
+      const newBuf = await zip.generateAsync({ type: 'arraybuffer', compression: 'DEFLATE', compressionOptions: { level: 6 } });
+      if (newBuf.byteLength < origBytes) {
+        return { arrayBuffer: newBuf, compressedCount, origBytes, newBytes: newBuf.byteLength };
+      }
+      return { arrayBuffer, compressedCount: 0, origBytes, newBytes: origBytes };
+    } catch (_err) {
+      return { arrayBuffer, compressedCount: 0, origBytes, newBytes: origBytes };
+    }
+  }
+
   async function runSlotDocxPreCheck(slotKey) {
     const { docCategory, edition } = parseUploadSlotKey_(slotKey);
     const fileInput = document.getElementById('upDocxFile_' + slotKey);
@@ -5667,13 +6424,6 @@
       return;
     }
     const file = fileInput.files[0];
-    if (file.size > MAX_UPLOAD_BYTES) {
-      showToast('ขนาดไฟล์เกิน 25 MB กรุณาลดขนาดรูปภาพในเอกสารแล้วลองใหม่อีกครั้งครับ', 'error');
-      fileInput.value = '';
-      if (card) card.classList.add('hidden');
-      STATE.preCheckSlots[slotKey] = null;
-      return;
-    }
     if (!file.name.toLowerCase().endsWith('.docx')) {
       showToast('ช่องนี้รองรับเฉพาะไฟล์ Word (.docx) เท่านั้นครับ', 'error');
       fileInput.value = '';
@@ -5681,8 +6431,30 @@
       STATE.preCheckSlots[slotKey] = null;
       return;
     }
+    if (file.size > 85 * 1024 * 1024) {
+      showToast('ไฟล์ต้นฉบับใหญ่เกิน 85 MB กรุณากดปุ่ม Compress Pictures (220 ppi) ใน Word ก่อนแนบครับ', 'error');
+      fileInput.value = '';
+      if (card) card.classList.add('hidden');
+      STATE.preCheckSlots[slotKey] = null;
+      return;
+    }
 
-    const arrayBuffer = await file.arrayBuffer();
+    if (card && file.size > 2.2 * 1024 * 1024) {
+      card.className = 'gw-alert-warn rounded-xl border p-3 text-xs';
+      card.innerHTML = `<div class="font-bold">⏳ กำลังย่อขนาดรูปภาพความละเอียดสูงในไฟล์ (${(file.size / (1024 * 1024)).toFixed(1)} MB) อัตโนมัติ เพื่อให้พร้อมรวมเล่มไม่เกิน 12 MB...</div>`;
+      card.classList.remove('hidden');
+    }
+
+    const rawBuffer = await file.arrayBuffer();
+    const optRes = await optimizeDocxImagesInBrowser_(rawBuffer);
+    const arrayBuffer = optRes.arrayBuffer;
+    if (arrayBuffer.byteLength > MAX_UPLOAD_BYTES) {
+      showToast('หลังบีบอัดรูปภาพแล้วไฟล์ยังเกิน 25 MB กรุณาใช้เมนู Picture Format > Compress Pictures (220 ppi) ใน Word ครับ', 'error');
+      fileInput.value = '';
+      if (card) card.classList.add('hidden');
+      STATE.preCheckSlots[slotKey] = null;
+      return;
+    }
     const bytes = new Uint8Array(arrayBuffer);
     const base64Data = uint8ToBase64_(bytes);
 
@@ -5705,6 +6477,12 @@
       const indMsg = (docCategory === 'PREPOST_EXAM' && edition === 'STUDENT')
         ? 'ไม่แสดงรหัสตัวชี้วัด (ถูกต้องสำหรับข้อสอบนักเรียน)'
         : (check.missingIndicators.length === 0 ? `รหัสตัวชี้วัดครบ (${expectedInds.length})` : `ขาดตัวชี้วัด (${check.missingIndicators.join(', ')})`);
+
+      const finalMb = arrayBuffer.byteLength / (1024 * 1024);
+      const origMb = optRes.origBytes / (1024 * 1024);
+      const imgOptHtml = optRes.compressedCount > 0
+        ? `<div style="color: var(--gw-accent);">• บีบอัดรูปอัตโนมัติ: <b>✓ ย่อรูป ${optRes.compressedCount} ภาพ จาก ${origMb.toFixed(2)} MB → เหลือ ${finalMb.toFixed(2)} MB (คมชัดระดับพิมพ์ A4 ไม่ติดลิมิต 12 MB)</b></div>`
+        : (finalMb > 11.8 ? `<div class="gw-text-warn font-bold">• ขนาดไฟล์ ${finalMb.toFixed(2)} MB (เกิน 12 MB สำหรับดึงรวมเล่มผ่านเซิร์ฟเวอร์ แนะนำกด Compress Pictures 220 ppi ใน Word หรือใช้ปุ่มรวมเล่มจากไฟล์ในเครื่องครับ)</div>` : '');
 
       const summaryParts = [
         docCategory === 'PREPOST_EXAM' ? 'ข้อสอบ Pre-Post' : 'เอกสารยกระดับฯ',
@@ -5766,6 +6544,7 @@
           <div>• ตัวชี้วัด: <b>${escHtml(indMsg)}</b></div>
           <div>• องค์ประกอบของ${edition === 'STUDENT' ? 'ฉบับนักเรียน' : 'ฉบับครู'}: <b>${check.missingSections.length === 0 ? '✓ ครบถ้วน' : escHtml(check.missingSections.join(', '))}</b></div>
           <div>• จัดหน้า A4 / รูปลอย: <b>${layoutClean ? '✓ ปลอดภัย' : escHtml(check.layoutWarnings.join(' ; '))}</b></div>
+          ${imgOptHtml}
           ${autoExtractLineHtml}
         `;
         card.classList.remove('hidden');
@@ -9595,14 +10374,24 @@
 
   async function assembleMergedDocxBlob_({ subjectCode, subjectName, sourceCategory, targetAudience, examRound = 'PRE', fileName, parts }) {
     if (typeof JSZip === 'undefined') throw new Error('ไลบรารี JSZip ยังไม่พร้อมทำงาน กรุณารีเฟรชหน้าเว็บ');
-    parts = Array.from(parts || []).map(normalizeSubMetaClient_).sort((a, b) => {
+    const bpRowsForSubject = (STATE.blueprint || []).filter(r => String(r.subjectCode) === String(subjectCode));
+
+    parts = Array.from(parts || []).map((rawPart) => {
+      const p = normalizeSubMetaClient_(rawPart);
+      const inferred = inferPartScopeFromXml_(p, subjectCode, sourceCategory, bpRowsForSubject);
+      return Object.assign({}, p, {
+        strandNo: inferred.strandNo || p.strandNo,
+        scopeSummary: inferred.scopeSummary || p.subStandard || p.fileName
+      });
+    }).sort((a, b) => {
       const sDiff = (Number(a.strandNo || 99) || 99) - (Number(b.strandNo || 99) || 99);
       if (sDiff !== 0) return sDiff;
       const aAll = !a.subStandard || /ครบทั้งสาระ|ALL/i.test(String(a.subStandard));
       const bAll = !b.subStandard || /ครบทั้งสาระ|ALL/i.test(String(b.subStandard));
       if (aAll !== bAll) return aAll ? -1 : 1;
-      return String(a.subStandard || a.fileName || '').localeCompare(String(b.subStandard || b.fileName || ''), 'th', { numeric: true });
+      return String(a.scopeSummary || a.subStandard || a.fileName || '').localeCompare(String(b.scopeSummary || b.subStandard || b.fileName || ''), 'th', { numeric: true });
     });
+
     const binStr = atob(REPORT_DOCX_SKELETON_B64.replace(/-/g, '+').replace(/_/g, '/'));
     const bytes = new Uint8Array(binStr.length);
     for (let i = 0; i < binStr.length; i++) bytes[i] = binStr.charCodeAt(i);
@@ -9616,6 +10405,7 @@
     const chapters = parts.map(p => ({
       strandNo: p.strandNo,
       strandLabel: p.strandNo === 'ทั้งวิชา' ? 'แบบทดสอบครบชุดทั้งรายวิชา' : `สาระที่ ${p.strandNo}`,
+      scopeSummary: p.scopeSummary || p.subStandard || p.fileName,
       subStandard: p.subStandard || p.fileName,
       fileName: p.fileName,
       authorSchool: `${p.teacherName || 'คณะกรรมการ'}${p.schoolId ? ' (' + getSchoolShortName(p.schoolId) + ')' : ''}`
@@ -9623,22 +10413,6 @@
 
     const isExam = sourceCategory === 'PREPOST_EXAM';
     const roundKey = String(examRound || 'PRE').toUpperCase() === 'POST' ? 'POST' : 'PRE';
-    const frontMatterXml = isExam
-      ? buildNietsExamBookletFrontMatterXml({
-          subjectCode,
-          subjectName,
-          examRound: roundKey,
-          editionLabel: edLabel,
-          targetAudience,
-          chapters
-        })
-      : buildMergedBookFrontMatterXml({
-          subjectName,
-          docCategoryLabel: catLabel,
-          editionLabel: edLabel,
-          academicYearBE: '2569',
-          chapters
-        });
 
     let nextRId = 20;
     const allNewRels = [];
@@ -9677,16 +10451,30 @@
       remappedParts.push({
         strandNo: part.strandNo,
         subStandard: part.subStandard,
+        scopeSummary: part.scopeSummary,
         fileName: part.fileName,
+        teacherName: part.teacherName,
+        schoolId: part.schoolId,
+        authorSchool: `${part.teacherName || 'คณะกรรมการ'}${part.schoolId ? ' (' + getSchoolShortName(part.schoolId) + ')' : ''}`,
         bodyXml: remapped.bodyXml
       });
     }
 
-    const bodySections = [frontMatterXml];
+    let frontMatterXml = '';
+    let compiledBodyXml = '';
     let smartSummary = null;
+
     if (isExam) {
+      frontMatterXml = buildNietsExamBookletFrontMatterXml({
+        subjectCode,
+        subjectName,
+        examRound: roundKey,
+        editionLabel: edLabel,
+        targetAudience,
+        chapters
+      });
       const smartRes = assembleSmartExamBodyXml(remappedParts, { subjectCode, targetAudience });
-      bodySections.push(smartRes.bodyXml);
+      compiledBodyXml = smartRes.bodyXml;
       const bpExpected = (NIETS_2569_EXAM_ITEMS[String(subjectCode)] || []).map(x => Number(x.itemNo));
       const sortedSet = new Set(smartRes.sortedItemNos || []);
       const missingItemNos = bpExpected.filter(n => !sortedSet.has(n));
@@ -9698,11 +10486,32 @@
         missingItemNos
       };
     } else {
-      remappedParts.forEach((rp, idx) => {
-        if (idx > 0) bodySections.push('<w:p><w:r><w:br w:type="page"/></w:r></w:p>');
-        bodySections.push(rp.bodyXml);
+      const smartTutorRes = assembleSmartTutoringBodyXml(remappedParts, {
+        subjectCode,
+        targetAudience,
+        blueprintRows: bpRowsForSubject
       });
+      frontMatterXml = buildMergedBookFrontMatterXml({
+        subjectName,
+        docCategoryLabel: catLabel,
+        editionLabel: edLabel,
+        targetAudience,
+        academicYearBE: '2569',
+        chapters,
+        blueprintChecklist: smartTutorRes.blueprintChecklist
+      });
+      compiledBodyXml = smartTutorRes.bodyXml;
+      smartSummary = {
+        mode: smartTutorRes.usedFallback ? 'RAW_FALLBACK' : 'SMART_TUTORING',
+        usedFallback: !!smartTutorRes.usedFallback,
+        coveredCount: smartTutorRes.coveredCount || 0,
+        totalBlueprintCount: smartTutorRes.totalBlueprintCount || 0,
+        coveredIndicators: smartTutorRes.coveredIndicators || [],
+        missingIndicators: smartTutorRes.missingIndicators || []
+      };
     }
+
+    const bodySections = [frontMatterXml, compiledBodyXml];
 
     const extraRelsXml = allNewRels.map(rel => {
       const modeAttr = rel.targetMode ? ` TargetMode="${escapeDocxXmlText(rel.targetMode)}"` : '';
@@ -9753,8 +10562,18 @@
 
   function formatSmartMergeSummaryHtml_(smartSummary) {
     if (!smartSummary) return '';
+    if (smartSummary.mode === 'SMART_TUTORING') {
+      const cov = Number(smartSummary.coveredCount || 0);
+      const tot = Number(smartSummary.totalBlueprintCount || 0);
+      const pct = tot > 0 ? Math.round((cov * 100) / tot) : 100;
+      const miss = Array.isArray(smartSummary.missingIndicators) ? smartSummary.missingIndicators : [];
+      const missHtml = miss.length > 0
+        ? ` <span class="gw-text-warn font-bold">| รอต้นฉบับเพิ่มอีก ${miss.length} ตัวชี้วัด (${escHtml(miss.slice(0, 5).join(', '))}${miss.length > 5 ? ' ...' : ''})</span>`
+        : ' <span class="gw-text-success font-bold">| ครบ 100% ทุกตัวชี้วัดตามผัง สทศ.!</span>';
+      return `<div>• โหมดจัดรูปเล่มเอกสารยกระดับฯ: <b>SMART_TUTORING (แยกและเรียงตามสาระ + ลำดับตัวชี้วัด สทศ. ตัดกล่องซ้ำ/เทมเพลตว่างออกอัตโนมัติ)</b> — บรรจุพร้อมติวแล้ว <b>${cov}${tot ? '/' + tot : ''} ตัวชี้วัด (${pct}%)</b>${missHtml}</div>`;
+    }
     if (smartSummary.usedFallback) {
-      return '<div>• โหมดจัดรูปเล่มข้อสอบ: <b>RAW_FALLBACK</b> (ไม่พบเลข "ข้อ 1..N" ชัดเจน จึงคงลำดับหน้าตามไฟล์ต้นฉบับ)</div>';
+      return '<div>• โหมดจัดรูปเล่ม: <b>RAW_FALLBACK</b> (ไม่พบรหัสตัวชี้วัดหรือเลขข้อชัดเจน จึงคงลำดับหน้าตามไฟล์ต้นฉบับ)</div>';
     }
     const missHtml = (smartSummary.missingItemNos && smartSummary.missingItemNos.length)
       ? ` <span class="gw-text-warn font-bold">| ยังขาดข้อ: ${escHtml(smartSummary.missingItemNos.join(', '))}</span>`
@@ -9782,7 +10601,7 @@
 
     if (btnLocal) btnLocal.disabled = true;
     if (btnPub) btnPub.disabled = true;
-    setLog('gw-alert-warn', 'กำลังดึงไฟล์ .docx ที่อนุมัติแล้วจาก Google Drive เพื่อเตรียมรวมเล่มอัตโนมัติ...');
+    setLog('gw-alert-warn', 'กำลังดึงไฟล์ .docx ที่อนุมัติแล้วจาก Google Drive เพื่อจัดเรียงตามสาระและตัวชี้วัดอัตโนมัติ...');
 
     try {
       const fetchRes = await callGas('apiGetApprovedDocsForMerge', {
@@ -9800,11 +10619,14 @@
       const validDocs = (fetchRes.docs || []).filter(d => d.base64Data || d.base64);
       const skipped = (fetchRes.docs || []).filter(d => !d.base64Data && !d.base64);
       if (!validDocs.length) {
-        setLog('gw-alert-warn', 'ไม่พบไฟล์ .docx ที่อนุมัติแล้วในหมวดและฉบับนี้ (แนะนำอนุมัติไฟล์ก่อน หรือกดปุ่ม "ทดลองสร้างไฟล์ตัวอย่าง & รวมเล่มจำลอง" เพื่อดูผลการทำงาน)');
+        const skipHint = skipped.length
+          ? `<div class="pt-1">💡 <b>พบไฟล์ขนาดใหญ่เกิน 12 MB จำนวน ${skipped.length} ไฟล์:</b> ${skipped.map(s => escHtml(s.fileName)).join(', ')} — คุณแอดมินสามารถดาวน์โหลดไฟล์จากลิงก์ Drive ลงเครื่อง แล้วกดปุ่ม <b>"📂 รวมเล่มจากไฟล์ .docx ในเครื่องโดยตรง (ไม่จำกัด MB)"</b> ด้านบนเพื่อรวมเล่มได้ทันทีโดยไม่ติดลิมิตครับ!</div>`
+          : '';
+        setLog('gw-alert-warn', `ไม่พบไฟล์ .docx ที่ดึงผ่านเซิร์ฟเวอร์ได้ในหมวดและฉบับนี้ (แนะนำอนุมัติไฟล์ก่อน หรือใช้ปุ่มรวมเล่มจากไฟล์ในเครื่องครับ)${skipHint}`);
         return;
       }
 
-      setLog('gw-alert-warn', `กำลังถอดรหัส ${validDocs.length} ไฟล์ สร้างหน้าปก สารบัญ และล็อกภาพประกอบใน Word...`);
+      setLog('gw-alert-warn', `กำลังถอดรหัส ${validDocs.length} ไฟล์ ตรวจจับรหัสตัวชี้วัด จัดเรียงตามผัง สทศ. และล็อกภาพประกอบใน Word...`);
       const parsedParts = [];
       for (const doc of validDocs) {
         const binStr = atob(doc.base64Data || doc.base64);
@@ -9840,6 +10662,9 @@
       let pubInfo = '';
       if (publishToDrive) {
         setLog('gw-alert-warn', 'สร้างไฟล์รวมเล่มเสร็จแล้ว กำลังบันทึกขึ้น Google Drive เพื่อเผยแพร่ให้โรงเรียนในกลุ่ม...');
+        const chapterDesc = (merged.smartSummary && merged.smartSummary.mode === 'SMART_TUTORING')
+          ? `พร้อมติว ${merged.smartSummary.coveredCount}/${merged.smartSummary.totalBlueprintCount} ตัวชี้วัด (จาก ${merged.partCount} ไฟล์ + ${merged.mediaCount} ภาพ)`
+          : `รวม ${merged.partCount} ตอน + ภาพประกอบ ${merged.mediaCount} ภาพ`;
         const pubRes = await callGas('apiSaveMergedBookToDrive', {
           authToken: STATE.authToken || '',
           subjectCode: subCode,
@@ -9847,7 +10672,7 @@
           targetAudience,
           fileName: merged.fileName,
           base64Data: merged.base64Data,
-          chapterSummary: `รวม ${merged.partCount} ตอน + ภาพประกอบ ${merged.mediaCount} ภาพ`
+          chapterSummary: chapterDesc
         });
         if (!pubRes || !pubRes.ok) {
           setLog('gw-alert-warn', `ดาวน์โหลดลงเครื่องแล้ว แต่บันทึกขึ้น Drive ไม่สำเร็จ: ${escHtml((pubRes && pubRes.error) || '')}`);
@@ -9857,10 +10682,12 @@
         refreshSuperAdminDashboard();
       }
 
-      const skipMsg = skipped.length ? `<div class="gw-text-danger">• ข้าม ${skipped.length} ไฟล์: ${skipped.map(s => escHtml(s.fileName + ' (' + s.error + ')')).join(', ')}</div>` : '';
+      const skipMsg = skipped.length
+        ? `<div class="gw-text-danger">• ข้าม ${skipped.length} ไฟล์ที่เกิน 12 MB: ${skipped.map(s => escHtml(s.fileName + ' (' + s.error + ')')).join(', ')} — <b>แนะนำดาวน์โหลดไฟล์ดังกล่าวลงเครื่อง แล้วกดปุ่ม "📂 รวมเล่มจากไฟล์ .docx ในเครื่องโดยตรง" เพื่อรวมครบทุกไฟล์โดยไม่จำกัดขนาดครับ</b></div>`
+        : '';
       const smartInfo = formatSmartMergeSummaryHtml_(merged.smartSummary);
       setLog('gw-alert-success', `
-        <div class="font-bold">✅ รวมเล่มสำเร็จ ${merged.partCount} ตอน + ปก + สารบัญ + ภาพประกอบ ${merged.mediaCount} ภาพ!</div>
+        <div class="font-bold">✅ รวมเล่มอัจฉริยะสำเร็จ (จากต้นฉบับ ${merged.partCount} ไฟล์ + ภาพประกอบ ${merged.mediaCount} ภาพ)!</div>
         ${smartInfo}
         <div>• ดาวน์โหลดไฟล์แล้ว: <b>${escHtml(merged.fileName)}</b></div>
         ${pubInfo}${skipMsg}
@@ -9871,6 +10698,168 @@
     } finally {
       if (btnLocal) btnLocal.disabled = false;
       if (btnPub) btnPub.disabled = false;
+    }
+  }
+
+  function guessPartAuthorMetaFromFilename_(fileName = '', subCode = '61') {
+    const fn = String(fileName || '');
+    const schM = /\b(SCH0[1-8])\b/i.exec(fn);
+    const schoolId = schM ? schM[1].toUpperCase() : '';
+    let teacherName = '';
+    const knownSub = (STATE.adminSubmissionsCache || []).find((s) => {
+      const cleanS = String(s.fileName || '').replace(/^\[[^\]]+\]_?/, '');
+      const cleanF = fn.replace(/^\[[^\]]+\]_?/, '');
+      return s.fileName === fn || (cleanS && cleanF && cleanS === cleanF);
+    });
+    if (knownSub) {
+      return {
+        teacherName: knownSub.teacherName || 'คณะกรรมการ',
+        schoolId: knownSub.schoolId || schoolId,
+        strandNo: knownSub.strandNo || '1',
+        subStandard: knownSub.subStandard || 'ครบทั้งสาระ'
+      };
+    }
+    if (schoolId) {
+      const tMatch = (STATE.adminTeachersCache || []).filter((t) => t.schoolId === schoolId && (String(t.subjectCode) === String(subCode) || t.subjectCode === 'ALL'));
+      if (tMatch.length === 1) teacherName = tMatch[0].fullName || '';
+    }
+    const strandM = /สาระ(?:ที่)?\s*([1-5])(?![0-9])/i.exec(normalizeThaiDigits(fn));
+    return {
+      teacherName: teacherName || (schoolId ? 'ครูผู้จัดทำ' : fn.replace(/\.docx$/i, '').slice(0, 32)),
+      schoolId,
+      strandNo: strandM ? strandM[1] : '1',
+      subStandard: 'ครบทั้งสาระ'
+    };
+  }
+
+  function triggerLocalFilesSmartMergePicker() {
+    const inp = document.getElementById('adminLocalMergeInput');
+    if (inp) inp.click();
+  }
+
+  async function runLocalFilesSmartMergeDocx(inputEl) {
+    if (!inputEl || !inputEl.files || !inputEl.files.length) return;
+    const files = Array.from(inputEl.files).filter((f) => /\.docx$/i.test(f.name));
+    inputEl.value = '';
+    if (!files.length) {
+      showToast('กรุณาเลือกไฟล์นามสกุล .docx อย่างน้อย 1 ไฟล์ครับ', 'error');
+      return;
+    }
+
+    const subCode = (document.getElementById('mergeSubjectCode') && document.getElementById('mergeSubjectCode').value) || '61';
+    const docCategory = (document.getElementById('mergeDocGroup') && document.getElementById('mergeDocGroup').value) || 'TUTORING_STRAND';
+    const targetAudience = (document.getElementById('mergeTargetAudience') && document.getElementById('mergeTargetAudience').value) || 'STUDENT';
+    const examRound = docCategory === 'PREPOST_EXAM'
+      ? ((document.getElementById('mergeExamRound') && document.getElementById('mergeExamRound').value) || 'PRE')
+      : 'ALL';
+    const logEl = document.getElementById('adminMergeLog');
+    const setLog = (cls, msg) => {
+      if (!logEl) return;
+      logEl.className = `${cls} rounded-xl border p-3 text-xs space-y-1`;
+      logEl.innerHTML = msg;
+      logEl.classList.remove('hidden');
+    };
+
+    try {
+      setLog('gw-alert-warn', `กำลังอ่านและย่อขนาดภาพจากไฟล์ในเครื่อง ${files.length} ไฟล์ (ไม่จำกัดขนาด MB) เพื่อจัดเรียงตามสาระและตัวชี้วัดอัตโนมัติ...`);
+      const parsedParts = [];
+      let totalCompressedImgs = 0;
+
+      for (const f of files) {
+        const rawBuf = await f.arrayBuffer();
+        const opt = await optimizeDocxImagesInBrowser_(rawBuf);
+        totalCompressedImgs += (opt.compressedCount || 0);
+        const z = await JSZip.loadAsync(opt.arrayBuffer);
+        const docXml = z.file('word/document.xml') ? await z.file('word/document.xml').async('string') : '';
+        const relsXml = z.file('word/_rels/document.xml.rels') ? await z.file('word/_rels/document.xml.rels').async('string') : '';
+        const meta = guessPartAuthorMetaFromFilename_(f.name, subCode);
+        parsedParts.push({
+          fileName: f.name,
+          teacherName: meta.teacherName,
+          schoolId: meta.schoolId,
+          strandNo: meta.strandNo,
+          subStandard: meta.subStandard,
+          zip: z,
+          documentXml: docXml,
+          relsXml
+        });
+      }
+
+      const subName = SUBJECT_NAMES[subCode] || subCode;
+      const catSlug = docCategory === 'PREPOST_EXAM' ? `ข้อสอบ_${examRound}` : 'เอกสารยกระดับ';
+      const edSlug = targetAudience === 'STUDENT' ? 'ฉบับนักเรียน' : 'ฉบับครู_มีเฉลย';
+      const outName = `รวมเล่ม_${catSlug}_${subName}_${edSlug}_ศรีเสาวภาค2569.docx`;
+
+      const merged = await assembleMergedDocxBlob_({
+        subjectCode: subCode,
+        subjectName: subName,
+        sourceCategory: docCategory,
+        targetAudience,
+        examRound,
+        fileName: outName,
+        parts: parsedParts
+      });
+
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(merged.blob);
+      a.download = merged.fileName;
+      a.click();
+      setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+
+      const mergedMb = merged.blob.size / (1024 * 1024);
+      STATE.lastLocalMergedBook = mergedMb <= 24 ? {
+        subjectCode: subCode,
+        sourceCategory: docCategory,
+        targetAudience,
+        fileName: merged.fileName,
+        base64Data: merged.base64Data,
+        chapterSummary: (merged.smartSummary && merged.smartSummary.mode === 'SMART_TUTORING')
+          ? `พร้อมติว ${merged.smartSummary.coveredCount}/${merged.smartSummary.totalBlueprintCount} ตัวชี้วัด (จาก ${merged.partCount} ไฟล์)`
+          : `รวม ${merged.partCount} ตอน + ภาพประกอบ ${merged.mediaCount} ภาพ`
+      } : null;
+
+      const optLine = totalCompressedImgs > 0
+        ? `<div style="color: var(--gw-accent);">• ย่อขนาดรูปภาพความละเอียดสูงอัตโนมัติรวม <b>${totalCompressedImgs} ภาพ</b> (ขนาดไฟล์รวมเล่มสุทธิ <b>${mergedMb.toFixed(2)} MB</b>)</div>`
+        : `<div>• ขนาดไฟล์รวมเล่มสุทธิ: <b>${mergedMb.toFixed(2)} MB</b></div>`;
+      const pubBtnHtml = STATE.lastLocalMergedBook
+        ? `<div class="pt-1.5"><button type="button" onclick="publishLastLocalMergedBookToDrive()" class="gw-btn-primary text-xs !py-1.5 !px-3"><i data-lucide="cloud-upload" class="w-3.5 h-3.5"></i><span>อัปโหลดเล่มที่รวมเสร็จนี้ขึ้นเผยแพร่บน Google Drive ทันที</span></button></div>`
+        : '';
+
+      setLog('gw-alert-success', `
+        <div class="font-bold">✅ รวมเล่มจากไฟล์ในเครื่องสำเร็จ (${merged.partCount} ไฟล์ + ภาพประกอบ ${merged.mediaCount} ภาพ)!</div>
+        ${formatSmartMergeSummaryHtml_(merged.smartSummary)}
+        ${optLine}
+        <div>• ดาวน์โหลดไฟล์แล้ว: <b>${escHtml(merged.fileName)}</b></div>
+        ${pubBtnHtml}
+      `);
+      if (window.lucide) lucide.createIcons();
+      showToast('รวมเล่มจากไฟล์ในเครื่องเสร็จสมบูรณ์แล้วครับ!', 'success');
+    } catch (err) {
+      setLog('gw-alert-danger', 'เกิดข้อผิดพลาดขณะรวมเล่มจากไฟล์ในเครื่อง: ' + escHtml(err.message || String(err)));
+    }
+  }
+
+  async function publishLastLocalMergedBookToDrive() {
+    const payload = STATE.lastLocalMergedBook;
+    if (!payload) {
+      showToast('ยังไม่มีไฟล์รวมเล่มล่าสุดในหน่วยความจำครับ', 'error');
+      return;
+    }
+    const logEl = document.getElementById('adminMergeLog');
+    showToast('กำลังบันทึกไฟล์รวมเล่มขึ้น Google Drive...', 'info');
+    try {
+      const pubRes = await callGas('apiSaveMergedBookToDrive', Object.assign({ authToken: STATE.authToken || '' }, payload));
+      if (!pubRes || !pubRes.ok) {
+        showToast('บันทึกขึ้น Drive ไม่สำเร็จ: ' + ((pubRes && pubRes.error) || ''), 'error');
+        return;
+      }
+      if (logEl) {
+        logEl.insertAdjacentHTML('beforeend', `<div class="font-bold pt-1" style="color: var(--gw-accent);">☁️ เผยแพร่ขึ้น Google Drive เรียบร้อยแล้ว: <a href="${escHtml(pubRes.driveFileUrl)}" target="_blank" class="underline">เปิดดูไฟล์บน Drive</a></div>`);
+      }
+      refreshSuperAdminDashboard();
+      showToast('เผยแพร่ไฟล์รวมเล่มขึ้น Google Drive สำเร็จแล้วครับ!', 'success');
+    } catch (err) {
+      showToast('เกิดข้อผิดพลาด: ' + (err.message || String(err)), 'error');
     }
   }
 
@@ -9888,32 +10877,41 @@
     const s1Rows = bpRows.filter(r => String(r.strandNo) === '1');
     const s2Rows = bpRows.filter(r => String(r.strandNo) === '2');
 
-    const part1Xml = buildManuscriptTemplateDocumentXml({
+    let part1Xml = buildManuscriptTemplateDocumentXml({
       subjectCode: subCode,
       subjectName: subName,
       strandNo: '1',
       strandName: (s1Rows[0] && s1Rows[0].strandName) || 'สาระที่ 1',
       subStandard: 'ครบทั้งสาระ',
-      expectedIndicators: (s1Rows.length ? s1Rows : bpRows).slice(0, 4).map(r => r.indicatorCode),
+      expectedIndicators: (s1Rows.length ? s1Rows : bpRows).slice(0, 2).map(r => r.indicatorCode),
       docCategory,
       targetAudience,
       examRound: roundKey,
       examScope: 'BY_STRAND',
       examItems: demoExamItems
     });
-    const part2Xml = buildManuscriptTemplateDocumentXml({
+    let part2Xml = buildManuscriptTemplateDocumentXml({
       subjectCode: subCode,
       subjectName: subName,
       strandNo: s2Rows.length ? '2' : '1',
-      strandName: (s2Rows[0] && s2Rows[0].strandName) || 'สาระที่ 2 (ตัวอย่างเนื้อหาส่วนที่ 2)',
-      subStandard: 'ตัวอย่างทดสอบการจัดหน้ารวมเล่มอัตโนมัติ',
-      expectedIndicators: (s2Rows.length ? s2Rows : bpRows).slice(0, 4).map(r => r.indicatorCode),
+      strandName: (s2Rows[0] && s2Rows[0].strandName) || 'สาระที่ 2',
+      subStandard: 'ครบทั้งสาระ',
+      expectedIndicators: (s2Rows.length ? s2Rows : bpRows.slice(2)).slice(0, 2).map(r => r.indicatorCode),
       docCategory,
       targetAudience,
       examRound: roundKey,
       examScope: 'BY_STRAND',
       examItems: demoExamItems
     });
+
+    if (docCategory === 'TUTORING_STRAND') {
+      const fillSampleAuthoring = (xmlStr, label) => String(xmlStr)
+        .replace(/พิมพ์สรุปเนื้อหาสำคัญ[^<]*/g, `สรุปหลักการสำคัญและเทคนิควิเคราะห์โจทย์ (${label}) กระชับเข้าใจง่ายสำหรับทบทวนก่อนสอบ O-NET ป.6`)
+        .replace(/\[พิมพ์โจทย์ข้อที่ 1[^\]]*\]/g, `โจทย์ตัวอย่างทบทวนความเข้าใจข้อที่ 1 (${label}) ข้อใดกล่าวถูกต้องตามหลักการของตัวชี้วัดนี้?`)
+        .replace(/\[พิมพ์โจทย์ข้อที่ 2[^\]]*\]/g, `โจทย์ตัวอย่างประยุกต์ข้อที่ 2 (${label}) จากสถานการณ์ที่กำหนด คำตอบในข้อใดสอดคล้องที่สุด?`);
+      part1Xml = fillSampleAuthoring(part1Xml, 'ชุดจำลองครู ก.');
+      part2Xml = fillSampleAuthoring(part2Xml, 'ชุดจำลองครู ข.');
+    }
 
     const edSlug = targetAudience === 'STUDENT' ? 'ฉบับนักเรียน' : 'ฉบับครู';
     const catSlug = docCategory === 'PREPOST_EXAM' ? `ข้อสอบ_${roundKey}` : 'เอกสารยกระดับ';
@@ -9926,8 +10924,8 @@
       examRound: roundKey,
       fileName: outName,
       parts: [
-        { strandNo: '1', subStandard: 'สาระที่ 1 (จำลอง)', fileName: 'ตัวอย่างส่วนที่_1.docx', teacherName: 'ครูจำลอง ก.', schoolId: 'SCH01', documentXml: part1Xml, relsXml: '' },
-        { strandNo: s2Rows.length ? '2' : '1', subStandard: 'สาระที่ 2 (จำลอง)', fileName: 'ตัวอย่างส่วนที่_2.docx', teacherName: 'ครูจำลอง ข.', schoolId: 'SCH02', documentXml: part2Xml, relsXml: '' }
+        { strandNo: '1', subStandard: 'ALL', fileName: 'ตัวอย่างส่วนที่_2_ส่งสลับลำดับ.docx', teacherName: 'ครูจำลอง ข.', schoolId: 'SCH02', documentXml: part2Xml, relsXml: '' },
+        { strandNo: '1', subStandard: 'ALL', fileName: 'ตัวอย่างส่วนที่_1.docx', teacherName: 'ครูจำลอง ก.', schoolId: 'SCH01', documentXml: part1Xml, relsXml: '' }
       ]
     });
 
@@ -9940,7 +10938,7 @@
     const logEl = document.getElementById('adminMergeLog');
     if (logEl) {
       logEl.className = 'gw-alert-success rounded-xl border p-3 text-xs space-y-1';
-      logEl.innerHTML = `<div class="font-bold">🧪 สร้างไฟล์รวมเล่มจำลองสำเร็จ: ${escHtml(merged.fileName)}</div>${formatSmartMergeSummaryHtml_(merged.smartSummary)}<div>เปิดดูใน Microsoft Word ได้ทันที (ประกอบด้วย หน้าปก + สารบัญอัตโนมัติ + เอกสาร 2 ส่วนจำลอง ฟอนต์ TH SarabunPSK ขนาด A4 ไม่เคลื่อน)</div>`;
+      logEl.innerHTML = `<div class="font-bold">🧪 สร้างไฟล์รวมเล่มจำลองสำเร็จ: ${escHtml(merged.fileName)}</div>${formatSmartMergeSummaryHtml_(merged.smartSummary)}<div>เปิดดูใน Microsoft Word ได้ทันที (ประกอบด้วย หน้าปก + ผังตรวจสอบตัวชี้วัดประจำเล่ม + เนื้อหาแยกสาระและตัวชี้วัดอัตโนมัติ ฟอนต์ TH SarabunPSK ขนาด A4 ไม่เคลื่อน)</div>`;
       logEl.classList.remove('hidden');
     }
     showToast('ดาวน์โหลดไฟล์รวมเล่มจำลอง (.docx) เพื่อทดลองเปิดดูเรียบร้อยแล้วครับ!', 'success');
