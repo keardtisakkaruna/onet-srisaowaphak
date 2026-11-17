@@ -5567,6 +5567,33 @@
     return { docCategory, edition };
   }
 
+  function detectFileStrandFromDocx_(fileName, documentXml, subjectCode) {
+    const fn = normalizeThaiDigits(String(fileName || ''));
+    const plain = normalizeThaiDigits(extractPlainTextFromDocxXml(documentXml || '').slice(0, 1500));
+    const subRows = (STATE.blueprint || []).filter(r => String(r.subjectCode) === String(subjectCode));
+    const validStrands = new Set(subRows.map(r => String(r.strandNo)));
+
+    const fnM = /สาระ(?:ที่)?\s*(\d+)/i.exec(fn);
+    if (fnM && validStrands.has(fnM[1])) return fnM[1];
+
+    const bodyM = /สาระที่\s*(\d+)\b/i.exec(plain);
+    if (bodyM && validStrands.has(bodyM[1])) return bodyM[1];
+
+    return '';
+  }
+
+  function switchUploadStrandTo(strandNo) {
+    const sel = document.getElementById('upStrandNo');
+    if (!sel) return;
+    sel.value = String(strandNo);
+    onUploadStrandChange();
+    const slots = STATE.preCheckSlots || {};
+    Object.keys(slots).forEach(k => {
+      if (slots[k]) runSlotDocxPreCheck(k);
+    });
+    showToast(`ปรับขอบเขตด้านบนเป็น "สาระที่ ${strandNo}" ให้ตรงกับไฟล์เรียบร้อยครับ!`, 'success');
+  }
+
   function detectSlotMismatchWarning_(fileName, documentXml, expectedCat, expectedAud) {
     const plain = extractPlainTextFromDocxXml(documentXml || '');
     const fn = String(fileName || '');
@@ -5652,7 +5679,13 @@
 
     try {
       const xmls = await extractDocxXmlInBrowser(arrayBuffer);
+      const subCodeVal = document.getElementById('upSubjectCode').value;
+      const selectedStrandVal = String(document.getElementById('upStrandNo').value || '1');
       const examScope = (document.getElementById('upExamScope') && document.getElementById('upExamScope').value) || 'BY_STRAND';
+      const detectedStrand = (docCategory === 'PREPOST_EXAM' && examScope === 'WHOLE_SUBJECT')
+        ? ''
+        : detectFileStrandFromDocx_(file.name, xmls.documentXml, subCodeVal);
+      const strandMismatch = Boolean(detectedStrand && detectedStrand !== selectedStrandVal);
       const expectedInds = getExpectedUploadIndicatorsForCategory_(docCategory, docCategory === 'PREPOST_EXAM' ? examScope : 'BY_STRAND');
       const check = validateDocxXmlContent(xmls.documentXml, xmls.stylesXml, expectedInds, {
         docCategory,
@@ -5677,9 +5710,11 @@
         slotKey,
         docCategory,
         edition,
-        passed: check.passed && layoutClean && !mismatchWarn,
+        passed: check.passed && layoutClean && !mismatchWarn && !strandMismatch,
         hasAnswerLeak: Boolean(check.hasAnswerLeak),
         mismatchWarn,
+        strandMismatch,
+        detectedStrand,
         summary: summaryParts.join(' | '),
         documentXml: xmls.documentXml || '',
         fileBase64: base64Data,
@@ -5706,15 +5741,16 @@
         }
       }
 
-      const allGreen = check.passed && layoutClean && !mismatchWarn;
+      const allGreen = check.passed && layoutClean && !mismatchWarn && !strandMismatch;
       if (card) {
         card.className = (check.hasAnswerLeak ? 'gw-alert-danger' : (allGreen ? 'gw-alert-success' : 'gw-alert-warn')) + ' rounded-xl border p-3 text-xs space-y-1';
         card.innerHTML = `
           <div class="font-bold">
             ${check.hasAnswerLeak
               ? '🚨 บล็อกอัปโหลด: พบคำว่า "เฉลย" หรือคำตอบของครูหลุดอยู่ในไฟล์ฉบับนักเรียน!'
-              : (mismatchWarn ? '⚠️ แจ้งเตือนวางไฟล์ผิดช่อง!' : (allGreen ? '✅ สแกนผ่าน 100% พร้อมส่ง' : '⚠️ พบจุดควรตรวจสอบก่อนส่ง'))}
+              : (mismatchWarn ? '⚠️ แจ้งเตือนวางไฟล์ผิดช่อง!' : (strandMismatch ? `⚠️ ไฟล์นี้คือ "สาระที่ ${escHtml(detectedStrand)}" แต่ด้านบนเลือกเป็น "สาระที่ ${escHtml(selectedStrandVal)}"` : (allGreen ? '✅ สแกนผ่าน 100% พร้อมส่ง' : '⚠️ พบจุดควรตรวจสอบก่อนส่ง')))}
           </div>
+          ${strandMismatch ? `<div class="flex flex-wrap items-center gap-2 pt-0.5"><span style="color:#b45309;">กรุณาเปลี่ยนสาระด้านบนให้ตรงกับไฟล์ก่อนกดอัปโหลด:</span><button type="button" onclick="switchUploadStrandTo('${escHtml(detectedStrand)}')" class="gw-btn-soft !py-1 !px-2.5 text-[11px] font-bold">🔄 ปรับเป็นสาระที่ ${escHtml(detectedStrand)} อัตโนมัติ</button></div>` : ''}
           ${mismatchWarn ? `<div class="font-bold" style="color: #b45309;">${escHtml(mismatchWarn)}</div>` : ''}
           ${check.hasAnswerLeak ? `<div class="font-bold gw-text-danger">จุดที่พบ: ${escHtml(check.answerLeakSnippets.join(' | '))}</div>` : ''}
           <div>• ฟอนต์ TH SarabunPSK: <b>${check.hasSarabunFont && check.otherFonts.length === 0 ? '✓ ผ่าน' : escHtml(check.otherFonts.join(', ') || 'ไม่พบฟอนต์สารบรรณ')}</b></div>
