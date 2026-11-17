@@ -1695,8 +1695,17 @@
                         <select id="stuSchoolSelect" onchange="onStudentSchoolChange()" class="hidden"></select>
                       </div>
                       <div>
-                        <label for="stuNameSelect" class="gw-label">2. เลือกชื่อ-นามสกุลตนเอง</label>
-                        <select id="stuNameSelect" onchange="onStudentNameChange()" class="gw-input">
+                        <label for="stuNameSelect" class="gw-label">2. เลือกชื่อ-นามสกุลตนเอง (คลิกชื่อได้เลย)</label>
+                        <div id="stuNameSearchWrap" class="hidden mb-2">
+                          <input type="search" id="stuNameSearchInput" aria-label="ค้นหาชื่อหรือเลขที่นักเรียน"
+                                 oninput="filterStudentNameChips()"
+                                 placeholder="พิมพ์ชื่อ นามสกุล หรือเลขที่ เพื่อหาเร็ว..."
+                                 class="gw-input !py-1.5 text-xs">
+                        </div>
+                        <div id="stuNameChipsWrap" class="gw-school-chips max-h-[220px] overflow-y-auto p-2 rounded-xl border" style="border-color: var(--gw-line); background: var(--gw-surface);" role="group" aria-label="รายชื่อนักเรียน ป.6">
+                          <span class="text-xs" style="color: var(--gw-muted);">-- กรุณาเลือกโรงเรียนด้านบนก่อน --</span>
+                        </div>
+                        <select id="stuNameSelect" onchange="onStudentNameChange()" class="hidden">
                           <option value="">-- กรุณาเลือกโรงเรียนก่อน --</option>
                         </select>
                       </div>
@@ -3359,18 +3368,15 @@
               <div class="gw-panel gw-reveal space-y-3">
                 <div class="flex flex-wrap items-center justify-between gap-2">
                   <h3 class="text-base font-bold">ตรวจรับไฟล์ต้นฉบับ & ข้อสอบ Pre-Post</h3>
-                  <select id="adminRevFilter" aria-label="กรองรายการตรวจรับไฟล์ต้นฉบับ" onchange="renderAdminReviewList()" class="gw-input !w-auto py-1 text-xs font-bold">
-                    <option value="ALL">ทุกประเภท/ทุกสถานะ</option>
+                  <select id="adminRevFilter" aria-label="กรองตามสถานะการตรวจ" onchange="renderAdminReviewList()" class="gw-input !w-auto py-1 text-xs font-bold">
+                    <option value="ALL">ทุกสถานะ</option>
                     <option value="รอตรวจ">เฉพาะรอตรวจ</option>
                     <option value="รอกรรมการตรวจ IOC">เฉพาะรอกรรมการตรวจ IOC</option>
                     <option value="ผ่านพร้อมรวมเล่ม">เฉพาะผ่านพร้อมรวมเล่ม</option>
-                    <option value="PREPOST_EXAM">เฉพาะข้อสอบ Pre-Post</option>
-                    <option value="TUTORING_STRAND">เฉพาะเอกสารตามสาระฯ</option>
-                    <option value="MERGED_BOOK">เฉพาะฉบับรวมเล่มแล้ว</option>
-                    <option value="STUDENT">เฉพาะฉบับนักเรียน</option>
-                    <option value="TEACHER">เฉพาะฉบับครู</option>
+                    <option value="ส่งแก้">เฉพาะส่งแก้</option>
                   </select>
                 </div>
+                <div id="adminRevDocTabs" class="gw-school-chips" role="tablist" aria-label="แยกแท็บตามประเภทเอกสาร"></div>
                 <div class="gw-subcard flex flex-wrap items-center justify-between gap-2 text-xs">
                   <label class="inline-flex items-center gap-2 font-bold cursor-pointer select-none">
                     <input type="checkbox" id="chkAllowStudentPrePost" onchange="toggleStudentPrePostVisibility(this.checked)" class="w-4 h-4 rounded cursor-pointer" style="accent-color: var(--gw-accent);">
