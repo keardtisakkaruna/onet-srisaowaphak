@@ -2440,7 +2440,7 @@
             <!-- Sub-navigation: 1. Upload Docs, 2. Practice Bank CRUD, 3. Exam IOC Review -->
             <div class="gw-segment gw-reveal" role="group" aria-label="เมนูคณะกรรมการ">
               <button type="button" id="btnCommSub_UPLOAD" onclick="switchCommitteeSubTab('UPLOAD')" class="is-active">
-                1. ส่งต้นฉบับเอกสารติว (.docx / .pdf)
+                1. โหลดแม่แบบ &amp; ส่งไฟล์งาน (.docx)
               </button>
               <button type="button" id="btnCommSub_BANK" onclick="switchCommitteeSubTab('BANK')">
                 2. จัดการคลังโจทย์ฝึกออนไลน์นักเรียน
@@ -2452,50 +2452,69 @@
 
             <div id="commPanel_UPLOAD">
             <div class="grid grid-cols-1 lg:grid-cols-12 gap-4">
-              <!-- Left: Upload + Auto Pre-Check (4-Document Standard) -->
+              <!-- Left: 1-Click Template Download + Single-File Smart Re-Check Upload -->
               <div class="lg:col-span-7 gw-panel gw-reveal space-y-4">
                 <div class="flex flex-wrap items-center justify-between gap-2 pb-3 border-b" style="border-color: var(--gw-line);">
                   <div>
-                    <h2 class="text-base sm:text-lg font-bold">ดาวน์โหลดแม่แบบ &amp; ส่งไฟล์ต้นฉบับครบ 4 ฉบับ (.docx)</h2>
-                    <p class="text-xs" style="color: var(--gw-muted);">แยกช่องอัปโหลด 2 ชุดชัดเจนตรงกับตอนโหลด (ชุดที่ 1: เอกสารยกระดับฯ ฉบับ 3–4 | ชุดที่ 2: ข้อสอบ Pre-Post ฉบับ 1–2)</p>
+                    <h2 class="text-base sm:text-lg font-bold">ดาวน์โหลดแม่แบบ &amp; ส่งไฟล์งาน Word (.docx)</h2>
+                    <p class="text-xs" style="color: var(--gw-muted);">ขั้นที่ 1 โหลดแม่แบบไปพิมพ์งาน (แบ่งทำรายตัวชี้วัดได้) • ขั้นที่ 2 เลือกไฟล์ .docx ที่ทำเสร็จแล้วทีละ 1 ไฟล์ ระบบจะรีเช็กให้ดูก่อนส่ง</p>
                   </div>
-                  <span class="px-3 py-1 rounded-full text-xs font-bold" style="background: var(--gw-accent-soft); color: var(--gw-accent);">Auto Pre-Check (4 ฉบับ)</span>
+                  <span class="px-3 py-1 rounded-full text-xs font-bold" style="background: var(--gw-accent-soft); color: var(--gw-accent);">Smart Re-Check ทีละไฟล์</span>
                 </div>
 
-                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 items-end">
-                  <div>
-                    <label for="upSubjectCode" class="gw-label">รายวิชา</label>
-                    <select id="upSubjectCode" onchange="onUploadSubjectChange()" class="gw-input">
-                      <option value="61">1. ภาษาไทย (61)</option>
-                      <option value="64">2. คณิตศาสตร์ (64)</option>
-                      <option value="65">3. วิทยาศาสตร์ฯ (65)</option>
-                      <option value="63">4. ภาษาอังกฤษ (63)</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label for="upStrandNo" class="gw-label">สาระการเรียนรู้ในผัง 2569</label>
-                    <select id="upStrandNo" onchange="onUploadStrandChange()" class="gw-input"></select>
-                  </div>
-                  <div>
-                    <label for="upSubStandard" class="gw-label">แบ่งงานในสาระ (กรณีมีครูช่วยกันทำ)</label>
-                    <select id="upSubStandard" onchange="onUploadStrandChange()" class="gw-input"></select>
-                  </div>
-                </div>
-
-                <div id="expectedIndicatorsBox" class="gw-subcard text-xs space-y-1.5"></div>
-
-                <!-- Anti-Layout-Shift Word Template Box (Complete 4 Editions + 1-Click ZIP) -->
+                <!-- STEP 1: DOWNLOAD TEMPLATES (Supports per-indicator splitting) -->
                 <div class="gw-subcard space-y-3" style="border-color: var(--gw-accent-soft);">
                   <div class="flex flex-wrap items-start justify-between gap-2 text-xs">
                     <div>
-                      <div class="font-bold text-sm" style="color: var(--gw-accent);">ดาวน์โหลดชุดแม่แบบมาตรฐานครบ 4 ฉบับ (A4 TH SarabunPSK + ล็อกเลขข้อตามผัง สทศ. 2569)</div>
-                      <div style="color: var(--gw-muted);">เลือกวิชา สาระ และวิธีแบ่งงานด้านบน แล้วกดดาวน์โหลดครบทั้ง 4 ฉบับรวดเดียว (.zip) หรือเลือกโหลดเฉพาะฉบับที่ต้องการได้เลยครับ</div>
+                      <div class="font-bold text-sm" style="color: var(--gw-accent);">📥 ขั้นที่ 1: เลือกขอบเขตเพื่อดาวน์โหลดแม่แบบ Word (.docx)</div>
+                      <div style="color: var(--gw-muted);">เลือกวิชา สาระ หรือเฉพาะตัวชี้วัดที่ได้รับมอบหมาย แล้วโหลดแม่แบบไปพิมพ์งานได้เลย (A4 TH SarabunPSK + ล็อกเลขข้อตามผัง สทศ. 2569)</div>
                     </div>
                     <button type="button" id="btnDownload4PackZip" onclick="downloadAll4StrandTemplatesZip()" class="gw-btn-primary text-xs !py-2 !px-3.5 !font-bold shrink-0">
                       <i data-lucide="package-check" aria-hidden="true" class="w-4 h-4"></i>
-                      <span>โหลดครบทั้ง 4 ฉบับรวดเดียว (.zip)</span>
+                      <span>โหลดครบทั้ง 4 ฉบับ (.zip)</span>
                     </button>
                   </div>
+
+                  <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5 items-end">
+                    <div>
+                      <label for="upSubjectCode" class="gw-label !text-[11px]">รายวิชา</label>
+                      <select id="upSubjectCode" onchange="onUploadSubjectChange()" class="gw-input !py-1.5 text-xs">
+                        <option value="61">1. ภาษาไทย (61)</option>
+                        <option value="64">2. คณิตศาสตร์ (64)</option>
+                        <option value="65">3. วิทยาศาสตร์ฯ (65)</option>
+                        <option value="63">4. ภาษาอังกฤษ (63)</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label for="upStrandNo" class="gw-label !text-[11px]">สาระการเรียนรู้ในผัง 2569</label>
+                      <select id="upStrandNo" onchange="onUploadStrandChange()" class="gw-input !py-1.5 text-xs"></select>
+                    </div>
+                    <div>
+                      <label for="upSubStandard" class="gw-label !text-[11px]">แบ่งงานรายตัวชี้วัด / มาตรฐาน</label>
+                      <select id="upSubStandard" onchange="onUploadStrandChange()" class="gw-input !py-1.5 text-xs"></select>
+                    </div>
+                  </div>
+
+                  <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 items-end">
+                    <div>
+                      <label for="upExamRound" class="gw-label !text-[11px]">รอบข้อสอบ (สำหรับโหลดแม่แบบฉบับ 1–2)</label>
+                      <select id="upExamRound" onchange="onUploadStrandChange()" class="gw-input !py-1.5 text-xs">
+                        <option value="PRE" selected>ข้อสอบ Pre-Test (ก่อนติว — ชุดแรก)</option>
+                        <option value="POST">ข้อสอบ Post-Test (หลังติว — คู่ขนาน)</option>
+                        <option value="PRE_POST">คู่ขนาน Pre &amp; Post (ทั้งชุด)</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label for="upExamScope" class="gw-label !text-[11px]">ขอบเขตแม่แบบข้อสอบ</label>
+                      <select id="upExamScope" onchange="onUploadCategoryChange()" class="gw-input !py-1.5 text-xs">
+                        <option value="BY_STRAND" selected>เฉพาะสาระ / ตัวชี้วัดที่เลือกด้านบน</option>
+                        <option value="WHOLE_SUBJECT">ครบชุดทั้งรายวิชา (ตาม Test Blueprint)</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div id="expectedIndicatorsBox" class="gw-subcard text-xs space-y-1.5"></div>
+
                   <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
                     <button type="button" onclick="downloadSpecificTemplateEdition('PREPOST_EXAM', 'STUDENT')" class="gw-btn-soft text-xs !py-2 !px-3 !font-bold justify-start border text-left" style="border-color: var(--gw-accent);">
                       <i data-lucide="file-down" aria-hidden="true" class="w-4 h-4 shrink-0"></i>
@@ -2516,164 +2535,37 @@
                   </div>
                 </div>
 
-                <!-- SMART UNIFIED AUTO-CLASSIFY DROPZONE (4-EDITION AUTO-ROUTER) -->
-                <div id="smartAutoUploadBox" class="gw-subcard space-y-2.5 border-2" style="border-color: var(--gw-accent); background: linear-gradient(135deg, rgba(16,185,129,0.08), rgba(59,130,246,0.06));">
-                  <div class="flex flex-wrap items-center justify-between gap-2">
-                    <div>
-                      <div class="font-bold text-sm" style="color: var(--gw-accent);">✨ ส่งแบบด่วนอัตโนมัติ (ไม่กลัวส่งผิดช่อง!) — ระบบตรวจแยกฉบับที่ 1, 2, 3, 4 ให้เอง</div>
-                      <div class="text-[11px]" style="color: var(--gw-muted);">เลือกไฟล์ Word (.docx) พร้อมกันกี่ไฟล์ก็ได้ (หรือเลือกใส่ช่องด้านล่างตามปกติก็ได้ — หากใส่ผิดช่องระบบจะย้ายไปช่องที่ถูกต้องให้อัตโนมัติทันทีครับ)</div>
-                    </div>
-                    <input type="file" id="upSmartAutoDocxInput" accept=".docx,application/vnd.openxmlformats-officedocument.wordprocessingml.document" multiple class="hidden" onchange="handleSmartAutoDocxFiles(this)">
-                    <button type="button" id="btnSmartAutoUploadPick" onclick="triggerSmartAutoUploadPicker()" class="gw-btn-primary text-xs !py-2 !px-3.5 !font-bold shrink-0">
-                      <i data-lucide="sparkles" aria-hidden="true" class="w-4 h-4"></i>
-                      <span>เลือกไฟล์ .docx แล้วให้ระบบแยก 1–4 ให้อัตโนมัติ</span>
-                    </button>
-                  </div>
-                  <div id="smartAutoRouteLog" class="hidden rounded-xl border p-2.5 text-xs space-y-1"></div>
-                </div>
-
-                <!-- SET 1: TUTORING_STRAND (Editions 3 & 4) -->
-                <div class="gw-subcard space-y-3" style="border-color: var(--gw-accent);">
-                  <div class="flex flex-wrap items-center justify-between gap-2">
-                    <div>
-                      <div class="font-bold text-sm" style="color: var(--gw-accent);">ชุดที่ 1: ส่งเอกสารยกระดับตามสาระฯ (ฉบับที่ 3 และ ฉบับที่ 4)</div>
-                      <div class="text-[11px]" style="color: var(--gw-muted);">สรุปความรู้รายตัวชี้วัด + แบบฝึกย่อย 2–5 ข้อ (ส่งพร้อมกันทั้งคู่ หรือส่งเฉพาะฉบับใดฉบับหนึ่งก็ได้)</div>
-                    </div>
-                    <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold" style="background: var(--gw-accent-soft); color: var(--gw-accent);">ดึงเข้าคลังฝึกออนไลน์อัตโนมัติ</span>
-                  </div>
-
-                  <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-                    <!-- Edition 3: Tutoring Student -->
-                    <div class="gw-subcard space-y-2.5" style="border-color: var(--gw-accent);">
-                      <div class="flex items-center justify-between gap-2">
-                        <span class="font-bold text-xs" style="color: var(--gw-accent);">ฉบับที่ 3: เอกสารยกระดับฯ — นักเรียน</span>
-                        <span class="px-2 py-0.5 rounded-full text-[10px] font-bold" style="background: var(--gw-accent-soft); color: var(--gw-accent);">ห้ามมีเฉลย</span>
-                      </div>
-                      <div>
-                        <label for="upDocxFile_TUTORING_STRAND__STUDENT" class="gw-label !text-[11px]">เลือกไฟล์ Word ฉบับที่ 3 (.docx)</label>
-                        <input type="file" id="upDocxFile_TUTORING_STRAND__STUDENT" accept=".docx,application/vnd.openxmlformats-officedocument.wordprocessingml.document" onchange="runSlotDocxPreCheck('TUTORING_STRAND__STUDENT')"
-                          class="gw-input border-dashed cursor-pointer py-2 text-xs">
-                      </div>
-                      <div>
-                        <label for="upPdfFile_TUTORING_STRAND__STUDENT" class="gw-label !text-[11px]">แนบ PDF ล็อกหน้าฉบับที่ 3 (ถ้ามี)</label>
-                        <input type="file" id="upPdfFile_TUTORING_STRAND__STUDENT" accept=".pdf" onchange="onSlotPdfSelected('TUTORING_STRAND__STUDENT')"
-                          class="gw-input border-dashed cursor-pointer py-2 text-xs">
-                        <div id="pdfStatus_TUTORING_STRAND__STUDENT" class="text-[11px] mt-1" style="color: var(--gw-muted);"></div>
-                      </div>
-                      <div id="preCheckCard_TUTORING_STRAND__STUDENT" class="hidden rounded-xl border p-3 text-xs space-y-1.5"></div>
-                    </div>
-
-                    <!-- Edition 4: Tutoring Teacher -->
-                    <div class="gw-subcard space-y-2.5" style="border-color: var(--gw-danger-bd);">
-                      <div class="flex items-center justify-between gap-2">
-                        <span class="font-bold text-xs" style="color: var(--gw-danger-ink);">ฉบับที่ 4: เอกสารยกระดับฯ — ครู</span>
-                        <span class="px-2 py-0.5 rounded-full text-[10px] font-bold gw-badge-danger">ต้องมีเฉลยละเอียด</span>
-                      </div>
-                      <div>
-                        <label for="upDocxFile_TUTORING_STRAND__TEACHER" class="gw-label !text-[11px]">เลือกไฟล์ Word ฉบับที่ 4 (.docx)</label>
-                        <input type="file" id="upDocxFile_TUTORING_STRAND__TEACHER" accept=".docx,application/vnd.openxmlformats-officedocument.wordprocessingml.document" onchange="runSlotDocxPreCheck('TUTORING_STRAND__TEACHER')"
-                          class="gw-input border-dashed cursor-pointer py-2 text-xs">
-                      </div>
-                      <div>
-                        <label for="upPdfFile_TUTORING_STRAND__TEACHER" class="gw-label !text-[11px]">แนบ PDF ล็อกหน้าฉบับที่ 4 (ถ้ามี)</label>
-                        <input type="file" id="upPdfFile_TUTORING_STRAND__TEACHER" accept=".pdf" onchange="onSlotPdfSelected('TUTORING_STRAND__TEACHER')"
-                          class="gw-input border-dashed cursor-pointer py-2 text-xs">
-                        <div id="pdfStatus_TUTORING_STRAND__TEACHER" class="text-[11px] mt-1" style="color: var(--gw-muted);"></div>
-                      </div>
-                      <div id="preCheckCard_TUTORING_STRAND__TEACHER" class="hidden rounded-xl border p-3 text-xs space-y-1.5"></div>
+                <!-- STEP 2: SINGLE-BUTTON, SINGLE-FILE UPLOAD + PRE-FLIGHT RE-CHECK CARD -->
+                <div id="smartAutoUploadBox" class="gw-subcard space-y-3 border-2" style="border-color: var(--gw-accent); background: linear-gradient(135deg, rgba(16,185,129,0.09), rgba(59,130,246,0.06));">
+                  <div class="space-y-1">
+                    <div class="font-bold text-sm sm:text-base" style="color: var(--gw-accent);">📤 ขั้นที่ 2: ส่งไฟล์ Word (.docx) ที่ทำเสร็จแล้ว (ส่งตรวจทีละ 1 ไฟล์)</div>
+                    <div class="text-xs" style="color: var(--gw-muted);">
+                      ไม่ต้องเลือกช่องเอง! กดปุ่มด้านล่างเพื่อเลือกไฟล์ Word (.docx) ทีละ 1 ไฟล์ ระบบจะเปิดอ่านเนื้อหาแล้วขึ้น <b>ใบสรุปรีเช็ก</b> แจ้งว่าเป็นเอกสารฉบับใด ตัวชี้วัดใด และติดปัญหาอะไรหรือไม่ ให้คุณครูตรวจดูก่อนกดยืนยันส่งครับ
                     </div>
                   </div>
 
-                  <div id="autoSyncPracticeToggleBox" class="rounded-xl border p-2.5 text-xs space-y-1" style="border-color: var(--gw-line); background: var(--gw-surface);">
+                  <input type="file" id="upSmartAutoDocxInput" accept=".docx,application/vnd.openxmlformats-officedocument.wordprocessingml.document" class="hidden" onchange="handleSmartAutoDocxFiles(this)">
+
+                  <button type="button" id="btnSmartAutoUploadPick" onclick="triggerSmartAutoUploadPicker()" class="gw-btn-soft w-full !py-3.5 !px-4 text-sm !font-bold border-2 border-dashed justify-center" style="border-color: var(--gw-accent); color: var(--gw-accent); background: var(--gw-surface);">
+                    <i data-lucide="file-search-2" aria-hidden="true" class="w-5 h-5"></i>
+                    <span id="lblSmartAutoUploadPick">เลือกไฟล์ Word (.docx) ที่ทำเสร็จแล้ว (ทีละ 1 ไฟล์)</span>
+                  </button>
+
+                  <!-- Pre-Flight Re-Check Summary Card for the 1 selected file -->
+                  <div id="singleFilePreCheckCard" class="hidden rounded-xl border p-3.5 text-xs space-y-2.5"></div>
+
+                  <div id="autoSyncPracticeToggleBox" class="hidden rounded-xl border p-2.5 text-xs space-y-1" style="border-color: var(--gw-line); background: var(--gw-surface);">
                     <label class="flex items-start gap-2 cursor-pointer font-bold" style="color: var(--gw-accent);">
                       <input type="checkbox" id="chkAutoSyncPracticeOnUpload" checked class="mt-0.5 rounded">
-                      <span>ดึงสรุปความรู้และแบบฝึกย่อย 4 ตัวเลือกจากชุดที่ 1 เข้า "คลังฝึกออนไลน์นักเรียน (เมนูย่อย 2)" อัตโนมัติ</span>
+                      <span>ดึงแบบฝึกย่อย 4 ตัวเลือกจากไฟล์เอกสารยกระดับฯ นี้เข้า "คลังฝึกออนไลน์นักเรียน (เมนูย่อย 2)" อัตโนมัติ</span>
                     </label>
-                    <div class="pl-5 text-[11px]" style="color: var(--gw-muted);">
-                      ระบบสกัด (1) สรุปความรู้รายตัวชี้วัด และ (2) แบบฝึกย่อย 2–5 ข้อ พร้อมตัวเลือกและเฉลยละเอียดรายข้อเข้าห้องติวนักเรียนทันทีโดยไม่ต้องพิมพ์ซ้ำ
-                    </div>
                   </div>
+
+                  <button type="button" id="btnUploadManuscript" onclick="submitCommitteeUpload()" disabled class="gw-btn-primary w-full py-3 opacity-60">
+                    <i data-lucide="cloud-upload" aria-hidden="true" class="w-4 h-4"></i>
+                    <span>กรุณาเลือกไฟล์ .docx ด้านบนเพื่อให้ระบบรีเช็กก่อนส่ง</span>
+                  </button>
                 </div>
-
-                <!-- SET 2: PREPOST_EXAM (Editions 1 & 2) -->
-                <div class="gw-subcard space-y-3" style="border-color: #93c5fd;">
-                  <div class="flex flex-wrap items-center justify-between gap-2">
-                    <div>
-                      <div class="font-bold text-sm" style="color: #1d4ed8;">ชุดที่ 2: ส่งข้อสอบคู่ขนาน Pre-Post O-NET (ฉบับที่ 1 และ ฉบับที่ 2)</div>
-                      <div class="text-[11px]" style="color: var(--gw-muted);">ล็อกเลขข้อตามผัง สทศ. 2569 และส่งเข้าหน้าตรวจ IOC แบบ 2 หน้าจอคู่ขนานอัตโนมัติ</div>
-                    </div>
-                    <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold" style="background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe;">ส่งเข้าตรวจ IOC อัตโนมัติ</span>
-                  </div>
-
-                  <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 items-end">
-                    <div>
-                      <label for="upExamRound" class="gw-label !text-[11px]">รอบข้อสอบ Pre-Post</label>
-                      <select id="upExamRound" onchange="onUploadStrandChange()" class="gw-input !py-1.5 text-xs">
-                        <option value="PRE" selected>ข้อสอบ Pre-Test (ก่อนติว — ส่งเป็นต้นแบบแรก)</option>
-                        <option value="POST">ข้อสอบ Post-Test (หลังติว — ข้อสอบคู่ขนานใหม่)</option>
-                        <option value="PRE_POST">คู่ขนาน Pre &amp; Post (ทั้งชุด)</option>
-                      </select>
-                    </div>
-                    <div>
-                      <label for="upExamScope" class="gw-label !text-[11px]">ขอบเขตข้อสอบ Pre-Post</label>
-                      <select id="upExamScope" onchange="onUploadCategoryChange()" class="gw-input !py-1.5 text-xs">
-                        <option value="BY_STRAND" selected>เฉพาะสาระ / ขอบเขตที่เลือกด้านบน (แบ่งกันทำแล้วรวมเล่ม)</option>
-                        <option value="WHOLE_SUBJECT">ครบชุดทั้งรายวิชา (ตาม Test Blueprint)</option>
-                      </select>
-                    </div>
-                  </div>
-
-                  <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-                    <!-- Edition 1: Exam Student -->
-                    <div class="gw-subcard space-y-2.5" style="border-color: #60a5fa;">
-                      <div class="flex items-center justify-between gap-2">
-                        <span class="font-bold text-xs" style="color: #1d4ed8;">ฉบับที่ 1: ข้อสอบ Pre/Post — นักเรียน</span>
-                        <span class="px-2 py-0.5 rounded-full text-[10px] font-bold" style="background: #eff6ff; color: #1d4ed8;">ห้ามมีเฉลย/ตัวชี้วัด</span>
-                      </div>
-                      <div>
-                        <label for="upDocxFile_PREPOST_EXAM__STUDENT" class="gw-label !text-[11px]">เลือกไฟล์ Word ฉบับที่ 1 (.docx)</label>
-                        <input type="file" id="upDocxFile_PREPOST_EXAM__STUDENT" accept=".docx,application/vnd.openxmlformats-officedocument.wordprocessingml.document" onchange="runSlotDocxPreCheck('PREPOST_EXAM__STUDENT')"
-                          class="gw-input border-dashed cursor-pointer py-2 text-xs">
-                      </div>
-                      <div>
-                        <label for="upPdfFile_PREPOST_EXAM__STUDENT" class="gw-label !text-[11px]">แนบ PDF ล็อกหน้าฉบับที่ 1 (ถ้ามี)</label>
-                        <input type="file" id="upPdfFile_PREPOST_EXAM__STUDENT" accept=".pdf" onchange="onSlotPdfSelected('PREPOST_EXAM__STUDENT')"
-                          class="gw-input border-dashed cursor-pointer py-2 text-xs">
-                        <div id="pdfStatus_PREPOST_EXAM__STUDENT" class="text-[11px] mt-1" style="color: var(--gw-muted);"></div>
-                      </div>
-                      <div id="preCheckCard_PREPOST_EXAM__STUDENT" class="hidden rounded-xl border p-3 text-xs space-y-1.5"></div>
-                    </div>
-
-                    <!-- Edition 2: Exam Teacher -->
-                    <div class="gw-subcard space-y-2.5" style="border-color: var(--gw-danger-bd);">
-                      <div class="flex items-center justify-between gap-2">
-                        <span class="font-bold text-xs" style="color: var(--gw-danger-ink);">ฉบับที่ 2: ข้อสอบ Pre/Post — ครู</span>
-                        <span class="px-2 py-0.5 rounded-full text-[10px] font-bold gw-badge-danger">ต้องมีผังข้อสอบ+เฉลย</span>
-                      </div>
-                      <div>
-                        <label for="upDocxFile_PREPOST_EXAM__TEACHER" class="gw-label !text-[11px]">เลือกไฟล์ Word ฉบับที่ 2 (.docx)</label>
-                        <input type="file" id="upDocxFile_PREPOST_EXAM__TEACHER" accept=".docx,application/vnd.openxmlformats-officedocument.wordprocessingml.document" onchange="runSlotDocxPreCheck('PREPOST_EXAM__TEACHER')"
-                          class="gw-input border-dashed cursor-pointer py-2 text-xs">
-                      </div>
-                      <div>
-                        <label for="upPdfFile_PREPOST_EXAM__TEACHER" class="gw-label !text-[11px]">แนบ PDF ล็อกหน้าฉบับที่ 2 (ถ้ามี)</label>
-                        <input type="file" id="upPdfFile_PREPOST_EXAM__TEACHER" accept=".pdf" onchange="onSlotPdfSelected('PREPOST_EXAM__TEACHER')"
-                          class="gw-input border-dashed cursor-pointer py-2 text-xs">
-                        <div id="pdfStatus_PREPOST_EXAM__TEACHER" class="text-[11px] mt-1" style="color: var(--gw-muted);"></div>
-                      </div>
-                      <div id="preCheckCard_PREPOST_EXAM__TEACHER" class="hidden rounded-xl border p-3 text-xs space-y-1.5"></div>
-                    </div>
-                  </div>
-                </div>
-
-                <p class="text-xs" style="color: var(--gw-muted);">
-                  * เลือกส่งเฉพาะ <strong>ชุดที่ 1 (ฉบับ 3–4)</strong>, เฉพาะ <strong>ชุดที่ 2 (ฉบับ 1–2)</strong> หรือแนบส่งพร้อมกันครบทั้ง <strong>4 ฉบับในคลิกเดียว</strong> ก็ได้ครับ
-                </p>
-
-                <button type="button" id="btnUploadManuscript" onclick="submitCommitteeUpload()" class="gw-btn-primary w-full py-3">
-                  <i data-lucide="cloud-upload" aria-hidden="true" class="w-4 h-4"></i>
-                  <span>อัปโหลดไฟล์ที่เลือกทั้งหมดเข้า Google Drive (wkha@saraburi2.go.th)</span>
-                </button>
               </div>
 
               <!-- Right: Submission Status List -->
@@ -3719,6 +3611,6 @@
   </div>
 
     <script>window.ONET_GAS_API_URL = 'https://script.google.com/macros/s/AKfycbwG-eaNeRsZ9wmCWvcGfKNpzxHgUFJPckdbfNL3b7MamTFjrWexwkCFYR_ApLfqGtQG/exec';</script>
-  <script src="./app.js?v=20261117_1794959286"></script>
+  <script src="./app.js?v=20261117_1794963740"></script>
 </body>
 </html>
