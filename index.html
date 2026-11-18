@@ -3364,6 +3364,36 @@
               <div id="adminTeachersApprovalList" class="grid grid-cols-1 md:grid-cols-2 gap-2 max-h-[280px] overflow-y-auto text-xs"></div>
             </div>
 
+            <!-- Whole-Book Blueprint Coverage & Completion Tracker -->
+            <div id="adminBookCoveragePanel" class="gw-panel gw-reveal space-y-3.5 border-2" style="border-color: var(--gw-accent-soft);">
+              <div class="flex flex-wrap items-center justify-between gap-2 pb-2.5 border-b" style="border-color: var(--gw-line);">
+                <div>
+                  <h3 class="text-base sm:text-lg font-bold">📊 ผังตรวจสอบความครบถ้วนต้นฉบับทั้งเล่ม &amp; เปอร์เซ็นต์ความก้าวหน้าเทียบเป้าหมาย สทศ.</h3>
+                  <p class="text-xs" style="color: var(--gw-muted);">ภาพรวมทั้งเล่มของแต่ละรายวิชา — ดูทันทีว่าส่งครบกี่เปอร์เซ็นต์ ตัวชี้วัดไหนหรือข้อสอบข้อไหนส่งแล้ว / ยังขาด แยกตามฉบับนักเรียนและฉบับครู</p>
+                </div>
+                <div class="flex flex-wrap items-center gap-2">
+                  <select id="covExamRound" aria-label="เลือกรอบข้อสอบเทียบผังความครบถ้วน" onchange="onBookCoverageOptionChange()" class="gw-input !w-auto py-1.5 text-xs font-bold">
+                    <option value="PRE">เทียบข้อสอบ Pre O-NET (ชุด 100)</option>
+                    <option value="POST">เทียบข้อสอบ Post O-NET (ชุด 200)</option>
+                  </select>
+                  <button type="button" id="btnDeepCoverageScan" onclick="runDeepDocxBookCoverageScan()" class="gw-btn-soft text-xs !py-1.5 !px-3 !font-bold border" style="border-color: var(--gw-accent); color: var(--gw-accent);">
+                    🔬 สแกนเช็กเนื้อหาจริงในไฟล์ .docx ทั้งวิชา
+                  </button>
+                  <button type="button" onclick="copyMissingCoverageSummaryText()" class="gw-btn-soft text-xs !py-1.5 !px-3 !font-bold">
+                    📋 คัดลอกรายการที่ยังขาด (ส่ง LINE)
+                  </button>
+                  <button type="button" onclick="printSubjectBookCoverageA4()" class="gw-btn-soft text-xs !py-1.5 !px-3 !font-bold">
+                    🖨️ พิมพ์เช็กลิสต์ทั้งเล่ม (A4)
+                  </button>
+                </div>
+              </div>
+
+              <div id="covFourSubjectsGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5 text-xs"></div>
+              <div id="covSubjectSummaryBanner" class="gw-subcard space-y-2.5 text-xs"></div>
+              <div id="covViewFilterBar" class="flex flex-wrap items-center gap-1.5 text-xs"></div>
+              <div id="covTablesContainer" class="space-y-4 text-xs"></div>
+            </div>
+
             <!-- Manuscript Review Queue (Full-Width, Grouped by Subject & Strand) -->
             <div class="gw-panel gw-reveal space-y-3.5 border-2" style="border-color: var(--gw-line-strong);">
               <div class="flex flex-wrap items-center justify-between gap-2 pb-2.5 border-b" style="border-color: var(--gw-line);">
@@ -3785,6 +3815,6 @@
   </div>
 
     <script>window.ONET_GAS_API_URL = 'https://script.google.com/macros/s/AKfycbwG-eaNeRsZ9wmCWvcGfKNpzxHgUFJPckdbfNL3b7MamTFjrWexwkCFYR_ApLfqGtQG/exec';</script>
-  <script src="./app.js?v=20261117_1794975757"></script>
+  <script src="./app.js?v=20261117_1794976539"></script>
 </body>
 </html>
