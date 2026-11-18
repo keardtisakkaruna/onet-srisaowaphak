@@ -14478,6 +14478,20 @@
     });
   }
 
+  async function safePreviewGasCall_(action, payload, timeoutMs = 22000) {
+    let timerId = null;
+    try {
+      const timeoutPromise = new Promise((_, reject) => {
+        timerId = setTimeout(() => reject(new Error('หมดเวลารอการเชื่อมต่อจาก Google Apps Script')), timeoutMs);
+      });
+      return await Promise.race([callGas(action, payload), timeoutPromise]);
+    } catch (err) {
+      return { ok: false, error: err && err.message ? err.message : String(err) };
+    } finally {
+      if (timerId) clearTimeout(timerId);
+    }
+  }
+
   async function fetchSubmissionBase64ForPreview_(submissionId) {
     if (!STATE.docxPreviewB64Cache) STATE.docxPreviewB64Cache = {};
     const idStr = String(submissionId || '').trim();
@@ -14489,12 +14503,12 @@
       return { ok: true, base64Data: STATE.docxPreviewB64Cache['FN:' + String(rawSub.fileName).trim()] };
     }
 
-    // Tier A: Dedicated Single-File RPC (works on updated GAS immediately)
+    // Tier A: Dedicated Single-File RPC (works once GAS Code.gs is updated)
     if (STATE.gasSupportsSinglePreviewRpc !== false) {
-      const resA = await callGas('apiGetSubmissionDocxPreview', {
+      const resA = await safePreviewGasCall_('apiGetSubmissionDocxPreview', {
         authToken: STATE.authToken || '',
         submissionId: idStr
-      });
+      }, 15000);
       if (resA && resA.ok && resA.base64Data) {
         STATE.docxPreviewB64Cache[idStr] = resA.base64Data;
         return { ok: true, base64Data: resA.base64Data };
@@ -14502,7 +14516,7 @@
       if (resA && resA.tooLargeForRpc) {
         return { ok: false, tooLarge: true, reason: 'ไฟล์มีขนาดใหญ่เกิน 18 MB สำหรับพรีวิวผ่านเครือข่ายโดยตรง' };
       }
-      if (resA && /Unknown action/i.test(String(resA.error || ''))) {
+      if (resA && /Unsupported API action|Unknown action/i.test(String(resA.error || ''))) {
         STATE.gasSupportsSinglePreviewRpc = false;
       }
     }
@@ -14511,41 +14525,17 @@
       return { ok: false, reason: 'ไม่พบข้อมูลรายการไฟล์ในหน่วยความจำ' };
     }
 
-    // Tier B: Live-Backend-Compatible Batch Fallback (also pre-warms neighbor files in same category!)
     const isSuperAdmin = Boolean(STATE.currentTeacher && String(STATE.currentTeacher.role || '').includes('SUPER_ADMIN'));
     const rawCat = String(rawSub.docCategory || normSub.docCategory || 'TUTORING_STRAND').toUpperCase();
     const rawAud = String(rawSub.targetAudience || normSub.targetAudience || 'STUDENT').toUpperCase();
 
-    if (isSuperAdmin) {
-      const pairs = [{ docCategory: rawCat, targetAudience: rawAud }];
-      if (normSub.docCategory !== rawCat || normSub.targetAudience !== rawAud) {
-        pairs.push({ docCategory: normSub.docCategory, targetAudience: normSub.targetAudience });
-      }
-      for (const pair of pairs) {
-        const resMerge = await callGas('apiGetApprovedDocsForMerge', {
-          authToken: STATE.authToken || '',
-          teacherId: STATE.currentTeacher.teacherId,
-          subjectCode: rawSub.subjectCode,
-          docCategory: pair.docCategory,
-          targetAudience: pair.targetAudience,
-          examRound: 'ALL',
-          includeDraftForKeyImport: true
-        });
-        if (resMerge && resMerge.ok && Array.isArray(resMerge.docs)) {
-          cacheDocxDocsArray_(resMerge.docs);
-          if (STATE.docxPreviewB64Cache[idStr]) {
-            return { ok: true, base64Data: STATE.docxPreviewB64Cache[idStr] };
-          }
-        }
-      }
-    }
-
+    // Tier B1: Fast single-file RPC for TUTORING_STRAND on current live GAS
     if (rawCat === 'TUTORING_STRAND' || normSub.docCategory === 'TUTORING_STRAND') {
-      const resTut = await callGas('apiGetTutoringDocsForPracticeSync', {
+      const resTut = await safePreviewGasCall_('apiGetTutoringDocsForPracticeSync', {
         authToken: STATE.authToken || '',
         subjectCode: rawSub.subjectCode,
         submissionIds: [idStr]
-      });
+      }, 20000);
       if (resTut && resTut.ok && Array.isArray(resTut.docs)) {
         cacheDocxDocsArray_(resTut.docs);
         if (STATE.docxPreviewB64Cache[idStr]) {
@@ -14554,13 +14544,43 @@
       }
     }
 
+    // Tier B2: Live-Backend-Compatible Admin Merge Fallback (scoped round first, then ALL)
+    if (isSuperAdmin) {
+      const pairs = [{ docCategory: rawCat, targetAudience: rawAud }];
+      if (normSub.docCategory !== rawCat || normSub.targetAudience !== rawAud) {
+        pairs.push({ docCategory: normSub.docCategory, targetAudience: normSub.targetAudience });
+      }
+      for (const pair of pairs) {
+        const scopedRound = (pair.docCategory === 'PREPOST_EXAM' && normSub.examRound) ? normSub.examRound : 'ALL';
+        const roundsToTry = scopedRound !== 'ALL' ? [scopedRound, 'ALL'] : ['ALL'];
+        for (const rVal of roundsToTry) {
+          const resMerge = await safePreviewGasCall_('apiGetApprovedDocsForMerge', {
+            authToken: STATE.authToken || '',
+            teacherId: STATE.currentTeacher.teacherId,
+            subjectCode: rawSub.subjectCode,
+            docCategory: pair.docCategory,
+            targetAudience: pair.targetAudience,
+            examRound: rVal,
+            includeDraftForKeyImport: true
+          }, 25000);
+          if (resMerge && resMerge.ok && Array.isArray(resMerge.docs)) {
+            cacheDocxDocsArray_(resMerge.docs);
+            if (STATE.docxPreviewB64Cache[idStr]) {
+              return { ok: true, base64Data: STATE.docxPreviewB64Cache[idStr] };
+            }
+          }
+        }
+      }
+    }
+
+    // Tier B3: Exam IOC Preview Fallback
     if (rawCat === 'PREPOST_EXAM' || normSub.docCategory === 'PREPOST_EXAM') {
       const roundKey = normSub.examRound === 'POST' ? 'POST' : 'PRE';
-      const resIoc = await callGas('apiGetExamDocsForIocPreview', {
+      const resIoc = await safePreviewGasCall_('apiGetExamDocsForIocPreview', {
         authToken: STATE.authToken || '',
         round: roundKey,
         subjectCode: rawSub.subjectCode
-      });
+      }, 22000);
       if (resIoc && resIoc.ok && Array.isArray(resIoc.docs)) {
         cacheDocxDocsArray_(resIoc.docs);
         if (STATE.docxPreviewB64Cache[idStr]) {
@@ -14849,29 +14869,43 @@
       stage.innerHTML = `<div class="docx-a4-sheet text-center py-14 space-y-2"><div class="text-base font-bold">⏳ กำลังเปิดอ่านไฟล์ "${escHtml(normSub.fileName)}" จากระบบ...</div><div class="text-xs opacity-70">กำลังจัดหน้ากระดาษ A4 รูปภาพ ตาราง และรันเครื่องคิดเลขตรวจวิธีคิดอัตโนมัติ</div></div>`;
     }
 
-    const res = await fetchSubmissionBase64ForPreview_(normSub.submissionId);
-    if (STATE.activePreviewSubId !== normSub.submissionId) return; // User already stepped or closed
+    try {
+      const res = await fetchSubmissionBase64ForPreview_(normSub.submissionId);
+      if (STATE.activePreviewSubId !== normSub.submissionId) return; // User already stepped or closed
 
-    if (!res || !res.ok || !res.base64Data) {
+      if (!res || !res.ok || !res.base64Data) {
+        const bar = document.getElementById('docxPreviewAuditBar');
+        if (bar) { bar.classList.add('hidden'); bar.innerHTML = ''; }
+        if (normSub.pdfFileUrl || normSub.driveFileUrl) {
+          STATE.activePreviewMode = 'DRIVE';
+          if (modeRichBtn) modeRichBtn.className = 'gw-btn-soft !py-1 !px-2.5 text-[11px] font-bold';
+          if (modeDriveBtn) modeDriveBtn.className = 'gw-btn-primary !py-1 !px-2.5 text-[11px] font-bold';
+          paintDriveEmbedPreviewStage_(normSub, (res && res.reason) || '');
+        } else if (stage) {
+          stage.innerHTML = `<div class="gw-alert-danger max-w-[794px] mx-auto rounded-xl border p-4 text-xs font-bold">${escHtml((res && res.reason) || 'ไม่สามารถโหลดไฟล์เพื่อพรีวิวได้')}</div>`;
+        }
+        return;
+      }
+
+      const unpacked = await unpackDocxWithMediaInBrowser_(res.base64Data);
+      if (STATE.activePreviewSubId !== normSub.submissionId) return;
+      const richHtml = renderDocxXmlToRichHtml_(unpacked.documentXml, unpacked.relsXml, unpacked.mediaMap);
+      STATE.activePreviewUnpacked = { subId: normSub.submissionId, richHtml, docXml: unpacked.documentXml };
+      renderPreviewAuditSummaryBar_(unpacked.documentXml, normSub);
+      paintDocxPreviewStage_(richHtml);
+    } catch (err) {
+      if (STATE.activePreviewSubId !== normSub.submissionId) return;
       const bar = document.getElementById('docxPreviewAuditBar');
       if (bar) { bar.classList.add('hidden'); bar.innerHTML = ''; }
       if (normSub.pdfFileUrl || normSub.driveFileUrl) {
         STATE.activePreviewMode = 'DRIVE';
         if (modeRichBtn) modeRichBtn.className = 'gw-btn-soft !py-1 !px-2.5 text-[11px] font-bold';
         if (modeDriveBtn) modeDriveBtn.className = 'gw-btn-primary !py-1 !px-2.5 text-[11px] font-bold';
-        paintDriveEmbedPreviewStage_(normSub, (res && res.reason) || '');
+        paintDriveEmbedPreviewStage_(normSub, 'ไม่สามารถแปลงหน้ากระดาษอัตโนมัติได้ (' + (err && err.message ? err.message : String(err)) + ') — เปิดมุมมอง Google Drive แทนให้ครับ');
       } else if (stage) {
-        stage.innerHTML = `<div class="gw-alert-danger max-w-[794px] mx-auto rounded-xl border p-4 text-xs font-bold">${escHtml((res && res.reason) || 'ไม่สามารถโหลดไฟล์เพื่อพรีวิวได้')}</div>`;
+        stage.innerHTML = `<div class="gw-alert-danger max-w-[794px] mx-auto rounded-xl border p-4 text-xs font-bold">ไม่สามารถพรีวิวไฟล์ได้: ${escHtml(err && err.message ? err.message : String(err))}</div>`;
       }
-      return;
     }
-
-    const unpacked = await unpackDocxWithMediaInBrowser_(res.base64Data);
-    if (STATE.activePreviewSubId !== normSub.submissionId) return;
-    const richHtml = renderDocxXmlToRichHtml_(unpacked.documentXml, unpacked.relsXml, unpacked.mediaMap);
-    STATE.activePreviewUnpacked = { subId: normSub.submissionId, richHtml, docXml: unpacked.documentXml };
-    renderPreviewAuditSummaryBar_(unpacked.documentXml, normSub);
-    paintDocxPreviewStage_(richHtml);
   }
 
   function setDocxPreviewMode(mode) {
@@ -14900,6 +14934,7 @@
     if (!normSub) return;
     STATE.activePreviewSubId = nextId;
     STATE.activePreviewSubObj = normSub;
+    STATE.activePreviewMode = STATE.docxPreviewMode || 'RICH';
     renderDocxPreviewHeaderAndLinks_(normSub);
     renderPreviewAdminFooterHtml_(normSub);
     loadAndRenderSubmissionPreviewBody_(normSub);
@@ -14911,6 +14946,8 @@
     STATE.activePreviewSubId = '';
     STATE.activePreviewSubObj = null;
     STATE.activePreviewUnpacked = null;
+    STATE.docxPreviewMode = 'RICH';
+    STATE.activePreviewMode = 'RICH';
     const stage = document.getElementById('docxPreviewStage');
     if (stage) stage.innerHTML = '';
   }
