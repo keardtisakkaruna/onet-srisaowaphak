@@ -56,7 +56,12 @@
     iocSubjectInitialized: false,
     adminIocCurrentData: null,
     adminRevSubject: 'ALL',
-    adminRevDocTab: 'ALL'
+    adminRevDocTab: 'ALL',
+    docxPreviewB64Cache: {},
+    docxPreviewZoomPx: 19,
+    docxPreviewMode: 'RICH',
+    previewQueueIds: [],
+    activePreviewSubId: ''
   };
 
   const GLASS_STORAGE_KEY = 'SRISAOWAPHAK69_GLASS_V2';
@@ -8424,7 +8429,10 @@
                 ? '✅ รีเช็กไฟล์ผ่านครบถ้วน — ตรวจสอบข้อมูลด้านล่างแล้วกดยืนยันส่งได้เลยครับ'
                 : '⚠️ รีเช็กไฟล์เสร็จแล้ว — กรุณาตรวจดูข้อสังเกตด้านล่างก่อนกดยืนยันส่งครับ')}
           </div>
-          <button type="button" onclick="clearSinglePendingDocx()" class="gw-btn-soft !py-1 !px-2.5 text-[11px] font-bold shrink-0">✕ เปลี่ยน / ยกเลิกไฟล์นี้</button>
+          <div class="flex flex-wrap items-center gap-1.5 shrink-0">
+            <button type="button" onclick="previewPendingSingleUploadDocx()" class="gw-btn-soft !py-1 !px-2.5 text-[11px] font-bold" style="color: var(--gw-accent);">👁️ พรีวิวดูหน้ากระดาษ</button>
+            <button type="button" onclick="clearSinglePendingDocx()" class="gw-btn-soft !py-1 !px-2.5 text-[11px] font-bold">✕ เปลี่ยน / ยกเลิกไฟล์นี้</button>
+          </div>
         </div>
 
         <div class="space-y-1.5 rounded-xl p-2.5 border" style="background: var(--gw-surface); border-color: var(--gw-line);">
@@ -8645,6 +8653,7 @@
             <div class="flex items-center gap-1.5 flex-wrap">
               ${formatSubmissionCardBadges_(s)}
               <span class="${badgeCls}">${escHtml(s.reviewStatus || 'รอตรวจ')}</span>
+              <button type="button" onclick="openSubmissionPreviewModal('${escHtml(s.submissionId)}', 'COMMITTEE')" class="gw-btn-soft !py-1 !px-2.5 text-[11px] font-bold" style="color: var(--gw-accent);">👁️ พรีวิว</button>
               ${canDelete ? `<button type="button" onclick="deleteMySubmission('${escHtml(s.submissionId)}')" class="gw-btn-soft !py-1 !px-2.5 text-[11px] font-bold" style="color: var(--gw-danger-ink);">ลบงาน</button>` : ''}
             </div>
           </div>
@@ -9985,6 +9994,7 @@
                   <div class="text-xs font-bold">${escHtml(doc.fileName)}</div>
                   <div class="text-[11px]" style="color: var(--gw-muted);">${escHtml(doc.subStandard || '')} | จัดทำโดย: ${escHtml(doc.teacherName)}</div>
                   <div class="flex flex-wrap gap-2">
+                    <button type="button" onclick="openSubmissionPreviewModal('${escHtml(doc.submissionId)}', 'MATERIAL')" class="gw-btn-soft !py-1.5 !px-3 text-xs !font-bold" style="color: var(--gw-accent);">👁️ พรีวิวดูเนื้อหา</button>
                     ${doc.pdfFileUrl ? `<a href="${escHtml(doc.pdfFileUrl)}" target="_blank" class="gw-btn-primary !py-1.5 !px-3 text-xs">📄 โหลด PDF (${doc.targetAudience === 'STUDENT' ? 'ฉบับนักเรียน' : 'ฉบับครู'})</a>` : ''}
                     <a href="${escHtml(doc.driveFileUrl)}" target="_blank" class="${doc.pdfFileUrl ? 'gw-btn-soft' : 'gw-btn-primary'} !py-1.5 !px-3 text-xs !font-bold">📝 โหลด Word (.docx)</a>
                   </div>
@@ -10084,6 +10094,9 @@
               <div class="flex flex-wrap gap-1">${formatSubmissionCardBadges_(doc)} <span class="${badgeClass}">${escHtml(badgeText)}</span></div>
             </div>
             <div class="flex flex-wrap gap-2">
+              <button type="button" onclick="openSubmissionPreviewModal('${escHtml(doc.submissionId)}', 'MATERIAL')" class="gw-btn-soft !py-2 !px-3 text-xs !font-bold" style="color: var(--gw-accent);">
+                <span>👁️ พรีวิวดูเนื้อหา</span>
+              </button>
               ${doc.pdfFileUrl ? `
                 <a href="${escHtml(doc.pdfFileUrl)}" target="_blank" class="gw-btn-primary !py-2 !px-3 text-xs">
                   <span>📄 PDF ${edBtnLabel}</span>
@@ -10419,6 +10432,7 @@
           <div class="text-xs font-bold">${escHtml(doc.fileName)}</div>
           <div class="text-[11px]" style="color: var(--gw-muted);">${escHtml(usageHint)} | ${escHtml(doc.subStandard || '')} | ผู้จัดทำ: ${escHtml(doc.teacherName)} (${escHtml(getSchoolShortName(doc.schoolId))})</div>
           <div class="flex flex-wrap gap-2">
+            <button type="button" onclick="openSubmissionPreviewModal('${escHtml(doc.submissionId)}', 'MATERIAL')" class="gw-btn-soft !py-1.5 !px-3 text-xs !font-bold" style="color: var(--gw-accent);">👁️ พรีวิวดูเนื้อหา</button>
             ${doc.pdfFileUrl ? `<a href="${escHtml(doc.pdfFileUrl)}" target="_blank" class="gw-btn-primary !py-1.5 !px-3 text-xs">📄 ดาวน์โหลด PDF พร้อมพิมพ์</a>` : ''}
             <a href="${escHtml(doc.driveFileUrl)}" target="_blank" class="${doc.pdfFileUrl ? 'gw-btn-soft' : 'gw-btn-primary'} !py-1.5 !px-3 text-xs !font-bold">📝 ดาวน์โหลด Word (.docx)</a>
           </div>
@@ -11944,6 +11958,9 @@
       loadAdminIocDetail();
     }
     renderAdminKeyEditor();
+    if (STATE.activePreviewSubId && typeof syncActivePreviewModalStatus_ === 'function') {
+      syncActivePreviewModalStatus_();
+    }
   }
 
   function renderAdminIocOverview() {
@@ -12164,6 +12181,7 @@
         ${s.adminComment ? `<div class="text-xs gw-text-danger font-bold">หมายเหตุ: ${escHtml(s.adminComment)}</div>` : ''}
         <div class="flex flex-wrap items-center justify-between gap-1.5 pt-1">
           <div class="flex flex-wrap gap-1.5">
+            <button type="button" onclick="openSubmissionPreviewModal('${escHtml(s.submissionId)}', 'ADMIN')" class="gw-btn-soft !py-1 !px-3 text-xs !font-bold border" style="border-color: var(--gw-accent); color: var(--gw-accent);">👁️ พรีวิวดูเนื้อหา</button>
             <button type="button" onclick="reviewSubmissionStatus('${escHtml(s.submissionId)}', 'ผ่านพร้อมรวมเล่ม')" class="gw-btn-primary !py-1 !px-3 text-xs">✓ ผ่านพร้อมรวมเล่ม</button>
             ${isPrePostExam ? `<button type="button" onclick="reviewSubmissionStatus('${escHtml(s.submissionId)}', 'รอกรรมการตรวจ IOC')" class="gw-btn-soft !py-1 !px-2.5 text-xs" style="color: var(--gw-accent);">ส่งตรวจ IOC</button>` : ''}
             <button type="button" onclick="reviewSubmissionStatus('${escHtml(s.submissionId)}', 'ส่งแก้')" class="gw-btn-soft !py-1 !px-3 text-xs" style="color: var(--gw-danger-ink);">ส่งแก้</button>
@@ -12251,6 +12269,7 @@
     }
 
     if (!filtered.length) {
+      STATE.adminFilteredSubmissionIds = [];
       box.innerHTML = '<div class="gw-subcard text-center py-6" style="color: var(--gw-muted);">ยังไม่มีรายการไฟล์ที่ตรงกับรายวิชาและตัวกรองที่เลือกครับ</div>';
       return;
     }
@@ -12262,6 +12281,7 @@
       return String(a.subStandard || '').localeCompare(String(b.subStandard || ''), 'th');
     };
 
+    const visualOrderIds = [];
     if (activeSubject === 'ALL') {
       const subjectGroups = ['61', '64', '65', '63'].map(code => ({
         code,
@@ -12272,6 +12292,7 @@
       box.innerHTML = subjectGroups.map(g => {
         const gWait = g.items.filter(x => (x.reviewStatus || 'รอตรวจ') === 'รอตรวจ').length;
         const gOk = g.items.filter(x => isApprovedSubmissionStatus_(x.reviewStatus)).length;
+        g.items.forEach(it => visualOrderIds.push(it.submissionId));
         return `
           <div class="rounded-2xl border p-3 space-y-2.5" style="background: var(--gw-surface); border-color: var(--gw-line-strong);">
             <div class="flex flex-wrap items-center justify-between gap-2 pb-1.5 border-b" style="border-color: var(--gw-line);">
@@ -12297,6 +12318,7 @@
           ? 'ชุดรวมครบทั้งรายวิชา'
           : `สาระที่ ${stNo}${bpHit && bpHit.strandName ? ' — ' + bpHit.strandName : ''}`;
         const itemsInStrand = filtered.filter(s => String(s.strandNo || '1') === stNo).sort(sortByStrandAndSub);
+        itemsInStrand.forEach(it => visualOrderIds.push(it.submissionId));
         return `
           <div class="rounded-2xl border p-3 space-y-2.5" style="background: var(--gw-surface); border-color: var(--gw-line-strong);">
             <div class="flex flex-wrap items-center justify-between gap-2 pb-1.5 border-b" style="border-color: var(--gw-line);">
@@ -12309,6 +12331,7 @@
         `;
       }).join('');
     }
+    STATE.adminFilteredSubmissionIds = visualOrderIds;
   }
 
   function approveAllFilteredAdminSubmissions() {
@@ -14113,6 +14136,794 @@
           box.innerHTML = `<div class="gw-alert-danger rounded-xl border p-3 text-xs font-bold">เกิดข้อผิดพลาดขณะรีเช็กข้อสอบ: ${escHtml(err.message || String(err))}</div>`;
         }
         showToast('รีเช็กข้อสอบไม่สำเร็จ: ' + (err.message || String(err)), 'error');
+      }
+    });
+  }
+
+  /* ============================================================================
+     IN-APP SUBMITTED DOCUMENT (.DOCX / GOOGLE DRIVE) PREVIEW STUDIO
+     ============================================================================ */
+  function extractBalancedXmlTags_(xml = '', tagName = 'w:tr') {
+    const s = String(xml || '');
+    const out = [];
+    const escTag = tagName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const openRe = new RegExp(`<${escTag}(?=[\\s>\\/])[^>]*>`, 'gi');
+    const tokenRe = new RegExp(`<(?:(\\/))?${escTag}(?=[\\s>\\/])[^>]*>`, 'gi');
+    let idx = 0;
+
+    while (idx < s.length) {
+      openRe.lastIndex = idx;
+      const om = openRe.exec(s);
+      if (!om) break;
+      if (/\/\s*>$/.test(om[0])) {
+        out.push(om[0]);
+        idx = om.index + om[0].length;
+        continue;
+      }
+      tokenRe.lastIndex = om.index;
+      let depth = 0;
+      let endPos = -1;
+      let tm;
+      while ((tm = tokenRe.exec(s)) !== null) {
+        const isClosing = Boolean(tm[1]);
+        const isSelfClosing = !isClosing && /\/\s*>$/.test(tm[0]);
+        if (isSelfClosing) continue;
+        depth += isClosing ? -1 : 1;
+        if (depth === 0) {
+          endPos = tm.index + tm[0].length;
+          break;
+        }
+      }
+      if (endPos === -1) break;
+      out.push(s.slice(om.index, endPos));
+      idx = endPos;
+    }
+    return out;
+  }
+
+  function decodeXmlEntitiesSimple_(str) {
+    return String(str || '')
+      .replace(/&amp;/g, '&')
+      .replace(/&lt;/g, '<')
+      .replace(/&gt;/g, '>')
+      .replace(/&quot;/g, '"')
+      .replace(/&apos;/g, "'");
+  }
+
+  function renderOmmlMathHtml_(mathXml = '') {
+    let s = String(mathXml || '');
+    // Render fractions inside-out
+    const renderChildrenText = (frag) => {
+      let cur = String(frag || '');
+      let guard = 0;
+      while (/<m:(?:f|sSup|sSub|rad)\b/i.test(cur) && guard++ < 8) {
+        cur = cur.replace(/<m:f\b[^>]*>(?:(?!<m:f\b)[\s\S])*?<\/m:f>/gi, (fXml) => {
+          const numM = /<m:num\b[^>]*>([\s\S]*?)<\/m:num>/i.exec(fXml);
+          const denM = /<m:den\b[^>]*>([\s\S]*?)<\/m:den>/i.exec(fXml);
+          const nHtml = numM ? renderChildrenText(numM[1]) : '';
+          const dHtml = denM ? renderChildrenText(denM[1]) : '';
+          return `<!--FRAC_START-->${nHtml}<!--FRAC_MID-->${dHtml}<!--FRAC_END-->`;
+        });
+        cur = cur.replace(/<m:sSup\b[^>]*>(?:(?!<m:sSup\b)[\s\S])*?<\/m:sSup>/gi, (sXml) => {
+          const eM = /<m:e\b[^>]*>([\s\S]*?)<\/m:e>/i.exec(sXml);
+          const supM = /<m:sup\b[^>]*>([\s\S]*?)<\/m:sup>/i.exec(sXml);
+          return `${eM ? renderChildrenText(eM[1]) : ''}<!--SUP_S-->${supM ? renderChildrenText(supM[1]) : ''}<!--SUP_E-->`;
+        });
+        cur = cur.replace(/<m:sSub\b[^>]*>(?:(?!<m:sSub\b)[\s\S])*?<\/m:sSub>/gi, (sXml) => {
+          const eM = /<m:e\b[^>]*>([\s\S]*?)<\/m:e>/i.exec(sXml);
+          const subM = /<m:sub\b[^>]*>([\s\S]*?)<\/m:sub>/i.exec(sXml);
+          return `${eM ? renderChildrenText(eM[1]) : ''}<!--SUB_S-->${subM ? renderChildrenText(subM[1]) : ''}<!--SUB_E-->`;
+        });
+        cur = cur.replace(/<m:rad\b[^>]*>(?:(?!<m:rad\b)[\s\S])*?<\/m:rad>/gi, (rXml) => {
+          const eM = /<m:e\b[^>]*>([\s\S]*?)<\/m:e>/i.exec(rXml);
+          return `√(${eM ? renderChildrenText(eM[1]) : ''})`;
+        });
+      }
+
+      const parts = cur.split(/(<!--FRAC_START-->|<!--FRAC_MID-->|<!--FRAC_END-->|<!--SUP_S-->|<!--SUP_E-->|<!--SUB_S-->|<!--SUB_E-->)/);
+      return parts.map((p) => {
+        if (p === '<!--FRAC_START-->') return '<span class="docx-math-frac"><span class="num">';
+        if (p === '<!--FRAC_MID-->') return '</span><span class="den">';
+        if (p === '<!--FRAC_END-->') return '</span></span>';
+        if (p === '<!--SUP_S-->') return '<sup>';
+        if (p === '<!--SUP_E-->') return '</sup>';
+        if (p === '<!--SUB_S-->') return '<sub>';
+        if (p === '<!--SUB_E-->') return '</sub>';
+        let txt = '';
+        const tRe = /<(?:m:t|w:t)(?:\s[^>]*)?>([\s\S]*?)<\/(?:m:t|w:t)>/gi;
+        let tm;
+        while ((tm = tRe.exec(p)) !== null) {
+          txt += decodeXmlEntitiesSimple_(tm[1]);
+        }
+        if (!txt && !/</.test(p)) txt = p;
+        return escHtml(txt);
+      }).join('');
+    };
+
+    const innerHtml = renderChildrenText(s);
+    return `<span class="inline-block font-semibold px-0.5">${innerHtml}</span>`;
+  }
+
+  function renderRunXmlHtml_(runXml = '', rIdLookup = {}) {
+    let out = '';
+    const rPrM = /<w:rPr\b[^>]*>([\s\S]*?)<\/w:rPr>/i.exec(runXml);
+    const rPr = rPrM ? rPrM[1] : '';
+
+    const styles = [];
+    const isBold = /<w:b(?:\s*\/>|\s+w:val\s*=\s*"(?!0|false)[^"]*"\s*\/>)/i.test(rPr);
+    const isItalic = /<w:i(?:\s*\/>|\s+w:val\s*=\s*"(?!0|false)[^"]*"\s*\/>)/i.test(rPr);
+    const isUnderline = /<w:u\b[^>]*\bw:val\s*=\s*"(?!none)[^"]+"/i.test(rPr);
+    if (isBold) styles.push('font-weight:700');
+    if (isItalic) styles.push('font-style:italic');
+    if (isUnderline) styles.push('text-decoration:underline');
+
+    const colorM = /<w:color\b[^>]*\bw:val\s*=\s*"([0-9A-Fa-f]{6})"/i.exec(rPr);
+    if (colorM && colorM[1].toUpperCase() !== '000000') {
+      styles.push(`color:#${colorM[1].toUpperCase()}`);
+    }
+    const hlM = /<w:highlight\b[^>]*\bw:val\s*=\s*"([a-zA-Z]+)"/i.exec(rPr);
+    if (hlM && hlM[1].toLowerCase() !== 'none') {
+      const hlPalette = {
+        yellow: '#fef08a',
+        green: '#bbf7d0',
+        cyan: '#a5f3fc',
+        magenta: '#fbcfe8',
+        red: '#fecaca',
+        lightgray: '#e2e8f0'
+      };
+      const bg = hlPalette[hlM[1].toLowerCase()] || '#fef9c3';
+      styles.push(`background-color:${bg};padding:0 2px;border-radius:3px`);
+    }
+    const szM = /<w:sz\b[^>]*\bw:val\s*=\s*"(\d+)"/i.exec(rPr);
+    if (szM && Number(szM[1]) >= 36) {
+      styles.push('font-size:1.14em');
+    }
+
+    const vertM = /<w:vertAlign\b[^>]*\bw:val\s*=\s*"(superscript|subscript)"/i.exec(rPr);
+    const imgs = extractImagesFromBlockXml_(runXml, rIdLookup);
+    const imgHtml = imgs.map(u =>
+      `<img src="${u}" alt="" class="max-w-full h-auto rounded-lg my-2 mx-auto border block" style="max-height:440px;border-color:#cbd5e1;">`
+    ).join('');
+
+    const runBody = runXml.replace(/<w:rPr\b[^>]*>[\s\S]*?<\/w:rPr>/gi, '');
+    const partRe = /<w:t(?:\s[^>]*)?>([\s\S]*?)<\/w:t>|<w:tab\b[^>]*\/>|<w:br\b[^>]*\/>|<w:cr\b[^>]*\/>/gi;
+    let pm;
+    let textHtml = '';
+    while ((pm = partRe.exec(runBody)) !== null) {
+      if (pm[1] !== undefined) {
+        textHtml += escHtml(decodeXmlEntitiesSimple_(pm[1]));
+      } else if (/^<w:tab\b/i.test(pm[0])) {
+        textHtml += '&emsp;';
+      } else {
+        textHtml += '<br>';
+      }
+    }
+
+    if (textHtml) {
+      if (vertM) {
+        textHtml = vertM[1].toLowerCase() === 'superscript' ? `<sup>${textHtml}</sup>` : `<sub>${textHtml}</sub>`;
+      }
+      if (styles.length) {
+        textHtml = `<span style="${styles.join(';')}">${textHtml}</span>`;
+      }
+    }
+
+    out = textHtml + imgHtml;
+    return out;
+  }
+
+  function renderParagraphXmlHtml_(pXml = '', rIdLookup = {}, listState = null) {
+    const pPrM = /<w:pPr\b[^>]*>([\s\S]*?)<\/w:pPr>/i.exec(pXml);
+    const pPr = pPrM ? pPrM[1] : '';
+    const inner = pXml
+      .replace(/^<w:p\b[^>]*>/i, '')
+      .replace(/<\/w:p>\s*$/i, '')
+      .replace(/<w:pPr\b[^>]*>[\s\S]*?<\/w:pPr>/gi, '')
+      .replace(/<\/?(?:w:ins|w:smartTag|w:sdt|w:sdtContent|w:bookmarkStart|w:bookmarkEnd|w:proofErr)\b[^>]*>/gi, '');
+
+    const jcM = /<w:jc\b[^>]*\bw:val\s*=\s*"(center|right|both|left|thaiDistribute)"/i.exec(pPr);
+    let alignCss = 'text-align:left;';
+    if (jcM) {
+      const aVal = jcM[1].toLowerCase();
+      if (aVal === 'center') alignCss = 'text-align:center;';
+      else if (aVal === 'right') alignCss = 'text-align:right;';
+    }
+
+    let shdCss = '';
+    const pShdM = /<w:shd\b[^>]*\bw:fill\s*=\s*"([0-9A-Fa-f]{6})"/i.exec(pPr);
+    if (pShdM && pShdM[1].toUpperCase() !== 'FFFFFF') {
+      shdCss = `background-color:#${pShdM[1].toUpperCase()};padding:5px 9px;border-radius:6px;`;
+    }
+
+    let listPrefix = '';
+    const numPrM = /<w:numPr\b[^>]*>([\s\S]*?)<\/w:numPr>/i.exec(pPr);
+    const plainCheck = normalizeThaiDigits(extractPlainTextFromDocxXml(pXml)).trim();
+    if (numPrM && listState) {
+      const ilvlM = /<w:ilvl\b[^>]*\bw:val\s*=\s*"(\d+)"/i.exec(numPrM[1]);
+      const numIdM = /<w:numId\b[^>]*\bw:val\s*=\s*"(\d+)"/i.exec(numPrM[1]);
+      const numId = numIdM ? numIdM[1] : '1';
+      if (numId !== '0') {
+        const key = `${numId}:${ilvlM ? ilvlM[1] : '0'}`;
+        if (listState.lastKey !== key && /^ข้อ\s*\d+/.test(listState.prevPlain || '')) {
+          listState.counters[key] = 0;
+        }
+        listState.counters[key] = (listState.counters[key] || 0) + 1;
+        listState.lastKey = key;
+        const indentPx = (ilvlM ? Number(ilvlM[1]) : 0) * 18 + 14;
+        listPrefix = `<span style="font-weight:700;margin-left:${indentPx}px;">${listState.counters[key]}. </span>`;
+      }
+    } else if (listState && /^ข้อ\s*\d+/.test(plainCheck)) {
+      listState.counters = {};
+      listState.lastKey = '';
+    }
+    if (listState) listState.prevPlain = plainCheck;
+
+    // Walk top-level math / hyperlink / run tokens sequentially
+    let contentHtml = '';
+    const tokenRe = /<(m:oMathPara|m:oMath|w:hyperlink|w:r)(?=[\s>\/])[^>]*>/gi;
+    let cursor = 0;
+    while (cursor < inner.length) {
+      tokenRe.lastIndex = cursor;
+      const m = tokenRe.exec(inner);
+      if (!m) break;
+      const tag = m[1];
+      const tagLow = tag.toLowerCase();
+      if (/\/\s*>$/.test(m[0])) {
+        cursor = m.index + m[0].length;
+        continue;
+      }
+      const closeRe = new RegExp(`<(?:(\\/))?${tag.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(?=[\\s>\\/])[^>]*>`, 'gi');
+      closeRe.lastIndex = m.index;
+      let depth = 0;
+      let endIdx = -1;
+      let cm;
+      while ((cm = closeRe.exec(inner)) !== null) {
+        const isCl = Boolean(cm[1]);
+        const isSc = !isCl && /\/\s*>$/.test(cm[0]);
+        if (isSc) continue;
+        depth += isCl ? -1 : 1;
+        if (depth === 0) {
+          endIdx = cm.index + cm[0].length;
+          break;
+        }
+      }
+      if (endIdx === -1) break;
+      const chunk = inner.slice(m.index, endIdx);
+      cursor = endIdx;
+
+      if (tagLow === 'm:omathpara' || tagLow === 'm:omath') {
+        contentHtml += renderOmmlMathHtml_(chunk);
+      } else if (tagLow === 'w:hyperlink') {
+        const subRuns = extractBalancedXmlTags_(chunk, 'w:r');
+        const linkInner = subRuns.map(r => renderRunXmlHtml_(r, rIdLookup)).join('');
+        contentHtml += `<span class="underline" style="color:#0369a1;">${linkInner}</span>`;
+      } else {
+        contentHtml += renderRunXmlHtml_(chunk, rIdLookup);
+      }
+    }
+
+    if (!contentHtml.trim()) {
+      return '<div style="height:0.55em;"></div>';
+    }
+    return `<p style="margin:3px 0;${alignCss}${shdCss}">${listPrefix}${contentHtml}</p>`;
+  }
+
+  function renderTableXmlHtml_(tblXml = '', rIdLookup = {}) {
+    const rows = extractBalancedXmlTags_(tblXml, 'w:tr');
+    if (!rows.length) return '';
+    const rowsHtml = rows.map((trXml, rIdx) => {
+      const cells = extractBalancedXmlTags_(trXml, 'w:tc');
+      const cellsHtml = cells.map((tcXml) => {
+        const tcPrM = /<w:tcPr\b[^>]*>([\s\S]*?)<\/w:tcPr>/i.exec(tcXml);
+        const tcPr = tcPrM ? tcPrM[1] : '';
+        const spanM = /<w:gridSpan\b[^>]*\bw:val\s*=\s*"(\d+)"/i.exec(tcPr);
+        const colspanAttr = spanM && Number(spanM[1]) > 1 ? ` colspan="${Number(spanM[1])}"` : '';
+        const shdM = /<w:shd\b[^>]*\bw:fill\s*=\s*"([0-9A-Fa-f]{6})"/i.exec(tcPr);
+        let bgStyle = '';
+        if (shdM && shdM[1].toUpperCase() !== 'FFFFFF') {
+          bgStyle = `background-color:#${shdM[1].toUpperCase()};`;
+        } else if (rIdx === 0 && /<w:tblHeader\b/i.test(trXml)) {
+          bgStyle = 'background-color:#f1f5f9;font-weight:700;';
+        }
+
+        const tcInner = tcXml
+          .replace(/^<w:tc\b[^>]*>/i, '')
+          .replace(/<\/w:tc>\s*$/i, '')
+          .replace(/<w:tcPr\b[^>]*>[\s\S]*?<\/w:tcPr>/i, '');
+        const innerBlocks = extractWordTopLevelBlocks_(tcInner);
+        const cellBodyHtml = innerBlocks.map((b) => {
+          if (b.tag === 'w:tbl') return renderTableXmlHtml_(b.xml, rIdLookup);
+          return renderParagraphXmlHtml_(b.xml, rIdLookup, { counters: {}, lastKey: '', prevPlain: '' });
+        }).join('');
+        return `<td${colspanAttr} style="${bgStyle}">${cellBodyHtml || '&nbsp;'}</td>`;
+      }).join('');
+      return `<tr>${cellsHtml}</tr>`;
+    }).join('');
+    return `<div class="overflow-x-auto my-2"><table><tbody>${rowsHtml}</tbody></table></div>`;
+  }
+
+  function renderDocxXmlToRichHtml_(documentXml = '', relsXml = '', mediaMap = {}) {
+    if (!documentXml) return '<div class="p-6 text-center opacity-70">ไม่พบเนื้อหาเอกสารในไฟล์ .docx นี้</div>';
+    const rIdLookup = buildRelsImageLookup_(relsXml || '', mediaMap || {});
+    const bodyMatch = /<w:body\b[^>]*>([\s\S]*?)<\/w:body>/i.exec(String(documentXml));
+    const bodyXml = convertFloatingAnchorsToInline_(bodyMatch ? bodyMatch[1] : String(documentXml));
+    const blocks = extractWordTopLevelBlocks_(bodyXml);
+    const listState = { counters: {}, lastKey: '', prevPlain: '' };
+    return blocks.map((blk) => {
+      if (blk.tag === 'w:tbl') {
+        return renderTableXmlHtml_(blk.xml, rIdLookup);
+      }
+      return renderParagraphXmlHtml_(blk.xml, rIdLookup, listState);
+    }).join('');
+  }
+
+  function findSubmissionObjectsById_(submissionId) {
+    const idStr = String(submissionId || '').trim();
+    const adminList = (STATE.adminData && STATE.adminData.submissions) || [];
+    const cachedList = STATE.cachedSubmissions || [];
+    const rawSub = adminList.find(s => String(s.submissionId || '').trim() === idStr) ||
+      cachedList.find(s => String(s.submissionId || '').trim() === idStr) ||
+      null;
+    const normSub = rawSub ? normalizeSubMetaClient_(rawSub) : null;
+    return { rawSub, normSub };
+  }
+
+  function cacheDocxDocsArray_(docs = []) {
+    if (!STATE.docxPreviewB64Cache) STATE.docxPreviewB64Cache = {};
+    (docs || []).forEach((d) => {
+      const b64 = d && (d.base64Data || d.base64);
+      if (!b64) return;
+      if (d.submissionId) STATE.docxPreviewB64Cache[String(d.submissionId).trim()] = b64;
+      if (d.fileName) STATE.docxPreviewB64Cache['FN:' + String(d.fileName).trim()] = b64;
+    });
+  }
+
+  async function fetchSubmissionBase64ForPreview_(submissionId) {
+    if (!STATE.docxPreviewB64Cache) STATE.docxPreviewB64Cache = {};
+    const idStr = String(submissionId || '').trim();
+    const { rawSub, normSub } = findSubmissionObjectsById_(idStr);
+    if (STATE.docxPreviewB64Cache[idStr]) {
+      return { ok: true, base64Data: STATE.docxPreviewB64Cache[idStr] };
+    }
+    if (rawSub && rawSub.fileName && STATE.docxPreviewB64Cache['FN:' + String(rawSub.fileName).trim()]) {
+      return { ok: true, base64Data: STATE.docxPreviewB64Cache['FN:' + String(rawSub.fileName).trim()] };
+    }
+
+    // Tier A: Dedicated Single-File RPC (works on updated GAS immediately)
+    if (STATE.gasSupportsSinglePreviewRpc !== false) {
+      const resA = await callGas('apiGetSubmissionDocxPreview', {
+        authToken: STATE.authToken || '',
+        submissionId: idStr
+      });
+      if (resA && resA.ok && resA.base64Data) {
+        STATE.docxPreviewB64Cache[idStr] = resA.base64Data;
+        return { ok: true, base64Data: resA.base64Data };
+      }
+      if (resA && resA.tooLargeForRpc) {
+        return { ok: false, tooLarge: true, reason: 'ไฟล์มีขนาดใหญ่เกิน 18 MB สำหรับพรีวิวผ่านเครือข่ายโดยตรง' };
+      }
+      if (resA && /Unknown action/i.test(String(resA.error || ''))) {
+        STATE.gasSupportsSinglePreviewRpc = false;
+      }
+    }
+
+    if (!rawSub || !normSub) {
+      return { ok: false, reason: 'ไม่พบข้อมูลรายการไฟล์ในหน่วยความจำ' };
+    }
+
+    // Tier B: Live-Backend-Compatible Batch Fallback (also pre-warms neighbor files in same category!)
+    const isSuperAdmin = Boolean(STATE.currentTeacher && String(STATE.currentTeacher.role || '').includes('SUPER_ADMIN'));
+    const rawCat = String(rawSub.docCategory || normSub.docCategory || 'TUTORING_STRAND').toUpperCase();
+    const rawAud = String(rawSub.targetAudience || normSub.targetAudience || 'STUDENT').toUpperCase();
+
+    if (isSuperAdmin) {
+      const pairs = [{ docCategory: rawCat, targetAudience: rawAud }];
+      if (normSub.docCategory !== rawCat || normSub.targetAudience !== rawAud) {
+        pairs.push({ docCategory: normSub.docCategory, targetAudience: normSub.targetAudience });
+      }
+      for (const pair of pairs) {
+        const resMerge = await callGas('apiGetApprovedDocsForMerge', {
+          authToken: STATE.authToken || '',
+          teacherId: STATE.currentTeacher.teacherId,
+          subjectCode: rawSub.subjectCode,
+          docCategory: pair.docCategory,
+          targetAudience: pair.targetAudience,
+          examRound: 'ALL',
+          includeDraftForKeyImport: true
+        });
+        if (resMerge && resMerge.ok && Array.isArray(resMerge.docs)) {
+          cacheDocxDocsArray_(resMerge.docs);
+          if (STATE.docxPreviewB64Cache[idStr]) {
+            return { ok: true, base64Data: STATE.docxPreviewB64Cache[idStr] };
+          }
+        }
+      }
+    }
+
+    if (rawCat === 'TUTORING_STRAND' || normSub.docCategory === 'TUTORING_STRAND') {
+      const resTut = await callGas('apiGetTutoringDocsForPracticeSync', {
+        authToken: STATE.authToken || '',
+        subjectCode: rawSub.subjectCode,
+        submissionIds: [idStr]
+      });
+      if (resTut && resTut.ok && Array.isArray(resTut.docs)) {
+        cacheDocxDocsArray_(resTut.docs);
+        if (STATE.docxPreviewB64Cache[idStr]) {
+          return { ok: true, base64Data: STATE.docxPreviewB64Cache[idStr] };
+        }
+      }
+    }
+
+    if (rawCat === 'PREPOST_EXAM' || normSub.docCategory === 'PREPOST_EXAM') {
+      const roundKey = normSub.examRound === 'POST' ? 'POST' : 'PRE';
+      const resIoc = await callGas('apiGetExamDocsForIocPreview', {
+        authToken: STATE.authToken || '',
+        round: roundKey,
+        subjectCode: rawSub.subjectCode
+      });
+      if (resIoc && resIoc.ok && Array.isArray(resIoc.docs)) {
+        cacheDocxDocsArray_(resIoc.docs);
+        if (STATE.docxPreviewB64Cache[idStr]) {
+          return { ok: true, base64Data: STATE.docxPreviewB64Cache[idStr] };
+        }
+        if (rawSub.fileName && STATE.docxPreviewB64Cache['FN:' + String(rawSub.fileName).trim()]) {
+          return { ok: true, base64Data: STATE.docxPreviewB64Cache['FN:' + String(rawSub.fileName).trim()] };
+        }
+      }
+    }
+
+    return { ok: false, reason: 'ไฟล์นี้อาจมีขนาดเกิน 12 MB หรืออยู่ระหว่างส่งแก้ไข (กำลังเปิดมุมมอง Google Drive แทนให้ครับ)' };
+  }
+
+  function renderPreviewAuditSummaryBar_(documentXml, normSub) {
+    const bar = document.getElementById('docxPreviewAuditBar');
+    if (!bar) return;
+    if (!documentXml || !normSub) {
+      bar.classList.add('hidden');
+      bar.innerHTML = '';
+      return;
+    }
+
+    if (normSub.docCategory === 'PREPOST_EXAM') {
+      const res = auditExamAnswerKeyAndSolutions([{
+        fileName: normSub.fileName,
+        teacherName: normSub.teacherName || 'ครูผู้จัดทำ',
+        schoolId: normSub.schoolId || '',
+        targetAudience: normSub.targetAudience || 'TEACHER',
+        documentXml
+      }], {
+        subjectCode: normSub.subjectCode || '61',
+        examRound: normSub.examRound || 'PRE',
+        singleFileMode: true
+      });
+      if (!res.totalItems) {
+        bar.innerHTML = '<div class="font-bold text-amber-800">⚠️ ยังไม่พบข้อสอบที่พิมพ์ลงในข้อใด ๆ ของไฟล์นี้ (อาจเป็นแม่แบบว่างเปล่าหรือจัดรูปแบบข้อแตกต่าง)</div>';
+        bar.className = 'px-4 py-2 border-b text-xs gw-alert-warn';
+        bar.classList.remove('hidden');
+        return;
+      }
+      const cls = res.errorCount > 0 ? 'gw-alert-danger' : (res.warnCount > 0 ? 'gw-alert-warn' : 'gw-alert-success');
+      const issueLines = (res.items || []).filter(i => i.errors.length || i.warnings.length).map(it => {
+        const msgs = it.errors.map(e => `🚨 ข้อ ${it.itemNo}: ${escHtml(e)}`).concat(it.warnings.map(w => `⚠️ ข้อ ${it.itemNo}: ${escHtml(w)}`));
+        return msgs.join(' | ');
+      }).join('<br>');
+      bar.className = `px-4 py-2 border-b text-xs ${cls}`;
+      bar.innerHTML = `
+        <div class="flex flex-wrap items-center justify-between gap-2 font-bold">
+          <span>🧮 ผลรีเช็กอัตโนมัติ (ชั้นที่ 1): พบ ${res.totalItems} ข้อ • ✓ ผ่าน ${res.passCount} • ⚠ สังเกต ${res.warnCount} • 🚨 ต้องแก้ ${res.errorCount}</span>
+        </div>
+        ${issueLines ? `<div class="mt-1 text-[11px] leading-snug max-h-[84px] overflow-y-auto">${issueLines}</div>` : ''}
+      `;
+      bar.classList.remove('hidden');
+      return;
+    }
+
+    if (normSub.docCategory === 'TUTORING_STRAND' && normSub.targetAudience === 'TEACHER') {
+      const tutEq = auditTutoringDocxSolutions(documentXml);
+      if (tutEq.mismatchedEquations.length > 0) {
+        bar.className = 'px-4 py-2 border-b text-xs gw-alert-danger';
+        bar.innerHTML = `🧮 <b>ตรวจสมการในวิธีคิดพบจุดไม่ตรง ${tutEq.mismatchedEquations.length} จุด:</b> ` +
+          tutEq.mismatchedEquations.map(m => `${escHtml(m.expr)} (ได้ ${escHtml(m.expected)})`).join(', ');
+        bar.classList.remove('hidden');
+        return;
+      }
+      if (tutEq.checkedEquations.length > 0) {
+        bar.className = 'px-4 py-2 border-b text-xs gw-alert-success';
+        bar.innerHTML = `🧮 <b>ตรวจสมการในวิธีคิดผ่านถูกต้องครบทั้ง ${tutEq.checkedEquations.length} ขั้นตอน</b>`;
+        bar.classList.remove('hidden');
+        return;
+      }
+    }
+
+    bar.classList.add('hidden');
+    bar.innerHTML = '';
+  }
+
+  function renderPreviewAdminFooterHtml_(normSub) {
+    const footer = document.getElementById('docxPreviewAdminFooter');
+    if (!footer) return;
+    const isSuperAdmin = Boolean(STATE.currentTeacher && String(STATE.currentTeacher.role || '').includes('SUPER_ADMIN'));
+    if (!isSuperAdmin || !normSub || normSub.isLocalPending) {
+      footer.classList.add('hidden');
+      footer.innerHTML = '';
+      return;
+    }
+    const isPrePostExam = normSub.docCategory === 'PREPOST_EXAM';
+    const isPrePostKeyCandidate = normSub.docCategory === 'PREPOST_EXAM' && normSub.targetAudience === 'TEACHER';
+    const sid = escHtml(normSub.submissionId);
+    footer.classList.remove('hidden');
+    footer.innerHTML = `
+      <div class="flex flex-wrap items-center gap-1.5 font-bold">
+        <span>สถานะปัจจุบัน:</span>
+        <span class="px-2 py-0.5 rounded-full ${isApprovedSubmissionStatus_(normSub.reviewStatus) ? 'gw-badge-success' : (normSub.reviewStatus === 'ส่งแก้' ? 'gw-badge-danger' : 'gw-badge-warn')}">${escHtml(normSub.reviewStatus || 'รอตรวจ')}</span>
+      </div>
+      <div class="flex flex-wrap items-center gap-1.5">
+        <button type="button" onclick="reviewSubmissionStatus('${sid}', 'ผ่านพร้อมรวมเล่ม')" class="gw-btn-primary !py-1.5 !px-3 text-xs">✓ ผ่านพร้อมรวมเล่ม</button>
+        ${isPrePostExam ? `<button type="button" onclick="reviewSubmissionStatus('${sid}', 'รอกรรมการตรวจ IOC')" class="gw-btn-soft !py-1.5 !px-2.5 text-xs" style="color: var(--gw-accent);">ส่งตรวจ IOC</button>` : ''}
+        <button type="button" onclick="reviewSubmissionStatus('${sid}', 'ส่งแก้')" class="gw-btn-soft !py-1.5 !px-3 text-xs" style="color: var(--gw-danger-ink);">ส่งแก้</button>
+        ${isPrePostKeyCandidate ? `<button type="button" onclick="closeSubmissionPreviewModal(); jumpToAdminKeyEditor('${escHtml(normSub.subjectCode)}', '${escHtml(normSub.examRound || 'PRE')}')" class="gw-btn-soft !py-1.5 !px-2.5 text-xs">🔑 ผังเฉลย</button>` : ''}
+        <button type="button" onclick="adminDeleteSubmission('${sid}')" class="gw-btn-soft !py-1.5 !px-2.5 text-[11px]" style="color: var(--gw-danger-ink);">ลบไฟล์ซ้ำ</button>
+      </div>
+    `;
+  }
+
+  function syncActivePreviewModalStatus_() {
+    const modal = document.getElementById('docxPreviewModal');
+    if (!modal || modal.classList.contains('hidden') || !STATE.activePreviewSubId) return;
+    const { normSub } = findSubmissionObjectsById_(STATE.activePreviewSubId);
+    if (!normSub) {
+      closeSubmissionPreviewModal();
+      return;
+    }
+    const metaEl = document.getElementById('docxPreviewMeta');
+    if (metaEl) {
+      const badgeCls = isApprovedSubmissionStatus_(normSub.reviewStatus) ? 'gw-badge-success' : (normSub.reviewStatus === 'ส่งแก้' ? 'gw-badge-danger' : 'gw-badge-warn');
+      metaEl.innerHTML = `${formatSubmissionCardBadges_(normSub)} <span class="${badgeCls}">${escHtml(normSub.reviewStatus || 'รอตรวจ')}</span> <span>👤 ${escHtml(normSub.teacherName || '-')} (${escHtml(getSchoolShortName(normSub.schoolId))})</span>`;
+    }
+    renderPreviewAdminFooterHtml_(normSub);
+  }
+
+  async function openSubmissionPreviewModal(submissionId, sourceContext = 'ADMIN') {
+    const modal = document.getElementById('docxPreviewModal');
+    if (!modal) return;
+    const idStr = String(submissionId || '').trim();
+    const { normSub } = findSubmissionObjectsById_(idStr);
+    if (!normSub) {
+      showToast('ไม่พบข้อมูลไฟล์ที่ต้องการพรีวิวครับ', 'error');
+      return;
+    }
+
+    // Build queue for Prev/Next stepping
+    let queue = [idStr];
+    if (sourceContext === 'ADMIN' && Array.isArray(STATE.adminFilteredSubmissionIds) && STATE.adminFilteredSubmissionIds.includes(idStr)) {
+      queue = STATE.adminFilteredSubmissionIds.slice();
+    } else if (sourceContext === 'COMMITTEE') {
+      const myId = STATE.currentTeacher ? String(STATE.currentTeacher.teacherId || '').trim() : '';
+      const mine = (STATE.cachedSubmissions || []).filter(s => String(s.teacherId || '').trim() === myId).map(s => String(s.submissionId));
+      if (mine.includes(idStr)) queue = mine;
+    } else if (sourceContext === 'MATERIAL') {
+      const mats = (STATE.cachedSubmissions || []).filter(s => s.reviewStatus !== 'ส่งแก้').map(s => String(s.submissionId));
+      if (mats.includes(idStr)) queue = mats;
+    }
+
+    STATE.previewQueueIds = queue;
+    STATE.activePreviewSubId = idStr;
+    STATE.activePreviewSubObj = normSub;
+    STATE.activePreviewMode = STATE.docxPreviewMode || 'RICH';
+
+    renderDocxPreviewHeaderAndLinks_(normSub);
+    renderPreviewAdminFooterHtml_(normSub);
+    modal.classList.remove('hidden');
+    await loadAndRenderSubmissionPreviewBody_(normSub);
+  }
+
+  async function previewPendingSingleUploadDocx() {
+    const p = STATE.pendingSingleUpload;
+    const modal = document.getElementById('docxPreviewModal');
+    if (!p || !modal) return;
+
+    const synthSub = {
+      submissionId: '__LOCAL_PENDING__',
+      fileName: p.fileName || 'pending.docx',
+      teacherName: (STATE.currentTeacher && STATE.currentTeacher.fullName) || 'ครูผู้จัดทำ',
+      schoolId: (STATE.currentTeacher && STATE.currentTeacher.schoolId) || '',
+      subjectCode: p.effectiveSubjectCode || '61',
+      strandNo: p.effectiveStrandNo || '1',
+      subStandard: p.effectiveSubStandard || 'ALL',
+      docCategory: p.effectiveDocCategory || 'TUTORING_STRAND',
+      targetAudience: p.effectiveEdition || 'STUDENT',
+      examRound: p.effectiveExamRound || '',
+      reviewStatus: 'ยังไม่ส่ง (พรีวิวก่อนส่ง)',
+      driveFileUrl: '',
+      pdfFileUrl: '',
+      isLocalPending: true
+    };
+    STATE.previewQueueIds = ['__LOCAL_PENDING__'];
+    STATE.activePreviewSubId = '__LOCAL_PENDING__';
+    STATE.activePreviewSubObj = synthSub;
+    STATE.activePreviewMode = 'RICH';
+
+    renderDocxPreviewHeaderAndLinks_(synthSub);
+    renderPreviewAdminFooterHtml_(synthSub);
+    modal.classList.remove('hidden');
+
+    const stage = document.getElementById('docxPreviewStage');
+    if (stage) {
+      stage.innerHTML = '<div class="docx-a4-sheet text-center py-12 font-bold">⏳ กำลังจัดหน้ากระดาษและดึงรูปภาพจากไฟล์ในเครื่อง...</div>';
+    }
+    try {
+      const unpacked = p.fileBase64 ? await unpackDocxWithMediaInBrowser_(p.fileBase64) : { documentXml: p.documentXml || '', relsXml: '', mediaMap: {} };
+      const html = renderDocxXmlToRichHtml_(unpacked.documentXml || p.documentXml, unpacked.relsXml || '', unpacked.mediaMap || {});
+      STATE.activePreviewUnpacked = { subId: '__LOCAL_PENDING__', richHtml: html, docXml: unpacked.documentXml || p.documentXml };
+      renderPreviewAuditSummaryBar_(unpacked.documentXml || p.documentXml, synthSub);
+      paintDocxPreviewStage_(html);
+    } catch (err) {
+      if (stage) stage.innerHTML = `<div class="gw-alert-danger rounded-xl border p-4 text-xs font-bold">ไม่สามารถสร้างพรีวิวได้: ${escHtml(err.message || String(err))}</div>`;
+    }
+  }
+
+  function renderDocxPreviewHeaderAndLinks_(normSub) {
+    const titleEl = document.getElementById('docxPreviewTitle');
+    const metaEl = document.getElementById('docxPreviewMeta');
+    const counterEl = document.getElementById('docxPreviewCounter');
+    const prevBtn = document.getElementById('btnDocxPrev');
+    const nextBtn = document.getElementById('btnDocxNext');
+    const dlLink = document.getElementById('docxPreviewDownloadLink');
+    const pdfLink = document.getElementById('docxPreviewPdfLink');
+
+    if (titleEl) titleEl.textContent = normSub.fileName || 'พรีวิวไฟล์';
+    if (metaEl) {
+      const badgeCls = isApprovedSubmissionStatus_(normSub.reviewStatus) ? 'gw-badge-success' : (normSub.reviewStatus === 'ส่งแก้' ? 'gw-badge-danger' : 'gw-badge-warn');
+      metaEl.innerHTML = `${formatSubmissionCardBadges_(normSub)} <span class="${badgeCls}">${escHtml(normSub.reviewStatus || 'รอตรวจ')}</span> <span>👤 ${escHtml(normSub.teacherName || '-')} (${escHtml(getSchoolShortName(normSub.schoolId))})</span>`;
+    }
+
+    const q = STATE.previewQueueIds || [normSub.submissionId];
+    const idx = Math.max(0, q.indexOf(normSub.submissionId));
+    if (counterEl) counterEl.textContent = `${idx + 1}/${q.length}`;
+    if (prevBtn) prevBtn.disabled = idx <= 0;
+    if (nextBtn) nextBtn.disabled = idx >= q.length - 1;
+
+    if (dlLink) {
+      if (normSub.driveFileUrl) {
+        dlLink.href = normSub.driveFileUrl;
+        dlLink.classList.remove('hidden');
+      } else {
+        dlLink.classList.add('hidden');
+      }
+    }
+    if (pdfLink) {
+      if (normSub.pdfFileUrl) {
+        pdfLink.href = normSub.pdfFileUrl;
+        pdfLink.classList.remove('hidden');
+      } else {
+        pdfLink.classList.add('hidden');
+      }
+    }
+  }
+
+  function paintDocxPreviewStage_(richHtml) {
+    const stage = document.getElementById('docxPreviewStage');
+    if (!stage) return;
+    const zoom = Number(STATE.docxPreviewZoomPx || 19);
+    stage.innerHTML = `<div class="docx-a4-sheet" style="--docx-zoom-size:${zoom}px;">${richHtml}</div>`;
+    stage.scrollTop = 0;
+  }
+
+  function paintDriveEmbedPreviewStage_(normSub, noticeMsg = '') {
+    const stage = document.getElementById('docxPreviewStage');
+    if (!stage) return;
+    const embedUrl = toDriveEmbedPreviewUrl_(normSub.pdfFileUrl || normSub.driveFileUrl);
+    if (!embedUrl) {
+      stage.innerHTML = '<div class="docx-a4-sheet text-center py-10 font-bold">ไม่มีลิงก์ Google Drive หรือ PDF สำหรับไฟล์นี้ครับ</div>';
+      return;
+    }
+    stage.innerHTML = `
+      ${noticeMsg ? `<div class="max-w-[794px] mx-auto mb-2.5 gw-alert-warn rounded-xl border p-2.5 text-xs font-bold">${escHtml(noticeMsg)}</div>` : ''}
+      <div class="max-w-[900px] mx-auto rounded-xl overflow-hidden border bg-white shadow" style="height: 100%; min-height: 540px; border-color: var(--gw-line);">
+        <iframe src="${escHtml(embedUrl)}" title="พรีวิวจาก Google Drive" class="w-full h-full border-0" allow="autoplay"></iframe>
+      </div>
+    `;
+  }
+
+  async function loadAndRenderSubmissionPreviewBody_(normSub) {
+    const stage = document.getElementById('docxPreviewStage');
+    const modeRichBtn = document.getElementById('btnDocxModeRich');
+    const modeDriveBtn = document.getElementById('btnDocxModeDrive');
+    const mode = STATE.activePreviewMode || 'RICH';
+
+    if (modeRichBtn) modeRichBtn.className = (mode === 'RICH' ? 'gw-btn-primary' : 'gw-btn-soft') + ' !py-1 !px-2.5 text-[11px] font-bold';
+    if (modeDriveBtn) modeDriveBtn.className = (mode === 'DRIVE' ? 'gw-btn-primary' : 'gw-btn-soft') + ' !py-1 !px-2.5 text-[11px] font-bold';
+
+    if (mode === 'DRIVE') {
+      paintDriveEmbedPreviewStage_(normSub);
+      return;
+    }
+
+    if (STATE.activePreviewUnpacked && STATE.activePreviewUnpacked.subId === normSub.submissionId) {
+      renderPreviewAuditSummaryBar_(STATE.activePreviewUnpacked.docXml, normSub);
+      paintDocxPreviewStage_(STATE.activePreviewUnpacked.richHtml);
+      return;
+    }
+
+    if (stage) {
+      stage.innerHTML = `<div class="docx-a4-sheet text-center py-14 space-y-2"><div class="text-base font-bold">⏳ กำลังเปิดอ่านไฟล์ "${escHtml(normSub.fileName)}" จากระบบ...</div><div class="text-xs opacity-70">กำลังจัดหน้ากระดาษ A4 รูปภาพ ตาราง และรันเครื่องคิดเลขตรวจวิธีคิดอัตโนมัติ</div></div>`;
+    }
+
+    const res = await fetchSubmissionBase64ForPreview_(normSub.submissionId);
+    if (STATE.activePreviewSubId !== normSub.submissionId) return; // User already stepped or closed
+
+    if (!res || !res.ok || !res.base64Data) {
+      const bar = document.getElementById('docxPreviewAuditBar');
+      if (bar) { bar.classList.add('hidden'); bar.innerHTML = ''; }
+      if (normSub.pdfFileUrl || normSub.driveFileUrl) {
+        STATE.activePreviewMode = 'DRIVE';
+        if (modeRichBtn) modeRichBtn.className = 'gw-btn-soft !py-1 !px-2.5 text-[11px] font-bold';
+        if (modeDriveBtn) modeDriveBtn.className = 'gw-btn-primary !py-1 !px-2.5 text-[11px] font-bold';
+        paintDriveEmbedPreviewStage_(normSub, (res && res.reason) || '');
+      } else if (stage) {
+        stage.innerHTML = `<div class="gw-alert-danger max-w-[794px] mx-auto rounded-xl border p-4 text-xs font-bold">${escHtml((res && res.reason) || 'ไม่สามารถโหลดไฟล์เพื่อพรีวิวได้')}</div>`;
+      }
+      return;
+    }
+
+    const unpacked = await unpackDocxWithMediaInBrowser_(res.base64Data);
+    if (STATE.activePreviewSubId !== normSub.submissionId) return;
+    const richHtml = renderDocxXmlToRichHtml_(unpacked.documentXml, unpacked.relsXml, unpacked.mediaMap);
+    STATE.activePreviewUnpacked = { subId: normSub.submissionId, richHtml, docXml: unpacked.documentXml };
+    renderPreviewAuditSummaryBar_(unpacked.documentXml, normSub);
+    paintDocxPreviewStage_(richHtml);
+  }
+
+  function setDocxPreviewMode(mode) {
+    STATE.activePreviewMode = mode === 'DRIVE' ? 'DRIVE' : 'RICH';
+    STATE.docxPreviewMode = STATE.activePreviewMode;
+    if (STATE.activePreviewSubObj) {
+      loadAndRenderSubmissionPreviewBody_(STATE.activePreviewSubObj);
+    }
+  }
+
+  function setDocxPreviewZoom(px) {
+    STATE.docxPreviewZoomPx = Number(px) || 19;
+    const sheet = document.querySelector('#docxPreviewStage .docx-a4-sheet');
+    if (sheet) {
+      sheet.style.setProperty('--docx-zoom-size', `${STATE.docxPreviewZoomPx}px`);
+    }
+  }
+
+  function stepDocxPreviewQueue(delta) {
+    const q = STATE.previewQueueIds || [];
+    const idx = q.indexOf(STATE.activePreviewSubId);
+    const nextIdx = idx + Number(delta || 0);
+    if (nextIdx < 0 || nextIdx >= q.length) return;
+    const nextId = q[nextIdx];
+    const { normSub } = findSubmissionObjectsById_(nextId);
+    if (!normSub) return;
+    STATE.activePreviewSubId = nextId;
+    STATE.activePreviewSubObj = normSub;
+    renderDocxPreviewHeaderAndLinks_(normSub);
+    renderPreviewAdminFooterHtml_(normSub);
+    loadAndRenderSubmissionPreviewBody_(normSub);
+  }
+
+  function closeSubmissionPreviewModal() {
+    const modal = document.getElementById('docxPreviewModal');
+    if (modal) modal.classList.add('hidden');
+    STATE.activePreviewSubId = '';
+    STATE.activePreviewSubObj = null;
+    STATE.activePreviewUnpacked = null;
+    const stage = document.getElementById('docxPreviewStage');
+    if (stage) stage.innerHTML = '';
+  }
+
+  if (typeof document !== 'undefined' && document.addEventListener) {
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        const prevModal = document.getElementById('docxPreviewModal');
+        const customModal = document.getElementById('customActionModal');
+        const customHidden = !customModal || customModal.classList.contains('hidden');
+        if (prevModal && !prevModal.classList.contains('hidden') && customHidden) {
+          closeSubmissionPreviewModal();
+        }
       }
     });
   }
