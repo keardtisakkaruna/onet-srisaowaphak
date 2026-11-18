@@ -2751,6 +2751,13 @@
                     <button type="button" id="btnIocMarkAllPlusOne" onclick="markAllIocPlusOne()" class="gw-btn-soft text-xs !py-2 !px-3 font-bold border" style="border-color: var(--gw-accent); color: var(--gw-accent);">
                       <i data-lucide="zap" aria-hidden="true" class="w-3.5 h-3.5"></i><span>ให้ +1 (สอดคล้อง) ทุกข้อตั้งต้น</span>
                     </button>
+                    <button type="button" id="btnCommRunExamAudit" onclick="runSubjectExamKeyAndSolutionAudit('COMM')" class="gw-btn-primary text-xs !py-2 !px-3 font-bold">
+                      <i data-lucide="calculator" aria-hidden="true" class="w-3.5 h-3.5"></i><span>รีเช็กความถูกต้องข้อสอบ • เฉลย • วิธีคิดทั้งวิชา</span>
+                    </button>
+                    <input type="file" id="commLocalExamAuditInput" accept=".docx" multiple class="hidden" onchange="handleLocalExamAuditFiles(this)">
+                    <button type="button" id="btnCommLocalExamAudit" onclick="triggerLocalExamAuditPicker('COMM')" class="gw-btn-soft text-xs !py-2 !px-3 font-bold border border-dashed" style="border-color: var(--gw-line-strong);">
+                      <i data-lucide="folder-search" aria-hidden="true" class="w-3.5 h-3.5"></i><span>เลือกไฟล์ .docx จากเครื่องมาตรวจเฉลย</span>
+                    </button>
                     <button type="button" onclick="previewAndPrintIocA4Report('COMM')" class="gw-btn-soft text-xs !py-2 !px-3 font-bold">
                       <i data-lucide="printer" aria-hidden="true" class="w-3.5 h-3.5"></i><span>พิมพ์สรุปผล IOC (A4)</span>
                     </button>
@@ -2762,6 +2769,9 @@
                     โหมดอ่านอย่างเดียว (วิชานี้ไม่ใช่รายวิชาที่ท่านได้รับมอบหมาย)
                   </div>
                 </div>
+
+                <!-- Tier-1 Exam, Key & Solution Audit Report Box (Committee) -->
+                <div id="commExamAuditReportBox" class="hidden space-y-2.5"></div>
 
                 <!-- Mobile Screen Switcher (Visible below lg breakpoint) -->
                 <div class="lg:hidden gw-segment" role="group" aria-label="สลับหน้าจอประเมิน IOC บนมือถือ">
@@ -3304,6 +3314,15 @@
                   <p class="text-xs" style="color: var(--gw-muted);">ตรวจจับรหัสสาระและตัวชี้วัดจากข้างในไฟล์ครูอัตโนมัติ (ไม่ต่อท้ายไฟล์ดิบ) ตัดกล่องหัวกระดาษซ้ำและตัวชี้วัดว่างออก พร้อมผังตรวจสอบตัวชี้วัดประจำเล่ม (และรองรับรวมเล่มจากไฟล์ในเครื่องไม่จำกัดขนาด MB)</p>
                 </div>
                 <div class="flex flex-wrap gap-2">
+                  <button type="button" id="btnAdminMergeExamAudit" onclick="runSubjectExamKeyAndSolutionAudit('ADMIN_MERGE')" class="gw-btn-primary text-xs !font-bold">
+                    <i data-lucide="calculator" aria-hidden="true" class="w-3.5 h-3.5"></i>
+                    <span>รีเช็กความถูกต้องข้อสอบ • เฉลย • วิธีคิดทั้งวิชา</span>
+                  </button>
+                  <input type="file" id="adminLocalExamAuditInput" accept=".docx" multiple class="hidden" onchange="handleLocalExamAuditFiles(this)">
+                  <button type="button" id="btnAdminLocalExamAudit" onclick="triggerLocalExamAuditPicker('ADMIN')" class="gw-btn-soft text-xs !font-bold border border-dashed" style="border-color: var(--gw-line-strong);">
+                    <i data-lucide="folder-search" aria-hidden="true" class="w-3.5 h-3.5"></i>
+                    <span>เลือกไฟล์ .docx จากเครื่องมาตรวจเฉลย</span>
+                  </button>
                   <button type="button" id="btnMergeDemoPreview" onclick="runSampleDemoAutoMergeDocx()" class="gw-btn-soft text-xs !font-bold border" style="border-color: var(--gw-accent);">
                     <i data-lucide="flask-conical" aria-hidden="true" class="w-3.5 h-3.5"></i>
                     <span>ทดลองสร้างไฟล์ตัวอย่าง & รวมเล่มจำลอง</span>
@@ -3346,6 +3365,7 @@
               </div>
 
               <div id="adminMergeReadinessBox" class="gw-subcard text-xs space-y-2"></div>
+              <div id="adminExamAuditReportBox" class="hidden space-y-2.5"></div>
 
               <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <button type="button" id="btnMergeDownloadLocal" onclick="runAdminAutoMergeDocx(false)" class="gw-btn-soft w-full py-2.5 text-xs !font-bold border" style="border-color: var(--gw-accent);">
@@ -3408,6 +3428,9 @@
                     <option value="65">วิทยาศาสตร์ฯ (20 ข้อ)</option>
                     <option value="63">ภาษาอังกฤษ (32 ข้อ)</option>
                   </select>
+                  <button type="button" id="btnAdminKeyExamAudit" onclick="runSubjectExamKeyAndSolutionAudit('ADMIN_KEY')" class="gw-btn-soft text-xs py-2 px-3 font-bold border" style="border-color: var(--gw-accent); color: var(--gw-accent);">
+                    <i data-lucide="calculator" aria-hidden="true" class="w-3.5 h-3.5"></i><span>รีเช็กเฉลย + วิธีคิดทั้งวิชา</span>
+                  </button>
                   <button type="button" id="btnImportKeysFromTeacherDocx" onclick="importAnswerKeysFromTeacherDocx()" class="gw-btn-soft text-xs py-2 px-3 font-bold border" style="border-color: var(--gw-accent);">
                     <i data-lucide="download" aria-hidden="true" class="w-3.5 h-3.5"></i><span>ดึงเฉลยอัตโนมัติจากไฟล์ฉบับครู (.docx)</span>
                   </button>
@@ -3419,6 +3442,7 @@
               <div class="gw-subcard text-xs" style="color: var(--gw-muted);">
                 <b>รูปแบบเฉลย สทศ. 2569:</b> MC4 = 1–4 | NUMERIC (คณิต 12–15) = จำนวนเต็ม 0–999 | ORDER (ไทย 21) = แยก 21.1 และ 21.2 (ระบบคั่น | ให้อัตโนมัติ) | COMPLEX_MC (วิทย์ 19–20) = ใช่|ไม่ใช่|ใช่ (3/3 = 5, 2/3 = 2.5 คะแนน) | ESSAY = คะแนนเต็ม 15
               </div>
+              <div id="adminKeyExamAuditReportBox" class="hidden space-y-2.5"></div>
               <div id="adminKeyEditorGrid" class="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 gap-2.5 pt-2"></div>
             </div>
           </section>
@@ -3611,6 +3635,6 @@
   </div>
 
     <script>window.ONET_GAS_API_URL = 'https://script.google.com/macros/s/AKfycbwG-eaNeRsZ9wmCWvcGfKNpzxHgUFJPckdbfNL3b7MamTFjrWexwkCFYR_ApLfqGtQG/exec';</script>
-  <script src="./app.js?v=20261117_1794963740"></script>
+  <script src="./app.js?v=20261117_1794965822"></script>
 </body>
 </html>

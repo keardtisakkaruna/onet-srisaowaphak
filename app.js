@@ -5113,6 +5113,639 @@
     };
   }
 
+  /* ---- Tier-1 Deterministic Exam & Solution Auditor (NIETS Rules + Math Calculator + 3-Way Key Check) ---- */
+  function extractMathAwareTextFromXml_(xml = '') {
+    let s = String(xml || '');
+    s = s.replace(/<m:f\b[\s\S]*?<\/m:f>/gi, (fXml) => {
+      const numM = /<m:num\b[^>]*>([\s\S]*?)<\/m:num>/i.exec(fXml);
+      const denM = /<m:den\b[^>]*>([\s\S]*?)<\/m:den>/i.exec(fXml);
+      const numTxt = numM ? extractPlainTextFromDocxXml(numM[1]).replace(/\s+/g, '') : '';
+      const denTxt = denM ? extractPlainTextFromDocxXml(denM[1]).replace(/\s+/g, '') : '';
+      if (numTxt && denTxt) return ` ((${numTxt})/(${denTxt})) `;
+      return ' ' + extractPlainTextFromDocxXml(fXml) + ' ';
+    });
+    return normalizeThaiDigits(extractPlainTextFromDocxXml(s)).replace(/\s+/g, ' ').trim();
+  }
+
+  function evaluateSafeArithmeticExpr_(rawExpr) {
+    let s = normalizeThaiDigits(String(rawExpr || ''))
+      .replace(/,/g, '')
+      .replace(/[×xX]/g, '*')
+      .replace(/÷/g, '/')
+      .replace(/[–—−]/g, '-')
+      .replace(/(\d+(?:\.\d+)?)\s*%/g, '($1/100)')
+      .replace(/\s+/g, '');
+    if (!s || /[^0-9.+\-*/()]/.test(s)) return null;
+    if (/\d\(|\)\d|\)\(/.test(s)) return null;
+
+    const tokens = [];
+    let i = 0;
+    while (i < s.length) {
+      const ch = s[i];
+      if ('+-*/()'.includes(ch)) {
+        tokens.push(ch);
+        i++;
+      } else if (/[0-9.]/.test(ch)) {
+        let numStr = '';
+        let dotCount = 0;
+        while (i < s.length && /[0-9.]/.test(s[i])) {
+          if (s[i] === '.') dotCount++;
+          numStr += s[i++];
+        }
+        if (dotCount > 1 || numStr === '.') return null;
+        tokens.push(Number(numStr));
+      } else {
+        return null;
+      }
+    }
+    if (!tokens.length) return null;
+
+    let pos = 0;
+    function parseExpr() {
+      let val = parseTerm();
+      if (val === null) return null;
+      while (pos < tokens.length && (tokens[pos] === '+' || tokens[pos] === '-')) {
+        const op = tokens[pos++];
+        const rhs = parseTerm();
+        if (rhs === null) return null;
+        val = op === '+' ? val + rhs : val - rhs;
+      }
+      return val;
+    }
+    function parseTerm() {
+      let val = parseFactor();
+      if (val === null) return null;
+      while (pos < tokens.length && (tokens[pos] === '*' || tokens[pos] === '/')) {
+        const op = tokens[pos++];
+        const rhs = parseFactor();
+        if (rhs === null) return null;
+        if (op === '/') {
+          if (Math.abs(rhs) < 1e-12) return null;
+          val = val / rhs;
+        } else {
+          val = val * rhs;
+        }
+      }
+      return val;
+    }
+    function parseFactor() {
+      if (pos >= tokens.length) return null;
+      if (tokens[pos] === '+' || tokens[pos] === '-') {
+        const sign = tokens[pos++] === '-' ? -1 : 1;
+        const f = parseFactor();
+        return f === null ? null : sign * f;
+      }
+      if (tokens[pos] === '(') {
+        pos++;
+        const inner = parseExpr();
+        if (inner === null || tokens[pos] !== ')') return null;
+        pos++;
+        return inner;
+      }
+      if (typeof tokens[pos] === 'number') {
+        return tokens[pos++];
+      }
+      return null;
+    }
+
+    const result = parseExpr();
+    if (result === null || pos !== tokens.length || !Number.isFinite(result)) return null;
+    return result;
+  }
+
+  function hasBinaryArithmeticOp_(exprStr) {
+    const cleaned = normalizeThaiDigits(String(exprStr || ''))
+      .replace(/[×xX]/g, '*')
+      .replace(/÷/g, '/')
+      .replace(/[–—−]/g, '-')
+      .replace(/\s+/g, '')
+      .replace(/^[+\-]/, '')
+      .replace(/\([+\-]/g, '(');
+    return /[+\-*/]/.test(cleaned);
+  }
+
+  function auditArithmeticEquationsInLines_(lines = []) {
+    const checkedEquations = [];
+    const mismatchedEquations = [];
+    let lastComputedValue = null;
+
+    const mergedLines = [];
+    lines.forEach((rawLine) => {
+      const ln = normalizeThaiDigits(String(rawLine || '')).trim();
+      if (!ln) return;
+      if (/^=\s*[\(\d+\-]/.test(ln) && mergedLines.length > 0) {
+        mergedLines[mergedLines.length - 1] = mergedLines[mergedLines.length - 1] + ' ' + ln;
+      } else {
+        mergedLines.push(ln);
+      }
+    });
+
+    mergedLines.forEach((ln) => {
+      if (!ln || !ln.includes('=')) return;
+      if (/(?:^|\s)น\.|นาฬิกา|ชั่วโมง|นาที/.test(ln)) return;
+
+      let matchedChainOnLine = false;
+      const eqRe = /([\(\d][\d,.\s+\-–—−*×xX/÷%()]*=[\s\d,.+\-–—−*×xX/÷%()=]+)/g;
+      let m;
+      while ((m = eqRe.exec(ln)) !== null) {
+        const rawChain = m[1]
+          .replace(/[+\-–—−*×xX/÷(\s]+$/, '')
+          .replace(/^[\s)+*×xX/÷]+/, '')
+          .trim();
+        if (!rawChain.includes('=')) continue;
+        const sides = rawChain.split('=').map(x => x.trim()).filter(Boolean);
+        if (sides.length < 2) continue;
+
+        matchedChainOnLine = true;
+        const anyOp = sides.some(hasBinaryArithmeticOp_);
+        const vals = sides.map(evaluateSafeArithmeticExpr_);
+        if (vals.some(v => v === null)) {
+          const lastSideVal = evaluateSafeArithmeticExpr_(sides[sides.length - 1]);
+          if (lastSideVal !== null) lastComputedValue = lastSideVal;
+          continue;
+        }
+        lastComputedValue = vals[vals.length - 1];
+        if (!anyOp) continue;
+
+        for (let k = 0; k < vals.length - 1; k++) {
+          const a = vals[k];
+          const b = vals[k + 1];
+          const tol = Math.max(0.025, Math.abs(a) * 0.006);
+          if (Math.abs(a - b) <= tol) {
+            checkedEquations.push(`${sides[k]} = ${sides[k + 1]}`);
+          } else {
+            const expectedStr = Number.isInteger(Number(a.toFixed(6))) ? String(Math.round(a)) : String(Number(a.toFixed(4)));
+            mismatchedEquations.push({
+              expr: `${sides[k]} = ${sides[k + 1]}`,
+              expected: expectedStr,
+              actual: sides[k + 1]
+            });
+          }
+        }
+      }
+
+      if (!matchedChainOnLine) {
+        const tailEqs = Array.from(ln.matchAll(/=\s*(-?\d[\d,]*(?:\.\d+)?)(?![\d.,])/g));
+        if (tailEqs.length > 0) {
+          const tailVal = evaluateSafeArithmeticExpr_(tailEqs[tailEqs.length - 1][1]);
+          if (tailVal !== null) lastComputedValue = tailVal;
+        }
+      }
+    });
+
+    return { checkedEquations, mismatchedEquations, lastComputedValue };
+  }
+
+  function mapChoiceTokenTo14_(tok) {
+    const s = normalizeThaiDigits(String(tok || '')).trim();
+    const map = { '1': '1', '2': '2', '3': '3', '4': '4', 'ก': '1', 'ข': '2', 'ค': '3', 'ง': '4', 'A': '1', 'B': '2', 'C': '3', 'D': '4', 'a': '1', 'b': '2', 'c': '3', 'd': '4' };
+    return map[s] || '';
+  }
+
+  function parsePart1SummaryTableKeys_(docXml = '') {
+    const out = {};
+    const trRegex = /<w:tr\b[\s\S]*?<\/w:tr>/gi;
+    let trM;
+    while ((trM = trRegex.exec(String(docXml || ''))) !== null) {
+      const tcRegex = /<w:tc\b[\s\S]*?<\/w:tc>/gi;
+      const cells = [];
+      let tcM;
+      while ((tcM = tcRegex.exec(trM[0])) !== null) {
+        cells.push(extractPlainTextFromDocxXml(tcM[0]).replace(/\s+/g, ' ').trim());
+      }
+      if (cells.length >= 2) {
+        const c0 = normalizeThaiDigits(cells[0]);
+        const itemM = /^\s*(?:ข้อ\s*)?(\d{1,2})\s*$/.exec(c0);
+        if (itemM) {
+          const rawAns = normalizeThaiDigits(cells[cells.length - 1]).trim();
+          if (rawAns && rawAns !== '-' && !/เฉลยคำตอบ|\.\.\.|ระบุ/.test(rawAns)) {
+            out[Number(itemM[1])] = rawAns;
+          }
+        }
+      }
+    }
+    return out;
+  }
+
+  function parseCandidateItemForAudit_(rawBlocks = [], itemNo = 1, bpItem = null) {
+    const iType = String((bpItem && bpItem.itemType) || 'MC4').toUpperCase();
+    let mediaCount = 0;
+    let authoredChars = 0;
+    let hasMathInChoices = false;
+    const stemParts = [];
+    const choicesMap = {};
+    const numPrBuffer = [];
+    let inSol = false;
+    let inlineKeyRaw = '';
+    let inlineKeyNorm = '';
+    let statedAnsItemNo = null;
+    const solutionLines = [];
+
+    rawBlocks.forEach((blk, idx) => {
+      const xml = String(blk.xml || '');
+      const mCount = (xml.match(/<w:drawing\b|<w:pict\b|<v:imagedata\b|<a:blip\b/gi) || []).length;
+      mediaCount += mCount;
+      const plain = normalizeThaiDigits(String(blk.text || '')).replace(/\s+/g, ' ').trim();
+      const mathAware = extractMathAwareTextFromXml_(xml);
+
+      if (!isExamBlockBoilerplateOnly_(plain, itemNo)) {
+        const stripped = plain
+          .replace(/^\s*ข้อ\s*\d{1,2}(?:\.\d{1,2})?\s*[\.\):]?\s*/i, '')
+          .replace(/\[\s*[ทควต]\s*\d+\.\d+\s*ป\.\s*\d+\/\d+\s*\]/gi, '')
+          .replace(/\(\s*หมายเหตุ\s*สทศ\.[^)]*\)/gi, '')
+          .replace(/\s+/g, '');
+        authoredChars += stripped.length;
+      }
+
+      if (/^(?:เฉลย(?:\s|[:=\-]|ข้อ|ตอบ|$)|วิธีคิด|วิธีทำ|แนวคิด|คำอธิบายเฉลย)/i.test(plain)) {
+        if (isExamBlockBoilerplateOnly_(plain, itemNo)) return;
+        inSol = true;
+        if (!inlineKeyRaw && /^เฉลย/i.test(plain)) {
+          const noM = /^เฉลย\s*ข้อ(?:ที่)?\s*(\d{1,2})/i.exec(plain);
+          if (noM) statedAnsItemNo = Number(noM[1]);
+          const afterAns = plain
+            .replace(/^เฉลย(?:\s*ข้อ(?:ที่)?\s*\d{1,2})?\s*[:=\-\s]*(?:ตอบ(?:ตัวเลือก|ข้อ)?\s*)?/i, '')
+            .split(/\||วิธีคิด|วิธีทำ|แนวคิด|เหตุผล|เพราะ/i)[0]
+            .trim();
+          if (iType === 'MC4') {
+            const chM = /^(?:ข้อ\s*|ตัวเลือก\s*)?([1-4กขคงA-Da-d])(?![0-9])/.exec(afterAns);
+            if (chM) {
+              inlineKeyRaw = chM[1];
+              inlineKeyNorm = mapChoiceTokenTo14_(chM[1]);
+            }
+          } else if (iType === 'NUMERIC') {
+            const numM = /^([+\-]?\d[\d,]*(?:\.\d+)?(?:\s*\/\s*\d+)?)/.exec(afterAns);
+            if (numM) {
+              inlineKeyRaw = numM[1].replace(/\s+/g, '');
+              inlineKeyNorm = inlineKeyRaw.replace(/,/g, '');
+            }
+          } else {
+            inlineKeyRaw = afterAns.split(/\s+/)[0] || '';
+            inlineKeyNorm = inlineKeyRaw;
+          }
+        }
+        solutionLines.push(mathAware);
+        return;
+      }
+
+      if (inSol) {
+        if (plain) solutionLines.push(mathAware);
+        return;
+      }
+
+      if (idx === 0) {
+        const cleanedStem = plain
+          .replace(/^\s*ข้อ\s*\d{1,2}(?:\.\d{1,2})?\s*[\.\):]?\s*(?:\d{1,2}\s*[\.\)]\s*)?/i, '')
+          .replace(/\[\s*[ทควต]\s*\d+\.\d+\s*ป\.\s*\d+\/\d+\s*\]/gi, '')
+          .replace(/\[พิมพ์โจทย์[^\]]*\]/gi, '')
+          .replace(/(^|\])\s*\[\s*([^\[\]]{4,})\s*\]\s*$/, '$1 $2')
+          .trim();
+        if (cleanedStem) stemParts.push(cleanedStem);
+        return;
+      }
+
+      if (iType === 'MC4' && blk.tag === 'w:p') {
+        const cleanChoiceLine = plain.replace(/\s*\(\s*หมายเหตุ\s*สทศ\.[^)]*\)/gi, '').trim();
+        const parsedCh = splitChoicesFromParagraphLine_(cleanChoiceLine);
+        if (parsedCh.length > 0) {
+          if (/<m:oMath\b/i.test(xml)) hasMathInChoices = true;
+          parsedCh.forEach(c => {
+            if (!isUneditedPlaceholderText_(c.text)) choicesMap[c.key] = c.text.trim();
+          });
+          return;
+        }
+        if (/<w:numPr\b/i.test(xml) && cleanChoiceLine && !/^ข้อ\s*\d+/i.test(cleanChoiceLine)) {
+          if (/<m:oMath\b/i.test(xml)) hasMathInChoices = true;
+          numPrBuffer.push(cleanChoiceLine);
+          return;
+        }
+      }
+
+      if (!isExamBlockBoilerplateOnly_(plain, itemNo) && !/ช่องเขียน\/ระบายคำตอบ|\[\s*\]\s*\[\s*\]/.test(plain)) {
+        stemParts.push(plain);
+      }
+    });
+
+    if (Object.keys(choicesMap).length === 0 && numPrBuffer.length === 4) {
+      numPrBuffer.forEach((txt, k) => { choicesMap[String(k + 1)] = txt; });
+    }
+
+    const hasRealContent = mediaCount > 0 || authoredChars >= 6;
+    const contentScore = (mediaCount * 350) + authoredChars;
+    return {
+      hasRealContent,
+      contentScore,
+      mediaCount,
+      hasMathInChoices,
+      stemText: stemParts.join(' ').replace(/\s+/g, ' ').trim(),
+      choicesMap,
+      inlineKeyRaw,
+      inlineKeyNorm,
+      statedAnsItemNo,
+      solutionLines
+    };
+  }
+
+  function auditExamAnswerKeyAndSolutions(partEntries = [], params = {}) {
+    const subjectCode = String(params.subjectCode || '61');
+    const singleFileMode = Boolean(params.singleFileMode);
+    const bpItems = NIETS_2569_EXAM_ITEMS[subjectCode] || [];
+    const bpByNo = new Map();
+    bpItems.forEach(it => bpByNo.set(Number(it.itemNo), it));
+
+    const tchBestByNo = new Map();
+    const stuBestByNo = new Map();
+
+    partEntries.forEach((part) => {
+      const aud = String(part.targetAudience || 'TEACHER').toUpperCase();
+      const rawDocXml = String(part.documentXml || part.bodyXml || '');
+      const bodyMatch = /<w:body\b[^>]*>([\s\S]*?)<\/w:body>/i.exec(rawDocXml);
+      const bodyXml = convertFloatingAnchorsToInline_(bodyMatch ? bodyMatch[1] : rawDocXml);
+      const tableKeys = aud === 'TEACHER' ? parsePart1SummaryTableKeys_(rawDocXml) : {};
+      const authorLabel = part.authorLabel ||
+        `${part.teacherName || 'ผู้จัดทำ'}${part.schoolId ? ' (' + part.schoolId + ')' : ''}`;
+
+      const blocks = extractWordTopLevelBlocks_(bodyXml);
+      let curCand = null;
+      let pendingLeading = [];
+      const fileCands = [];
+
+      blocks.forEach((blk) => {
+        if (isPlaceholderOrChromeBlock_(blk, { targetAudience: aud })) return;
+        const cleanTxt = normalizeThaiDigits(blk.text || '').trim();
+        const itemM = blk.tag === 'w:p'
+          ? /^\s*ข้อ\s*(\d{1,2})(?:\.(\d{1,2}))?(?:\s*[.\):]|(?=\s+\[|\s+จง|\s+ข้อ|\s|$))/.exec(cleanTxt)
+          : null;
+        if (itemM) {
+          const parentNo = Number(itemM[1]);
+          const subNo = itemM[2] ? Number(itemM[2]) : null;
+          if (subNo && curCand && curCand.itemNo === parentNo) {
+            curCand.rawBlocks.push(blk);
+            return;
+          }
+          const detached = detachTrailingStimulusForNextItem_(curCand, bpByNo);
+          const leading = pendingLeading.concat(detached);
+          pendingLeading = [];
+          curCand = { itemNo: parentNo, rawBlocks: [blk, ...leading] };
+          fileCands.push(curCand);
+        } else if (curCand) {
+          curCand.rawBlocks.push(blk);
+        } else {
+          pendingLeading.push(blk);
+        }
+      });
+
+      fileCands.forEach((c) => {
+        const bp = bpByNo.get(c.itemNo) || null;
+        const parsed = parseCandidateItemForAudit_(c.rawBlocks, c.itemNo, bp);
+        if (!parsed.hasRealContent) return;
+        const entry = Object.assign({}, parsed, {
+          itemNo: c.itemNo,
+          authorLabel,
+          fileName: part.fileName || '',
+          tableKeyRaw: tableKeys[c.itemNo] || ''
+        });
+        const targetMap = aud === 'TEACHER' ? tchBestByNo : stuBestByNo;
+        const prev = targetMap.get(c.itemNo);
+        if (!prev || entry.contentScore > prev.contentScore) {
+          targetMap.set(c.itemNo, entry);
+        }
+      });
+    });
+
+    const targetItemNos = singleFileMode
+      ? Array.from(new Set([...tchBestByNo.keys(), ...stuBestByNo.keys()])).sort((a, b) => a - b)
+      : bpItems.map(b => Number(b.itemNo));
+
+    const itemReports = [];
+    let errorCount = 0;
+    let warnCount = 0;
+    let passCount = 0;
+    let missingCount = 0;
+
+    targetItemNos.forEach((itemNo) => {
+      const bp = bpByNo.get(itemNo) || { itemNo, strandNo: '1', indicatorCode: '', itemType: 'MC4' };
+      const iType = String(bp.itemType || 'MC4').toUpperCase();
+      const tch = tchBestByNo.get(itemNo) || null;
+      const stu = stuBestByNo.get(itemNo) || null;
+      const primary = tch || stu;
+
+      if (!primary) {
+        missingCount++;
+        itemReports.push({
+          itemNo,
+          strandNo: bp.strandNo,
+          indicatorCode: bp.indicatorCode,
+          itemType: iType,
+          status: 'MISSING',
+          authorLabel: '',
+          stemPreview: '',
+          effectiveKey: '',
+          errors: [],
+          warnings: ['ยังไม่มีไฟล์ข้อสอบส่งเข้ามาในข้อนี้'],
+          verifiedNotes: []
+        });
+        return;
+      }
+
+      const errors = [];
+      const warnings = [];
+      const verifiedNotes = [];
+
+      if (!singleFileMode) {
+        if (tch && !stu) {
+          warnings.push('พบโจทย์และเฉลยในฉบับครู แต่ไฟล์ฉบับนักเรียนยังเป็นแม่แบบว่างเปล่า (ระบบรวมเล่มกู้โจทย์และตัดเฉลยให้อัตโนมัติได้)');
+        } else if (stu && !tch) {
+          warnings.push('พบโจทย์ในฉบับนักเรียน แต่ในฉบับครูยังไม่ได้พิมพ์โจทย์และเฉลยวิธีคิด');
+        }
+      }
+
+      const stemText = (tch && tch.stemText) || (stu && stu.stemText) || '';
+      const hasAnyMedia = Boolean((tch && tch.mediaCount > 0) || (stu && stu.mediaCount > 0));
+      const choicesMap = (tch && Object.keys(tch.choicesMap).length ? tch.choicesMap : (stu ? stu.choicesMap : {})) || {};
+
+      if (/(?:ดังรูป|ดังภาพ|จากรูป|จากภาพ|จากแผนภูมิ|จากกราฟ|พิจารณาภาพ|พิจารณารูป|พิจารณาแผนภูมิ|พิจารณากราฟ)/i.test(stemText) && !hasAnyMedia) {
+        errors.push('โจทย์ระบุอ้างอิงรูปภาพ/กราฟ/แผนภูมิ แต่ไม่พบรูปภาพแทรกอยู่ในข้อนี้');
+      }
+
+      if (iType === 'MC4') {
+        const cKeys = ['1', '2', '3', '4'];
+        const presentKeys = cKeys.filter(k => Boolean(choicesMap[k]));
+        if (presentKeys.length > 0 && presentKeys.length < 4) {
+          errors.push(`พบตัวเลือกเพียง ${presentKeys.length} ตัวเลือก (ต้องมีครบ 4 ตัวเลือก 1–4)`);
+        } else if (presentKeys.length === 4) {
+          const seenChoiceNorm = new Map();
+          cKeys.forEach(k => {
+            const normCh = normalizeThaiDigits(choicesMap[k]).replace(/\s+/g, '').toLowerCase();
+            if (seenChoiceNorm.has(normCh)) {
+              errors.push(`ตัวเลือกที่ ${seenChoiceNorm.get(normCh)} และตัวเลือกที่ ${k} มีข้อความซ้ำกัน ("${choicesMap[k]}")`);
+            } else {
+              seenChoiceNorm.set(normCh, k);
+            }
+          });
+
+          const mathInCh = Boolean((tch && tch.hasMathInChoices) || (stu && stu.hasMathInChoices));
+          if (!mathInCh) {
+            const parsedNums = cKeys.map(k => {
+              const m = /^\s*(-?\d[\d,]*(?:\.\d+)?)\s*([^\d.\-/]*)$/.exec(normalizeThaiDigits(choicesMap[k]).trim());
+              if (!m) return null;
+              return { val: Number(m[1].replace(/,/g, '')), unit: m[2].replace(/\s+/g, '') };
+            });
+            if (parsedNums.every(Boolean) && parsedNums.every(p => p.unit === parsedNums[0].unit)) {
+              const vs = parsedNums.map(p => p.val);
+              const asc = vs[0] <= vs[1] && vs[1] <= vs[2] && vs[2] <= vs[3];
+              const desc = vs[0] >= vs[1] && vs[1] >= vs[2] && vs[2] >= vs[3];
+              if (!asc && !desc) {
+                warnings.push(`ตัวเลือกที่เป็นตัวเลข (${vs.join(', ')}) ยังไม่ได้เรียงจากน้อยไปมากหรือมากไปน้อยตามเกณฑ์ สทศ.`);
+              }
+            }
+          }
+        }
+      }
+
+      let effectiveKey = '';
+      if (tch) {
+        const tableKeyRaw = tch.tableKeyRaw || '';
+        const tableKeyNorm = iType === 'MC4' ? mapChoiceTokenTo14_(tableKeyRaw) : tableKeyRaw.replace(/,/g, '');
+        const inlineKeyRaw = tch.inlineKeyRaw || '';
+        const inlineKeyNorm = tch.inlineKeyNorm || '';
+
+        effectiveKey = inlineKeyNorm || tableKeyNorm || '';
+
+        if (tch.statedAnsItemNo && tch.statedAnsItemNo !== itemNo) {
+          warnings.push(`บรรทัดเฉลยท้ายข้อพิมพ์เลขข้อผิดเป็น "เฉลย ข้อ ${tch.statedAnsItemNo}" (แต่อยู่ใต้ข้อที่ ${itemNo})`);
+        }
+
+        if (!effectiveKey) {
+          errors.push('ยังไม่พบคำตอบเฉลยของข้อนี้ในไฟล์ฉบับครู');
+        } else {
+          if (tableKeyNorm && inlineKeyNorm && tableKeyNorm !== inlineKeyNorm) {
+            warnings.push(`ตารางสรุปเฉลยส่วนที่ 1 ระบุคำตอบเป็น "${tableKeyRaw}" ไม่ตรงกับเฉลยท้ายข้อที่ระบุ "${inlineKeyRaw}" (กรุณาปรับตารางสรุปส่วนที่ 1 ให้ตรงกัน)`);
+          } else if (tableKeyNorm && inlineKeyNorm && tableKeyNorm === inlineKeyNorm) {
+            verifiedNotes.push(`ตารางสรุปเฉลยส่วนที่ 1 ตรงกับเฉลยท้ายข้อ (${inlineKeyNorm})`);
+          }
+
+          const rawForRule = inlineKeyRaw || tableKeyRaw;
+          if (iType === 'NUMERIC') {
+            if (/\./.test(rawForRule) || /\//.test(rawForRule)) {
+              errors.push(`คำตอบที่เฉลย ("${rawForRule}") เป็นทศนิยมหรือเศษส่วน ผิดกติกาข้อสอบอัตนัยระบายตัวเลข สทศ. (ต้องเป็นจำนวนเต็ม 000–999 เท่านั้น นักเรียนไม่สามารถระบายจุดทศนิยมลงกระดาษคำตอบได้ — แนะนำปรับตัวเลขโจทย์ให้คำตอบลงตัวเป็นจำนวนเต็ม)`);
+            } else {
+              const chk = validateExamKeyByType('NUMERIC', rawForRule, subjectCode);
+              if (!chk.ok) {
+                errors.push(`คำตอบระบายตัวเลข "${rawForRule}" ไม่ผ่านเกณฑ์ สทศ.: ${chk.reason}`);
+              } else {
+                verifiedNotes.push(`รูปแบบคำตอบระบายตัวเลข (${chk.normalized}) เป็นจำนวนเต็มอยู่ในเกณฑ์ 000–999 ถูกต้อง`);
+              }
+            }
+          } else if (iType !== 'ESSAY') {
+            const chk = validateExamKeyByType(iType, effectiveKey, subjectCode);
+            if (!chk.ok) {
+              errors.push(`รูปแบบเฉลย "${rawForRule}" ไม่ถูกต้องตามประเภท ${iType}: ${chk.reason}`);
+            }
+          }
+        }
+
+        if (tch.solutionLines && tch.solutionLines.length > 0) {
+          const eqAudit = auditArithmeticEquationsInLines_(tch.solutionLines);
+          if (eqAudit.mismatchedEquations.length > 0) {
+            eqAudit.mismatchedEquations.forEach(mm => {
+              errors.push(`พบสมการคำนวณผิดในวิธีคิด: "${mm.expr}" (คำนวณค่าจริงได้ ${mm.expected})`);
+            });
+          } else if (eqAudit.checkedEquations.length > 0) {
+            verifiedNotes.push(`ตรวจสมการคำนวณในวิธีคิดผ่านถูกต้อง ${eqAudit.checkedEquations.length} ขั้นตอน`);
+          }
+
+          const solFull = tch.solutionLines.join(' ');
+          const solBodyOnly = solFull.replace(/^เฉลย(?:\s*ข้อ(?:ที่)?\s*\d{1,2})?\s*[:=\-\s]*(?:ตอบ(?:ตัวเลือก|ข้อ)?\s*)?[^\|]+/i, '').trim();
+
+          if (iType === 'MC4' && effectiveKey) {
+            const explicitOptM = /(?:ตรงกับตัวเลือก|ดังนั้น\s*คำตอบคือ|ตอบตัวเลือก|ตอบข้อ)\s*([1-4กขคงA-Da-d])(?![0-9])/i.exec(solBodyOnly);
+            if (explicitOptM) {
+              const conclOpt = mapChoiceTokenTo14_(explicitOptM[1]);
+              if (conclOpt && conclOpt !== effectiveKey) {
+                errors.push(`วิธีคิดสรุปคำตอบว่าเป็นตัวเลือกที่ ${conclOpt} แต่บรรทัดเฉลยระบุเป็นตัวเลือกที่ ${effectiveKey}`);
+              } else if (conclOpt === effectiveKey) {
+                verifiedNotes.push(`บทสรุปในวิธีคิดตรงกับตัวเลือกที่ ${effectiveKey}`);
+              }
+            }
+
+            if (eqAudit.lastComputedValue !== null && Object.keys(choicesMap).length === 4 && !(tch.hasMathInChoices)) {
+              const finalNum = eqAudit.lastComputedValue;
+              const hasProfit = /ได้กำไร/.test(solBodyOnly);
+              const hasLoss = /ขาดทุน/.test(solBodyOnly) && !hasProfit;
+
+              const matchingKeys = ['1', '2', '3', '4'].filter(k => {
+                const chTxt = normalizeThaiDigits(choicesMap[k]);
+                if (hasProfit && /ขาดทุน/.test(chTxt)) return false;
+                if (hasLoss && /กำไร/.test(chTxt)) return false;
+                const numM = /(-?\d[\d,]*(?:\.\d+)?)/.exec(chTxt);
+                if (!numM) return false;
+                const chVal = Number(numM[1].replace(/,/g, ''));
+                return Math.abs(chVal - finalNum) <= 0.015;
+              });
+
+              if (matchingKeys.length === 1) {
+                if (matchingKeys[0] !== effectiveKey) {
+                  errors.push(`ผลคำนวณสุดท้ายในวิธีคิดได้ ${finalNum} ซึ่งตรงกับตัวเลือกที่ ${matchingKeys[0]} ("${choicesMap[matchingKeys[0]]}") แต่ระบุเฉลยเป็นตัวเลือกที่ ${effectiveKey} ("${choicesMap[effectiveKey] || '-'}")`);
+                } else {
+                  verifiedNotes.push(`ผลคำนวณสุดท้าย (${finalNum}) ตรงกับตัวเลือกที่ ${effectiveKey} ("${choicesMap[effectiveKey]}")`);
+                }
+              }
+            }
+          } else if (iType === 'NUMERIC' && effectiveKey && eqAudit.lastComputedValue !== null) {
+            const keyNum = Number(String(inlineKeyRaw || effectiveKey).replace(/,/g, ''));
+            if (Number.isFinite(keyNum) && Math.abs(keyNum - eqAudit.lastComputedValue) > 0.025) {
+              errors.push(`ผลคำนวณสุดท้ายในวิธีคิดได้ ${eqAudit.lastComputedValue} ไม่ตรงกับคำตอบที่ระบุไว้ (${inlineKeyRaw || effectiveKey})`);
+            } else if (Number.isFinite(keyNum)) {
+              verifiedNotes.push(`ผลคำนวณสุดท้ายในวิธีคิด (${eqAudit.lastComputedValue}) ตรงกับคำตอบที่เฉลย`);
+            }
+          }
+        } else {
+          warnings.push('ยังไม่พบคำอธิบายวิธีคิดละเอียดใต้ข้อนี้ในไฟล์ฉบับครู');
+        }
+      }
+
+      const status = errors.length > 0 ? 'ERROR' : (warnings.length > 0 ? 'WARN' : 'PASS');
+      if (status === 'ERROR') errorCount++;
+      else if (status === 'WARN') warnCount++;
+      else passCount++;
+
+      const choiceSummary = iType === 'MC4' && choicesMap[effectiveKey]
+        ? `${effectiveKey} (${choicesMap[effectiveKey]})`
+        : effectiveKey;
+
+      itemReports.push({
+        itemNo,
+        strandNo: bp.strandNo,
+        indicatorCode: bp.indicatorCode,
+        itemType: iType,
+        status,
+        authorLabel: primary.authorLabel,
+        stemPreview: stemText.length > 140 ? stemText.slice(0, 140) + '…' : stemText,
+        effectiveKey: choiceSummary || (tch ? (tch.inlineKeyRaw || tch.tableKeyRaw || '-') : 'ฉบับนักเรียน'),
+        errors,
+        warnings,
+        verifiedNotes
+      });
+    });
+
+    return {
+      subjectCode,
+      totalItems: targetItemNos.length,
+      passCount,
+      warnCount,
+      errorCount,
+      missingCount,
+      items: itemReports
+    };
+  }
+
+  function auditTutoringDocxSolutions(documentXml = '') {
+    const blocks = extractWordTopLevelBlocks_(String(documentXml || ''));
+    const lines = blocks.map(b => extractMathAwareTextFromXml_(b.xml)).filter(Boolean);
+    return auditArithmeticEquationsInLines_(lines);
+  }
+
   if (typeof window !== 'undefined') {
     window.extractPracticeItemsFromTutoringDocxXml = extractPracticeItemsFromTutoringDocxXml;
     window.parseExamDocxItemsForIocPreview = parseExamDocxItemsForIocPreview;
@@ -7664,6 +8297,32 @@
       warnReasons.push(`${check.layoutWarnings.join(' ; ')} (ระบบรวมเล่มจะช่วยล็อกรูปเป็น In Line with Text ให้อัตโนมัติ)`);
     }
 
+    let singleExamAudit = null;
+    let tutMathAudit = null;
+    if (!isBlankTemplate && finalDocCategory === 'PREPOST_EXAM') {
+      singleExamAudit = auditExamAnswerKeyAndSolutions([{
+        fileName: p.fileName,
+        teacherName: (STATE.currentTeacher && STATE.currentTeacher.fullName) || 'ครูผู้จัดทำ',
+        schoolId: (STATE.currentTeacher && STATE.currentTeacher.schoolId) || '',
+        targetAudience: finalEdition,
+        documentXml: p.documentXml
+      }], {
+        subjectCode: effectiveSubjectCode,
+        examRound: finalExamRound,
+        singleFileMode: true
+      });
+      if (singleExamAudit.errorCount > 0) {
+        warnReasons.push(`ตรวจพบข้อผิดพลาดด้านกติกาคำตอบ สทศ. / สมการคำนวณ / เฉลยไม่ตรงกัน จำนวน ${singleExamAudit.errorCount} ข้อ — กรุณาตรวจแก้ตามรายการรายข้อด้านล่างก่อนกดส่ง`);
+      } else if (singleExamAudit.warnCount > 0) {
+        warnReasons.push(`มีข้อสังเกตจากการรีเช็กข้อสอบ/ตารางสรุปเฉลย จำนวน ${singleExamAudit.warnCount} ข้อ — ดูรายละเอียดรายข้อด้านล่าง`);
+      }
+    } else if (!isBlankTemplate && finalDocCategory === 'TUTORING_STRAND' && finalEdition === 'TEACHER') {
+      tutMathAudit = auditTutoringDocxSolutions(p.documentXml);
+      if (tutMathAudit.mismatchedEquations.length > 0) {
+        warnReasons.push(`พบสมการคำนวณในวิธีคิดไม่ตรงจำนวน ${tutMathAudit.mismatchedEquations.length} จุด — กรุณาตรวจทานตัวเลขด้านล่าง`);
+      }
+    }
+
     const canSubmit = blockReasons.length === 0;
     const isCleanPass = canSubmit && warnReasons.length === 0;
 
@@ -7700,6 +8359,8 @@
     p.validationExpectedInds = validationExpectedInds;
     p.isBlankTemplate = isBlankTemplate;
     p.hasAnswerLeak = hasAnswerLeak;
+    p.itemAudit = singleExamAudit;
+    p.tutoringMathAudit = tutMathAudit;
     p.canSubmit = canSubmit;
     p.passed = isCleanPass;
     p.summary = summaryParts.join(' | ');
@@ -7800,6 +8461,31 @@
           <div class="space-y-1 rounded-xl p-2.5 border border-amber-300 bg-amber-50/70 text-amber-950">
             <div class="font-bold">💡 จุดสังเกตให้คุณครูตรวจดูก่อนยืนยันส่ง (ส่งได้หากตรวจสอบแล้วถูกต้อง):</div>
             ${warnReasons.map(w => `<div>• ${escHtml(w)}</div>`).join('')}
+          </div>
+        ` : ''}
+
+        ${singleExamAudit && singleExamAudit.items && singleExamAudit.items.length > 0 ? `
+          <div class="space-y-2 rounded-xl p-2.5 border" style="background: var(--gw-surface); border-color: ${singleExamAudit.errorCount > 0 ? 'rgba(225,29,72,0.55)' : 'var(--gw-line-strong)'};">
+            <div class="flex flex-wrap items-center justify-between gap-1.5">
+              <div class="font-bold">🧮 ผลการรีเช็กโจทย์ • คำตอบ • วิธีคิดอัตโนมัติ (${singleExamAudit.totalItems} ข้อในไฟล์นี้)</div>
+              <div class="flex flex-wrap gap-1 text-[11px] font-bold">
+                <span class="px-2 py-0.5 rounded-full gw-badge-success">✓ ผ่าน ${singleExamAudit.passCount}</span>
+                ${singleExamAudit.warnCount > 0 ? `<span class="px-2 py-0.5 rounded-full gw-badge-warn">⚠ สังเกต ${singleExamAudit.warnCount}</span>` : ''}
+                ${singleExamAudit.errorCount > 0 ? `<span class="px-2 py-0.5 rounded-full gw-badge-danger">✗ ต้องแก้ ${singleExamAudit.errorCount}</span>` : ''}
+              </div>
+            </div>
+            <div class="space-y-1.5 max-h-[260px] overflow-y-auto pr-1">
+              ${renderExamAuditItemsListHtml_(singleExamAudit.items, true)}
+            </div>
+          </div>
+        ` : ''}
+
+        ${tutMathAudit && (tutMathAudit.checkedEquations.length > 0 || tutMathAudit.mismatchedEquations.length > 0) ? `
+          <div class="space-y-1 rounded-xl p-2.5 border" style="background: var(--gw-surface); border-color: ${tutMathAudit.mismatchedEquations.length > 0 ? 'rgba(225,29,72,0.55)' : 'var(--gw-line)'};">
+            <div class="font-bold">🧮 ผลตรวจเครื่องคิดเลขสมการในวิธีคิด (เอกสารติวฉบับครู)</div>
+            ${tutMathAudit.mismatchedEquations.length > 0
+              ? tutMathAudit.mismatchedEquations.map(mm => `<div class="text-rose-700 font-bold">✗ สมการไม่ตรง: ${escHtml(mm.expr)} (คำนวณจริงได้ ${escHtml(mm.expected)})</div>`).join('')
+              : `<div class="font-bold" style="color: var(--gw-accent);">✓ ตรวจสมการคำนวณในวิธีคิดผ่านถูกต้องทั้ง ${tutMathAudit.checkedEquations.length} ขั้นตอน</div>`}
           </div>
         ` : ''}
 
@@ -12795,4 +13481,465 @@
     const regradeNote = res.regradedCount > 0 ? ` และคำนวณคะแนนนักเรียนใหม่ ${res.regradedCount} รายการ` : '';
     showToast(`บันทึกเฉลยสำเร็จ ${res.updatedCount} ข้อ${regradeNote}`, 'success');
     refreshSuperAdminDashboard();
+  }
+
+  /* ============================================================================
+     TIER-1 RETROSPECTIVE & UPLOAD EXAM + SOLUTION AUDITOR UI CONTROLLERS
+     ============================================================================ */
+  function renderExamAuditItemsListHtml_(items = [], compact = false) {
+    if (!items || !items.length) {
+      return '<div class="p-3 text-center opacity-70">ไม่มีรายการข้อสอบในหมวดตัวกรองนี้ครับ</div>';
+    }
+    return items.map((it) => {
+      let badgeCls = 'gw-badge-success';
+      let badgeTxt = '✓ ผ่านครบถ้วน';
+      let borderStyle = 'border-color: rgba(16,185,129,0.35);';
+      if (it.status === 'ERROR') {
+        badgeCls = 'gw-badge-danger';
+        badgeTxt = '✗ ต้องแก้ไขด่วน';
+        borderStyle = 'border-color: rgba(225,29,72,0.55); background: rgba(254,242,242,0.55);';
+      } else if (it.status === 'WARN') {
+        badgeCls = 'gw-badge-warn';
+        badgeTxt = '⚠ มีข้อสังเกต';
+        borderStyle = 'border-color: rgba(245,158,11,0.45); background: rgba(255,251,235,0.5);';
+      } else if (it.status === 'MISSING') {
+        badgeCls = 'gw-badge-warn';
+        badgeTxt = '⏳ รอส่งไฟล์';
+        borderStyle = 'border-color: var(--gw-line); opacity: 0.85;';
+      }
+
+      const indTag = it.indicatorCode ? ` • <span class="opacity-80">${escHtml(it.indicatorCode)}</span>` : '';
+      const authorTag = it.authorLabel ? ` • <span class="opacity-80">ผู้จัดทำ: ${escHtml(it.authorLabel)}</span>` : '';
+      const keyTag = it.effectiveKey ? `<span class="px-2 py-0.5 rounded font-bold border" style="background: var(--gw-input-bg); border-color: var(--gw-line);">เฉลย: ${escHtml(it.effectiveKey)}</span>` : '';
+
+      return `
+        <div class="rounded-xl border p-2.5 space-y-1 text-xs" style="${borderStyle}">
+          <div class="flex flex-wrap items-center justify-between gap-1.5">
+            <div class="font-bold">ข้อที่ ${escHtml(it.itemNo)} <span class="opacity-75">(${escHtml(it.itemType)})</span>${indTag}${!compact ? authorTag : ''}</div>
+            <div class="flex flex-wrap items-center gap-1.5">
+              ${keyTag}
+              <span class="px-2 py-0.5 rounded-full text-[11px] font-bold ${badgeCls}">${badgeTxt}</span>
+            </div>
+          </div>
+          ${it.stemPreview ? `<div class="text-[11px] opacity-85">โจทย์: ${escHtml(it.stemPreview)}</div>` : ''}
+          ${(it.errors || []).map(e => `<div class="font-bold text-rose-700">🚨 ${escHtml(e)}</div>`).join('')}
+          ${(it.warnings || []).map(w => `<div class="text-amber-800">⚠️ ${escHtml(w)}</div>`).join('')}
+          ${(!compact || it.status === 'PASS') ? (it.verifiedNotes || []).map(v => `<div class="text-emerald-700 text-[11px]">✅ ${escHtml(v)}</div>`).join('') : ''}
+        </div>
+      `;
+    }).join('');
+  }
+
+  function renderExamAuditReportHtml_(auditRes, titleLabel, boxId, activeFilter = 'ISSUES_FIRST') {
+    if (!STATE.examAuditCacheByBox) STATE.examAuditCacheByBox = {};
+    STATE.examAuditCacheByBox[boxId] = { auditRes, titleLabel, activeFilter };
+
+    const allItems = auditRes.items || [];
+    const issueItems = allItems.filter(i => i.status === 'ERROR' || i.status === 'WARN');
+    const presentItems = allItems.filter(i => i.status !== 'MISSING');
+    const passItems = allItems.filter(i => i.status === 'PASS');
+
+    let shownItems = allItems;
+    let effFilter = activeFilter;
+    if (effFilter === 'ISSUES_FIRST') {
+      effFilter = issueItems.length > 0 ? 'ISSUES' : 'ALL';
+    }
+    if (effFilter === 'ISSUES') shownItems = issueItems;
+    else if (effFilter === 'PRESENT') shownItems = presentItems;
+    else if (effFilter === 'PASS') shownItems = passItems;
+
+    const filterBtns = [
+      { id: 'ALL', lbl: `ครบผัง สทศ. (${allItems.length})` },
+      { id: 'ISSUES', lbl: `เฉพาะข้อที่พบปัญหา/ข้อสังเกต (${issueItems.length})` },
+      { id: 'PASS', lbl: `ผ่านสมบูรณ์ (${passItems.length})` }
+    ].map(f => {
+      const isAct = effFilter === f.id;
+      return `<button type="button" onclick="filterExamAuditReportView('${escHtml(boxId)}', '${f.id}')" class="px-2.5 py-1 rounded-lg text-[11px] font-bold border ${isAct ? 'gw-btn-primary !py-1 !px-2.5' : 'gw-btn-soft !py-1 !px-2.5'}">${escHtml(f.lbl)}</button>`;
+    }).join('');
+
+    const headerBannerCls = auditRes.errorCount > 0
+      ? 'gw-alert-danger'
+      : (auditRes.warnCount > 0 ? 'gw-alert-warn' : 'gw-alert-success');
+
+    return `
+      <div class="${headerBannerCls} rounded-2xl border-2 p-3.5 space-y-3 text-xs">
+        <div class="flex flex-wrap items-start justify-between gap-2 pb-2 border-b" style="border-color: var(--gw-line);">
+          <div>
+            <div class="text-sm font-bold">🔍 รายงานรีเช็กความถูกต้องข้อสอบ • คำตอบเฉลย • วิธีคิด (${escHtml(titleLabel)})</div>
+            <div class="text-[11px] opacity-85">ตรวจด้วยกฎเกณฑ์รูปแบบข้อสอบ สทศ. + เครื่องคิดเลขตรวจสมการในวิธีคิด + เทียบความตรงกัน 3 จุด (ตารางสรุป / เฉลยท้ายข้อ / ตัวเลือก)</div>
+          </div>
+          <div class="flex flex-wrap items-center gap-1.5">
+            <button type="button" onclick="printExamAuditReportA4('${escHtml(boxId)}')" class="gw-btn-soft !py-1 !px-2.5 text-[11px] font-bold">
+              🖨️ พิมพ์สรุปผลรีเช็ก (A4)
+            </button>
+            <button type="button" onclick="closeExamAuditReportBox('${escHtml(boxId)}')" class="gw-btn-soft !py-1 !px-2.5 text-[11px] font-bold">
+              ✕ ปิดหน้าต่างผลตรวจ
+            </button>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-center">
+          <div class="rounded-xl p-2 border" style="background: var(--gw-surface); border-color: var(--gw-line);">
+            <div class="text-[11px] opacity-75">ผ่านสมบูรณ์</div>
+            <div class="text-base font-extrabold text-emerald-700 gw-tabular">${auditRes.passCount} / ${auditRes.totalItems}</div>
+          </div>
+          <div class="rounded-xl p-2 border" style="background: var(--gw-surface); border-color: rgba(225,29,72,0.4);">
+            <div class="text-[11px] opacity-75">ผิดกติกา / คำนวณไม่ตรง</div>
+            <div class="text-base font-extrabold text-rose-700 gw-tabular">${auditRes.errorCount} ข้อ</div>
+          </div>
+          <div class="rounded-xl p-2 border" style="background: var(--gw-surface); border-color: rgba(245,158,11,0.4);">
+            <div class="text-[11px] opacity-75">ข้อสังเกต / ตารางไม่ตรง</div>
+            <div class="text-base font-extrabold text-amber-700 gw-tabular">${auditRes.warnCount} ข้อ</div>
+          </div>
+          <div class="rounded-xl p-2 border" style="background: var(--gw-surface); border-color: var(--gw-line);">
+            <div class="text-[11px] opacity-75">รอส่งไฟล์ต้นฉบับ</div>
+            <div class="text-base font-extrabold gw-tabular">${auditRes.missingCount} ข้อ</div>
+          </div>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-1.5">
+          <span class="font-bold text-[11px] opacity-80">กรองดูรายการ:</span>
+          ${filterBtns}
+        </div>
+
+        <div class="space-y-2 max-h-[480px] overflow-y-auto pr-1" style="background: var(--gw-surface); border-radius: 0.75rem; padding: 0.65rem;">
+          ${renderExamAuditItemsListHtml_(shownItems, false)}
+        </div>
+      </div>
+    `;
+  }
+
+  function filterExamAuditReportView(boxId, filterMode) {
+    const cached = STATE.examAuditCacheByBox && STATE.examAuditCacheByBox[boxId];
+    const box = document.getElementById(boxId);
+    if (!cached || !box) return;
+    box.innerHTML = renderExamAuditReportHtml_(cached.auditRes, cached.titleLabel, boxId, filterMode);
+    refreshIcons();
+  }
+
+  function closeExamAuditReportBox(boxId) {
+    const box = document.getElementById(boxId);
+    if (box) {
+      box.classList.add('hidden');
+      box.innerHTML = '';
+    }
+  }
+
+  function printExamAuditReportA4(boxId) {
+    const cached = STATE.examAuditCacheByBox && STATE.examAuditCacheByBox[boxId];
+    if (!cached || !cached.auditRes) return;
+    const r = cached.auditRes;
+    const rowsHtml = (r.items || []).map(it => {
+      const stTxt = it.status === 'ERROR' ? 'ต้องแก้ไขด่วน' : (it.status === 'WARN' ? 'มีข้อสังเกต' : (it.status === 'MISSING' ? 'รอส่งไฟล์' : 'ผ่านสมบูรณ์'));
+      const stColor = it.status === 'ERROR' ? '#be123c' : (it.status === 'WARN' ? '#b45309' : (it.status === 'MISSING' ? '#6b7280' : '#047857'));
+      const notes = []
+        .concat((it.errors || []).map(e => `<div style="color:#be123c;font-weight:bold;">• [ต้องแก้] ${escHtml(e)}</div>`))
+        .concat((it.warnings || []).map(w => `<div style="color:#b45309;">• [สังเกต] ${escHtml(w)}</div>`))
+        .concat((it.verifiedNotes || []).map(v => `<div style="color:#047857;">• ${escHtml(v)}</div>`))
+        .join('');
+      return `
+        <tr>
+          <td style="border:1px solid #cbd5e1;padding:6px;text-align:center;font-weight:bold;">${escHtml(it.itemNo)}</td>
+          <td style="border:1px solid #cbd5e1;padding:6px;">${escHtml(it.indicatorCode || '-')} (${escHtml(it.itemType)})<br><span style="font-size:13px;color:#475569;">${escHtml(it.authorLabel || '-')}</span></td>
+          <td style="border:1px solid #cbd5e1;padding:6px;text-align:center;font-weight:bold;">${escHtml(it.effectiveKey || '-')}</td>
+          <td style="border:1px solid #cbd5e1;padding:6px;text-align:center;font-weight:bold;color:${stColor};">${stTxt}</td>
+          <td style="border:1px solid #cbd5e1;padding:6px;">${notes || '-'}</td>
+        </tr>
+      `;
+    }).join('');
+
+    const w = window.open('', '_blank');
+    if (!w) {
+      showToast('เบราว์เซอร์บล็อกหน้าต่างพิมพ์ กรุณาอนุญาต Pop-up ก่อนครับ', 'error');
+      return;
+    }
+    w.document.write(`<!DOCTYPE html><html lang="th"><head><meta charset="utf-8"><title>รายงานรีเช็กข้อสอบและเฉลย — ${escHtml(cached.titleLabel)}</title>
+      <style>
+        @page { size: A4 portrait; margin: 15mm 14mm; }
+        body { font-family: "TH SarabunPSK", "Sarabun", sans-serif; font-size: 16pt; color: #0f172a; margin: 0; }
+        h1 { font-size: 20pt; margin: 0 0 4px 0; }
+        .meta { font-size: 15pt; margin-bottom: 10px; color: #334155; }
+        table { width: 100%; border-collapse: collapse; font-size: 15pt; }
+        tr { page-break-inside: avoid; }
+        th { background: #f1f5f9; border: 1px solid #94a3b8; padding: 6px; text-align: center; }
+        @media print { .no-print { display: none !important; } }
+      </style></head><body>
+      <div class="no-print" style="padding:10px;background:#ecfdf5;border-bottom:1px solid #a7f3d0;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center;">
+        <b>ตัวอย่างก่อนพิมพ์ขนาด A4 (TH SarabunPSK)</b>
+        <button onclick="window.print()" style="padding:6px 16px;font-weight:bold;cursor:pointer;background:#059669;color:#fff;border:none;border-radius:8px;">🖨️ สั่งพิมพ์ / บันทึกเป็น PDF</button>
+      </div>
+      <h1>รายงานผลการรีเช็กความถูกต้องข้อสอบ คำตอบเฉลย และวิธีคิด</h1>
+      <div class="meta"><b>ชุดข้อสอบ:</b> ${escHtml(cached.titleLabel)} | <b>สรุปผล:</b> ผ่านสมบูรณ์ ${r.passCount}/${r.totalItems} ข้อ • ต้องแก้ไขด่วน ${r.errorCount} ข้อ • ข้อสังเกต ${r.warnCount} ข้อ • รอส่งไฟล์ ${r.missingCount} ข้อ</div>
+      <table>
+        <thead><tr><th style="width:7%;">ข้อ</th><th style="width:20%;">ตัวชี้วัด / ผู้จัดทำ</th><th style="width:14%;">เฉลยที่ตรวจพบ</th><th style="width:13%;">สถานะ</th><th>รายละเอียดผลการตรวจสมการวิธีคิดและกติกา สทศ.</th></tr></thead>
+        <tbody>${rowsHtml}</tbody>
+      </table>
+    </body></html>`);
+    w.document.close();
+  }
+
+  function triggerLocalExamAuditPicker(mode) {
+    STATE.localExamAuditContext = String(mode || 'ADMIN').toUpperCase();
+    const inpId = STATE.localExamAuditContext === 'COMM' ? 'commLocalExamAuditInput' : 'adminLocalExamAuditInput';
+    const inp = document.getElementById(inpId);
+    if (inp) inp.click();
+  }
+
+  async function handleLocalExamAuditFiles(inputEl) {
+    if (!inputEl || !inputEl.files || !inputEl.files.length) return;
+    const files = Array.from(inputEl.files).filter(f => /\.docx$/i.test(f.name));
+    inputEl.value = '';
+    if (!files.length) {
+      showToast('กรุณาเลือกไฟล์นามสกุล .docx เท่านั้นครับ', 'error');
+      return;
+    }
+
+    const mode = STATE.localExamAuditContext || (inputEl.id === 'commLocalExamAuditInput' ? 'COMM' : 'ADMIN');
+    const subjectCode = mode === 'COMM'
+      ? ((document.getElementById('iocSubject') && document.getElementById('iocSubject').value) || '64')
+      : ((document.getElementById('mergeSubjectCode') && document.getElementById('mergeSubjectCode').value) || '64');
+    const roundRaw = mode === 'COMM'
+      ? ((document.getElementById('iocRound') && document.getElementById('iocRound').value) || 'PRE')
+      : ((document.getElementById('mergeExamRound') && document.getElementById('mergeExamRound').value) || 'PRE');
+    const round = roundRaw === 'POST' ? 'POST' : 'PRE';
+    const boxId = mode === 'COMM' ? 'commExamAuditReportBox' : 'adminExamAuditReportBox';
+    const box = document.getElementById(boxId);
+
+    if (box) {
+      box.classList.remove('hidden');
+      box.innerHTML = `<div class="gw-subcard text-xs font-bold">⏳ กำลังแตกไฟล์ .docx จากเครื่อง (${files.length} ไฟล์) และตรวจสมการวิธีคิดรายข้อ...</div>`;
+    }
+
+    try {
+      const parts = [];
+      let detectedSub = '';
+      for (const f of files) {
+        const ab = await f.arrayBuffer();
+        const zip = await JSZip.loadAsync(ab);
+        const docXml = zip.file('word/document.xml') ? await zip.file('word/document.xml').async('string') : '';
+        if (!docXml) continue;
+        const cls = classifyCommitteeDocxEdition(f.name, docXml, {
+          docCategory: 'PREPOST_EXAM',
+          targetAudience: 'TEACHER',
+          examRound: round,
+          subjectCode,
+          blueprintRows: STATE.blueprint || []
+        });
+        if (!detectedSub && cls.detectedSubjectCode) detectedSub = cls.detectedSubjectCode;
+        parts.push({
+          fileName: f.name,
+          teacherName: f.name.replace(/\.docx$/i, ''),
+          targetAudience: cls.targetAudience || 'TEACHER',
+          documentXml: docXml
+        });
+      }
+
+      const effSub = detectedSub || subjectCode;
+      const singleMode = files.length <= 2;
+      const auditRes = auditExamAnswerKeyAndSolutions(parts, {
+        subjectCode: effSub,
+        examRound: round,
+        singleFileMode: singleMode
+      });
+      const subLabel = SUBJECT_NAMES[effSub] || effSub;
+      if (box) {
+        box.innerHTML = renderExamAuditReportHtml_(
+          auditRes,
+          `${subLabel} • ตรวจจากไฟล์ในเครื่อง ${files.length} ไฟล์`,
+          boxId,
+          'ISSUES_FIRST'
+        );
+        box.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }
+      refreshIcons();
+      showToast(`รีเช็กไฟล์จากเครื่องสำเร็จ (${auditRes.totalItems} ข้อ | ต้องแก้ ${auditRes.errorCount} | สังเกต ${auditRes.warnCount})`, auditRes.errorCount > 0 ? 'error' : 'success');
+    } catch (err) {
+      if (box) box.innerHTML = `<div class="gw-alert-danger rounded-xl border p-3 text-xs font-bold">ตรวจไฟล์ไม่สำเร็จ: ${escHtml(err.message || String(err))}</div>`;
+    }
+  }
+
+  async function runSubjectExamKeyAndSolutionAudit(contextMode = 'ADMIN_MERGE') {
+    const mode = String(contextMode || 'ADMIN_MERGE').toUpperCase();
+    let subjectCode = '64';
+    let round = 'PRE';
+    let boxId = 'adminExamAuditReportBox';
+    let btnId = 'btnAdminMergeExamAudit';
+
+    if (mode === 'COMM') {
+      subjectCode = (document.getElementById('iocSubject') && document.getElementById('iocSubject').value) || '64';
+      round = (document.getElementById('iocRound') && document.getElementById('iocRound').value) || 'PRE';
+      boxId = 'commExamAuditReportBox';
+      btnId = 'btnCommRunExamAudit';
+    } else if (mode === 'ADMIN_KEY') {
+      subjectCode = (document.getElementById('adminKeySubject') && document.getElementById('adminKeySubject').value) || '64';
+      round = (document.getElementById('adminKeyRound') && document.getElementById('adminKeyRound').value) || 'PRE';
+      boxId = 'adminKeyExamAuditReportBox';
+      btnId = 'btnAdminKeyExamAudit';
+    } else {
+      subjectCode = (document.getElementById('mergeSubjectCode') && document.getElementById('mergeSubjectCode').value) || '64';
+      const rawR = (document.getElementById('mergeExamRound') && document.getElementById('mergeExamRound').value) || 'PRE';
+      round = rawR === 'POST' ? 'POST' : 'PRE';
+      boxId = 'adminExamAuditReportBox';
+      btnId = 'btnAdminMergeExamAudit';
+    }
+
+    const box = document.getElementById(boxId);
+    const subLabel = SUBJECT_NAMES[subjectCode] || subjectCode;
+
+    return withButtonBusy(btnId, 'กำลังดึงไฟล์และรีเช็กวิธีคิด...', async () => {
+      if (typeof JSZip === 'undefined') {
+        showToast('ไลบรารี JSZip ยังไม่พร้อมทำงาน กรุณารีเฟรชหน้าเว็บครับ', 'error');
+        return;
+      }
+      if (box) {
+        box.classList.remove('hidden');
+        box.innerHTML = `<div class="gw-subcard text-xs font-bold">⏳ กำลังดึงไฟล์ข้อสอบวิชา "${escHtml(subLabel)}" (รอบ ${escHtml(round)}) ทั้งฉบับครูและฉบับนักเรียนมาตรวจคำนวณวิธีคิดรายข้อ...</div>`;
+        box.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }
+
+      try {
+        const rawDocs = [];
+        const seenSubmissionIds = new Set();
+        const isSuperAdmin = Boolean(STATE.currentTeacher && String(STATE.currentTeacher.role || '').includes('SUPER_ADMIN'));
+
+        if (isSuperAdmin || mode.startsWith('ADMIN')) {
+          const [resT, resS] = await Promise.all([
+            callGas('apiGetApprovedDocsForMerge', {
+              authToken: STATE.authToken || '',
+              teacherId: STATE.currentTeacher && STATE.currentTeacher.teacherId,
+              subjectCode,
+              docCategory: 'PREPOST_EXAM',
+              targetAudience: 'TEACHER',
+              examRound: round,
+              includeDraftForKeyImport: true
+            }),
+            callGas('apiGetApprovedDocsForMerge', {
+              authToken: STATE.authToken || '',
+              teacherId: STATE.currentTeacher && STATE.currentTeacher.teacherId,
+              subjectCode,
+              docCategory: 'PREPOST_EXAM',
+              targetAudience: 'STUDENT',
+              examRound: round,
+              includeDraftForKeyImport: true
+            })
+          ]);
+
+          [(resT && resT.docs) || [], (resS && resS.docs) || []].forEach((arr) => {
+            arr.forEach((d) => {
+              const sid = d.submissionId || d.fileId || d.fileName;
+              if (sid && !seenSubmissionIds.has(sid) && (d.base64Data || d.base64)) {
+                seenSubmissionIds.add(sid);
+                rawDocs.push(d);
+              }
+            });
+          });
+
+          // Also rescue any misclassified exam files sitting in TUTORING_STRAND
+          const allSubs = (STATE.adminData && STATE.adminData.submissions) || [];
+          const rescueIds = allSubs
+            .filter(s => String(s.subjectCode) === String(subjectCode) && !seenSubmissionIds.has(s.submissionId))
+            .filter(s => /ข้อสอบ|ฉบับที่\s*[12]|PRE|POST/i.test(String(s.fileName || '')))
+            .map(s => s.submissionId)
+            .filter(Boolean);
+          if (rescueIds.length > 0) {
+            const resRescue = await callGas('apiGetApprovedDocsForMerge', {
+              authToken: STATE.authToken || '',
+              teacherId: STATE.currentTeacher && STATE.currentTeacher.teacherId,
+              subjectCode,
+              docCategory: 'TUTORING_STRAND',
+              targetAudience: 'ALL',
+              selectedIds: rescueIds,
+              includeDraftForKeyImport: true
+            });
+            ((resRescue && resRescue.docs) || []).forEach((d) => {
+              const sid = d.submissionId || d.fileId || d.fileName;
+              if (sid && !seenSubmissionIds.has(sid) && (d.base64Data || d.base64)) {
+                seenSubmissionIds.add(sid);
+                rawDocs.push(d);
+              }
+            });
+          }
+        } else {
+          const iocRes = await callGas('apiGetExamDocsForIocPreview', {
+            authToken: STATE.authToken || '',
+            teacherId: STATE.currentTeacher && STATE.currentTeacher.teacherId,
+            round,
+            subjectCode
+          });
+          if (!iocRes || !iocRes.ok) {
+            throw new Error((iocRes && iocRes.error) || 'ดึงไฟล์ข้อสอบจากระบบไม่สำเร็จ');
+          }
+          ((iocRes && iocRes.docs) || []).forEach((d) => {
+            if (d.base64Data || d.base64) rawDocs.push(d);
+          });
+        }
+
+        if (!rawDocs.length) {
+          if (box) {
+            box.innerHTML = `<div class="gw-alert-warn rounded-xl border p-3 text-xs font-bold">ยังไม่มีไฟล์ข้อสอบคู่ขนาน (${escHtml(round)}) ของวิชา ${escHtml(subLabel)} ส่งเข้ามาในระบบครับ (หรือสามารถกดปุ่ม "เลือกไฟล์ .docx จากเครื่องมาตรวจเฉลย" ข้าง ๆ ได้ทันทีครับ)</div>`;
+          }
+          return;
+        }
+
+        const parts = [];
+        for (const d of rawDocs) {
+          const b64 = d.base64Data || d.base64 || '';
+          if (!b64) continue;
+          const binStr = atob(b64);
+          const bytes = new Uint8Array(binStr.length);
+          for (let i = 0; i < binStr.length; i++) bytes[i] = binStr.charCodeAt(i);
+          const zip = await JSZip.loadAsync(bytes);
+          const docXml = zip.file('word/document.xml') ? await zip.file('word/document.xml').async('string') : '';
+          if (!docXml) continue;
+
+          const cls = classifyCommitteeDocxEdition(d.fileName || '', docXml, {
+            docCategory: d.docCategory || 'PREPOST_EXAM',
+            targetAudience: d.targetAudience || 'TEACHER',
+            examRound: d.examRound || round,
+            subjectCode,
+            blueprintRows: STATE.blueprint || []
+          });
+          if (cls.docCategory !== 'PREPOST_EXAM') continue;
+
+          parts.push({
+            fileName: d.fileName || '',
+            schoolId: d.schoolId || '',
+            teacherName: d.teacherName || 'คณะกรรมการ',
+            authorLabel: `${d.teacherName || 'คณะกรรมการ'}${d.schoolId ? ' (' + getSchoolShortName(d.schoolId) + ')' : ''}`,
+            targetAudience: cls.targetAudience || d.targetAudience || 'TEACHER',
+            documentXml: docXml
+          });
+        }
+
+        const auditRes = auditExamAnswerKeyAndSolutions(parts, {
+          subjectCode,
+          examRound: round,
+          singleFileMode: false
+        });
+
+        if (box) {
+          box.innerHTML = renderExamAuditReportHtml_(
+            auditRes,
+            `${subLabel} • รอบ ${round} (ตรวจจาก ${parts.length} ไฟล์ในระบบ)`,
+            boxId,
+            'ISSUES_FIRST'
+          );
+          box.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+        refreshIcons();
+
+        if (auditRes.errorCount > 0) {
+          showToast(`พบจุดที่ต้องแก้ไขด่วน ${auditRes.errorCount} ข้อ และข้อสังเกต ${auditRes.warnCount} ข้อ ดูรายการด้านล่างครับ`, 'error');
+        } else if (auditRes.warnCount > 0) {
+          showToast(`ตรวจครบ ${auditRes.totalItems} ข้อ (ไม่พบสมการผิด • มีข้อสังเกต ${auditRes.warnCount} ข้อ)`, 'info');
+        } else {
+          showToast(`สุดยอด! รีเช็กข้อสอบและวิธีคิดวิชา${subLabel} ผ่านสมบูรณ์ครบ ${auditRes.passCount} ข้อ`, 'success');
+        }
+      } catch (err) {
+        if (box) {
+          box.innerHTML = `<div class="gw-alert-danger rounded-xl border p-3 text-xs font-bold">เกิดข้อผิดพลาดขณะรีเช็กข้อสอบ: ${escHtml(err.message || String(err))}</div>`;
+        }
+        showToast('รีเช็กข้อสอบไม่สำเร็จ: ' + (err.message || String(err)), 'error');
+      }
+    });
   }
