@@ -3272,23 +3272,29 @@
               <div id="adminNetworkTable" class="overflow-x-auto"></div>
             </div>
 
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
-              <!-- Teacher Account 1-Click Approval -->
-              <div class="gw-panel gw-reveal space-y-3">
-                <div class="flex flex-wrap items-center justify-between gap-2">
-                  <h3 class="text-base font-bold">อนุมัติสิทธิ์คณะกรรมการ ครูผู้สอน ป.6 และครูวิชาการ</h3>
-                  <button type="button" id="btnApproveAllPending" onclick="approveAllPendingTeachers()" class="hidden gw-btn-primary !py-1.5 !px-3 text-xs">
-                    ✓ อนุมัติที่รอทั้งหมด
-                  </button>
-                </div>
-                <div id="adminTeachersApprovalList" class="space-y-2 max-h-[380px] overflow-y-auto text-xs"></div>
+            <!-- Teacher Account 1-Click Approval -->
+            <div class="gw-panel gw-reveal space-y-3">
+              <div class="flex flex-wrap items-center justify-between gap-2">
+                <h3 class="text-base font-bold">อนุมัติสิทธิ์คณะกรรมการ ครูผู้สอน ป.6 และครูวิชาการ</h3>
+                <button type="button" id="btnApproveAllPending" onclick="approveAllPendingTeachers()" class="hidden gw-btn-primary !py-1.5 !px-3 text-xs">
+                  ✓ อนุมัติที่รอทั้งหมด
+                </button>
               </div>
+              <div id="adminTeachersApprovalList" class="grid grid-cols-1 md:grid-cols-2 gap-2 max-h-[280px] overflow-y-auto text-xs"></div>
+            </div>
 
-              <!-- Manuscript Review Queue -->
-              <div class="gw-panel gw-reveal space-y-3">
-                <div class="flex flex-wrap items-center justify-between gap-2">
-                  <h3 class="text-base font-bold">ตรวจรับไฟล์ต้นฉบับ & ข้อสอบ Pre-Post</h3>
-                  <select id="adminRevFilter" aria-label="กรองตามสถานะการตรวจ" onchange="renderAdminReviewList()" class="gw-input !w-auto py-1 text-xs font-bold">
+            <!-- Manuscript Review Queue (Full-Width, Grouped by Subject & Strand) -->
+            <div class="gw-panel gw-reveal space-y-3.5 border-2" style="border-color: var(--gw-line-strong);">
+              <div class="flex flex-wrap items-center justify-between gap-2 pb-2.5 border-b" style="border-color: var(--gw-line);">
+                <div>
+                  <h3 class="text-base sm:text-lg font-bold">ตรวจรับไฟล์ต้นฉบับ & ข้อสอบ Pre-Post (แยกตามรายวิชาและสาระ)</h3>
+                  <p class="text-xs" style="color: var(--gw-muted);">เลือกแท็บรายวิชาด้านล่างเพื่อดูจำนวนไฟล์แยกตามฉบับ (1–4) จัดกลุ่มเรียงตามสาระและตัวชี้วัดอย่างเป็นระเบียบ</p>
+                </div>
+                <div class="flex flex-wrap items-center gap-2">
+                  <button type="button" id="btnApproveFilteredSubs" onclick="approveAllFilteredAdminSubmissions()" class="hidden gw-btn-primary !py-1.5 !px-3 text-xs">
+                    ✓ อนุมัติ "รอตรวจ" ในหมวดนี้ทั้งหมด
+                  </button>
+                  <select id="adminRevFilter" aria-label="กรองตามสถานะการตรวจ" onchange="renderAdminReviewList()" class="gw-input !w-auto py-1.5 text-xs font-bold">
                     <option value="ALL">ทุกสถานะ</option>
                     <option value="รอตรวจ">เฉพาะรอตรวจ</option>
                     <option value="รอกรรมการตรวจ IOC">เฉพาะรอกรรมการตรวจ IOC</option>
@@ -3296,16 +3302,30 @@
                     <option value="ส่งแก้">เฉพาะส่งแก้</option>
                   </select>
                 </div>
-                <div id="adminRevDocTabs" class="gw-school-chips" role="tablist" aria-label="แยกแท็บตามประเภทเอกสาร"></div>
-                <div class="gw-subcard flex flex-wrap items-center justify-between gap-2 text-xs">
-                  <label class="inline-flex items-center gap-2 font-bold cursor-pointer select-none">
-                    <input type="checkbox" id="chkAllowStudentPrePost" onchange="toggleStudentPrePostVisibility(this.checked)" class="w-4 h-4 rounded cursor-pointer" style="accent-color: var(--gw-accent);">
-                    <span>เปิดให้นักเรียนดาวน์โหลดไฟล์ข้อสอบคู่ขนาน Pre-Post (ฉบับนักเรียน)</span>
-                  </label>
-                  <span id="lblAllowStudentPrePost" class="px-2.5 py-0.5 rounded-full text-[11px] font-bold gw-badge-warn">ปิดไว้ (เห็นเฉพาะครู/วิชาการ)</span>
-                </div>
-                <div id="adminSubmissionsReviewList" class="space-y-2 max-h-[380px] overflow-y-auto text-xs"></div>
               </div>
+
+              <!-- Step 1: Subject Tabs (4 Subjects + All) -->
+              <div class="space-y-1.5">
+                <div class="text-[11px] font-bold" style="color: var(--gw-muted);">1. เลือกรายวิชาที่ต้องการตรวจ:</div>
+                <div id="adminRevSubjectTabs" class="gw-segment" role="tablist" aria-label="แยกตามรายวิชา"></div>
+              </div>
+
+              <!-- Step 2: Edition / Document Type Chips (Scoped to Selected Subject) -->
+              <div class="space-y-1.5">
+                <div class="text-[11px] font-bold" style="color: var(--gw-muted);">2. กรองตามประเภทฉบับเอกสาร (นับจำนวนเฉพาะวิชาที่เลือก):</div>
+                <div id="adminRevDocTabs" class="gw-school-chips" role="tablist" aria-label="แยกแท็บตามประเภทเอกสาร"></div>
+              </div>
+
+              <div class="gw-subcard flex flex-wrap items-center justify-between gap-2 text-xs">
+                <label class="inline-flex items-center gap-2 font-bold cursor-pointer select-none">
+                  <input type="checkbox" id="chkAllowStudentPrePost" onchange="toggleStudentPrePostVisibility(this.checked)" class="w-4 h-4 rounded cursor-pointer" style="accent-color: var(--gw-accent);">
+                  <span>เปิดให้นักเรียนดาวน์โหลดไฟล์ข้อสอบคู่ขนาน Pre-Post (ฉบับนักเรียน)</span>
+                </label>
+                <span id="lblAllowStudentPrePost" class="px-2.5 py-0.5 rounded-full text-[11px] font-bold gw-badge-warn">ปิดไว้ (เห็นเฉพาะครู/วิชาการ)</span>
+              </div>
+
+              <div id="adminRevSummaryStrip" class="text-xs font-bold" style="color: var(--gw-accent);"></div>
+              <div id="adminSubmissionsReviewList" class="space-y-3 max-h-[600px] overflow-y-auto pr-1 text-xs"></div>
             </div>
 
             <!-- 1-Click Auto-Merge .docx Book Studio + Demo Simulator -->
@@ -3637,6 +3657,6 @@
   </div>
 
     <script>window.ONET_GAS_API_URL = 'https://script.google.com/macros/s/AKfycbwG-eaNeRsZ9wmCWvcGfKNpzxHgUFJPckdbfNL3b7MamTFjrWexwkCFYR_ApLfqGtQG/exec';</script>
-  <script src="./app.js?v=20261117_1794971166"></script>
+  <script src="./app.js?v=20261117_1794973170"></script>
 </body>
 </html>
