@@ -40,7 +40,7 @@
     instMatCatFilter: 'ALL',
     acadSubFilter: 'ALL',
     acadCatFilter: 'ALL',
-    committeeSubFilter: 'ALL',
+    committeeSubFilter: 'MINE',
     practiceBankItems: [],
     instructorPracticeCache: null,
     lastAnalyticsPayload: null,
@@ -8610,12 +8610,8 @@
     }
   }
 
-  function setCommitteeSubFilter(mode) {
-    STATE.committeeSubFilter = mode === 'MINE' ? 'MINE' : 'ALL';
-    const btnAll = document.getElementById('btnCommFilterAll');
-    const btnMine = document.getElementById('btnCommFilterMine');
-    if (btnAll) btnAll.classList.toggle('is-active', STATE.committeeSubFilter === 'ALL');
-    if (btnMine) btnMine.classList.toggle('is-active', STATE.committeeSubFilter === 'MINE');
+  function setCommitteeSubFilter() {
+    STATE.committeeSubFilter = 'MINE';
     renderCommitteeSubmissionsList();
   }
 
@@ -8623,22 +8619,22 @@
     const box = document.getElementById('committeeSubmissionsList');
     if (!box) return;
     const allSubs = (STATE.cachedSubmissions || []).map(normalizeSubMetaClient_);
-    const myId = STATE.currentTeacher ? STATE.currentTeacher.teacherId : '';
-    const isAdmin = STATE.currentTeacher && STATE.currentTeacher.role === 'SUPER_ADMIN';
-    const mode = STATE.committeeSubFilter || 'ALL';
-    const list = mode === 'MINE' ? allSubs.filter(s => s.teacherId === myId) : allSubs;
+    const myId = STATE.currentTeacher ? String(STATE.currentTeacher.teacherId || '').trim() : '';
+    const isAdmin = Boolean(STATE.currentTeacher && String(STATE.currentTeacher.role || '').includes('SUPER_ADMIN'));
+    const list = myId ? allSubs.filter(s => String(s.teacherId || '').trim() === myId) : [];
+
+    const countBadge = document.getElementById('mySubmissionsCountBadge');
+    if (countBadge) countBadge.textContent = `${list.length} ไฟล์`;
 
     if (!list.length) {
-      box.innerHTML = mode === 'MINE'
-        ? '<div class="text-xs" style="color: var(--gw-muted);">ยังไม่มีรายการไฟล์ที่คุณครูอัปโหลดในขณะนี้</div>'
-        : '<div class="text-xs" style="color: var(--gw-muted);">ยังไม่มีรายการอัปโหลดต้นฉบับ</div>';
+      box.innerHTML = '<div class="text-xs" style="color: var(--gw-muted);">ยังไม่มีรายการไฟล์ที่คุณครูอัปโหลดในขณะนี้</div>';
       return;
     }
 
     box.innerHTML = list.map(s => {
       const isOk = isApprovedSubmissionStatus_(s.reviewStatus);
       const badgeCls = isOk ? 'gw-badge-success' : (s.reviewStatus === 'ส่งแก้' ? 'gw-badge-danger' : 'gw-badge-warn');
-      const canDelete = (s.teacherId === myId || isAdmin) && !isOk;
+      const canDelete = (String(s.teacherId || '').trim() === myId || isAdmin) && !isOk;
       const subTag = s.subStandard && s.subStandard !== 'ALL' ? ` | ${s.subStandard}` : '';
       return `
         <div class="gw-subcard space-y-1.5">
@@ -8651,7 +8647,7 @@
             </div>
           </div>
           ${s.pdfFileUrl ? `<div><a href="${escHtml(s.pdfFileUrl)}" target="_blank" class="text-xs font-bold underline" style="color: var(--gw-info-ink);">📄 เปิดไฟล์ PDF ล็อกหน้าคู่ขนาน (รวมเล่มไม่เพี้ยน 100%)</a></div>` : ''}
-          <div class="text-xs" style="color: var(--gw-muted);">สาระที่ ${escHtml(s.strandNo)}${escHtml(subTag)} | ผู้ส่ง: ${escHtml(s.teacherName)} (${escHtml(getSchoolShortName(s.schoolId))}) | ${escHtml(s.preCheckSummary)}</div>
+          <div class="text-xs" style="color: var(--gw-muted);">สาระที่ ${escHtml(s.strandNo)}${escHtml(subTag)} | ${escHtml(s.preCheckSummary)}</div>
           ${s.adminComment ? `<div class="text-xs font-bold gw-text-danger">ข้อเสนอแนะผู้ดูแล: ${escHtml(s.adminComment)}</div>` : ''}
         </div>
       `;
