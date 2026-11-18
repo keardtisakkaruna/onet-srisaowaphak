@@ -54,7 +54,9 @@
     iocDraftScores: {},
     iocDraftComments: {},
     iocSubjectInitialized: false,
-    adminIocCurrentData: null
+    adminIocCurrentData: null,
+    adminRevSubject: 'ALL',
+    adminRevDocTab: 'ALL'
   };
 
   const GLASS_STORAGE_KEY = 'SRISAOWAPHAK69_GLASS_V2';
@@ -12129,16 +12131,79 @@
     return true;
   }
 
+  function setAdminRevSubject(subKey) {
+    STATE.adminRevSubject = subKey || 'ALL';
+    renderAdminReviewList();
+  }
+
   function setAdminRevDocTab(tabKey) {
     STATE.adminRevDocTab = tabKey || 'ALL';
     renderAdminReviewList();
+  }
+
+  function renderSingleAdminSubmissionCardHtml_(s) {
+    const isOk = isApprovedSubmissionStatus_(s.reviewStatus);
+    const badgeCls = isOk ? 'gw-badge-success' : (s.reviewStatus === 'ส่งแก้' ? 'gw-badge-danger' : 'gw-badge-warn');
+    const isPrePostKeyCandidate = s.docCategory === 'PREPOST_EXAM' && s.targetAudience === 'TEACHER';
+    const isPrePostExam = s.docCategory === 'PREPOST_EXAM';
+    const subTag = s.subStandard && s.subStandard !== 'ALL' ? s.subStandard : 'ครบทั้งสาระ';
+    return `
+      <div class="gw-subcard space-y-1.5 border" style="border-color: var(--gw-line);">
+        <div class="flex items-start justify-between gap-2 flex-wrap">
+          <div class="space-y-0.5 min-w-0 flex-1">
+            <div class="flex flex-wrap items-center gap-1.5">
+              <span class="px-2 py-0.5 rounded-md text-[11px] font-extrabold border" style="background: var(--gw-accent-soft); color: var(--gw-accent); border-color: rgba(16,185,129,0.28);">สาระที่ ${escHtml(s.strandNo || '-')} • ${escHtml(subTag)}</span>
+              ${formatSubmissionCardBadges_(s)}
+              <span class="${badgeCls}">${escHtml(s.reviewStatus || 'รอตรวจ')}</span>
+            </div>
+            <a href="${escHtml(s.driveFileUrl)}" target="_blank" class="font-bold underline break-all inline-block pt-0.5" style="color: var(--gw-accent);">${escHtml(s.fileName)}</a>
+          </div>
+        </div>
+        ${s.pdfFileUrl ? `<div><a href="${escHtml(s.pdfFileUrl)}" target="_blank" class="text-xs font-bold underline" style="color: var(--gw-info-ink);">📄 เปิดไฟล์ PDF ล็อกหน้าคู่ขนาน</a></div>` : ''}
+        <div class="text-xs" style="color: var(--gw-muted);">👤 <b>${escHtml(s.teacherName)}</b> (${escHtml(getSchoolShortName(s.schoolId))}) | ${escHtml(s.preCheckSummary)}</div>
+        ${s.adminComment ? `<div class="text-xs gw-text-danger font-bold">หมายเหตุ: ${escHtml(s.adminComment)}</div>` : ''}
+        <div class="flex flex-wrap items-center justify-between gap-1.5 pt-1">
+          <div class="flex flex-wrap gap-1.5">
+            <button type="button" onclick="reviewSubmissionStatus('${escHtml(s.submissionId)}', 'ผ่านพร้อมรวมเล่ม')" class="gw-btn-primary !py-1 !px-3 text-xs">✓ ผ่านพร้อมรวมเล่ม</button>
+            ${isPrePostExam ? `<button type="button" onclick="reviewSubmissionStatus('${escHtml(s.submissionId)}', 'รอกรรมการตรวจ IOC')" class="gw-btn-soft !py-1 !px-2.5 text-xs" style="color: var(--gw-accent);">ส่งตรวจ IOC</button>` : ''}
+            <button type="button" onclick="reviewSubmissionStatus('${escHtml(s.submissionId)}', 'ส่งแก้')" class="gw-btn-soft !py-1 !px-3 text-xs" style="color: var(--gw-danger-ink);">ส่งแก้</button>
+            ${isPrePostKeyCandidate ? `<button type="button" onclick="jumpToAdminKeyEditor('${escHtml(s.subjectCode)}', '${escHtml(s.examRound || 'PRE')}')" class="gw-btn-soft !py-1 !px-2.5 text-xs">🔑 ตั้งค่าผังเฉลยดิจิทัล</button>` : ''}
+          </div>
+          <button type="button" onclick="adminDeleteSubmission('${escHtml(s.submissionId)}')" class="gw-btn-soft !py-1 !px-2.5 text-[11px]" style="color: var(--gw-danger-ink);">ลบไฟล์ซ้ำ</button>
+        </div>
+      </div>
+    `;
   }
 
   function renderAdminReviewList() {
     const box = document.getElementById('adminSubmissionsReviewList');
     if (!box) return;
     const rawSubs = ((STATE.adminData && STATE.adminData.submissions) || []).map(normalizeSubMetaClient_);
+    const activeSubject = STATE.adminRevSubject || 'ALL';
     const activeDocTab = STATE.adminRevDocTab || 'ALL';
+
+    const subTabsEl = document.getElementById('adminRevSubjectTabs');
+    const subOrderDefs = [
+      { key: 'ALL', label: 'รวมครบ 4 วิชา' },
+      { key: '61', label: '📖 ภาษาไทย (61)' },
+      { key: '64', label: '📐 คณิตศาสตร์ (64)' },
+      { key: '65', label: '🔬 วิทยาศาสตร์ฯ (65)' },
+      { key: '63', label: '🌐 ภาษาอังกฤษ (63)' }
+    ];
+    if (subTabsEl) {
+      subTabsEl.innerHTML = subOrderDefs.map(sd => {
+        const listForSub = sd.key === 'ALL' ? rawSubs : rawSubs.filter(s => String(s.subjectCode) === sd.key);
+        const pendingCnt = listForSub.filter(s => (s.reviewStatus || 'รอตรวจ') === 'รอตรวจ').length;
+        const isAct = activeSubject === sd.key;
+        const pendingBadge = pendingCnt > 0 ? ` • รอตรวจ ${pendingCnt}` : '';
+        return `<button type="button" role="tab" aria-selected="${isAct ? 'true' : 'false'}" class="${isAct ? 'is-active' : ''}" onclick="setAdminRevSubject('${sd.key}')">${escHtml(sd.label)} (${listForSub.length}${escHtml(pendingBadge)})</button>`;
+      }).join('');
+    }
+
+    const subjectScopedSubs = activeSubject === 'ALL'
+      ? rawSubs
+      : rawSubs.filter(s => String(s.subjectCode) === activeSubject);
+
     const tabsEl = document.getElementById('adminRevDocTabs');
     if (tabsEl) {
       const tabDefs = [
@@ -12152,7 +12217,7 @@
         { key: 'MERGED_BOOK', label: 'เล่มรวมแล้ว' }
       ];
       tabsEl.innerHTML = tabDefs.map(t => {
-        const cnt = rawSubs.filter(s => matchesAdminRevDocTab_(s, t.key)).length;
+        const cnt = subjectScopedSubs.filter(s => matchesAdminRevDocTab_(s, t.key)).length;
         const isAct = activeDocTab === t.key;
         return `<button type="button" role="tab" aria-selected="${isAct ? 'true' : 'false'}" class="gw-school-chip${isAct ? ' is-active' : ''}" onclick="setAdminRevDocTab('${t.key}')">${escHtml(t.label)} (${cnt})</button>`;
       }).join('');
@@ -12160,36 +12225,148 @@
 
     const filterEl = document.getElementById('adminRevFilter');
     const fVal = filterEl ? filterEl.value : 'ALL';
-    const filtered = rawSubs.filter(s => {
+    const filtered = subjectScopedSubs.filter(s => {
       if (!matchesAdminRevDocTab_(s, activeDocTab)) return false;
       if (fVal === 'ALL') return true;
       if (fVal === 'รอตรวจ' || fVal === 'รอกรรมการตรวจ IOC' || fVal === 'ผ่านพร้อมรวมเล่ม' || fVal === 'ส่งแก้') return s.reviewStatus === fVal;
       return true;
     });
 
-    box.innerHTML = filtered.map(s => {
-      const isOk = isApprovedSubmissionStatus_(s.reviewStatus);
-      const badgeCls = isOk ? 'gw-badge-success' : (s.reviewStatus === 'ส่งแก้' ? 'gw-badge-danger' : 'gw-badge-warn');
-      const isPrePostKeyCandidate = s.docCategory === 'PREPOST_EXAM' && s.targetAudience === 'TEACHER';
-      const isPrePostExam = s.docCategory === 'PREPOST_EXAM';
-      return `
-      <div class="gw-subcard space-y-1.5">
-        <div class="flex items-center justify-between gap-2 flex-wrap">
-          <a href="${escHtml(s.driveFileUrl)}" target="_blank" class="font-bold underline" style="color: var(--gw-accent);">${escHtml(s.fileName)}</a>
-          <div class="flex flex-wrap gap-1">${formatSubmissionCardBadges_(s)} <span class="${badgeCls}">${escHtml(s.reviewStatus || 'รอตรวจ')}</span></div>
-        </div>
-        ${s.pdfFileUrl ? `<div><a href="${escHtml(s.pdfFileUrl)}" target="_blank" class="text-xs font-bold underline" style="color: var(--gw-info-ink);">📄 เปิดไฟล์ PDF ล็อกหน้าคู่ขนาน (รวมเล่มไม่เพี้ยน 100%)</a></div>` : ''}
-        <div class="text-xs" style="color: var(--gw-muted);">${escHtml(s.teacherName)} (${escHtml(getSchoolShortName(s.schoolId))}) | ${escHtml(s.preCheckSummary)}</div>
-        ${s.adminComment ? `<div class="text-xs gw-text-danger font-bold">หมายเหตุ: ${escHtml(s.adminComment)}</div>` : ''}
-        <div class="flex flex-wrap gap-1.5 pt-1">
-          <button type="button" onclick="reviewSubmissionStatus('${escHtml(s.submissionId)}', 'ผ่านพร้อมรวมเล่ม')" class="gw-btn-primary !py-1 !px-3 text-xs">ผ่านพร้อมรวมเล่ม</button>
-          ${isPrePostExam ? `<button type="button" onclick="reviewSubmissionStatus('${escHtml(s.submissionId)}', 'รอกรรมการตรวจ IOC')" class="gw-btn-soft !py-1 !px-2.5 text-xs" style="color: var(--gw-accent);">ส่งตรวจ IOC</button>` : ''}
-          <button type="button" onclick="reviewSubmissionStatus('${escHtml(s.submissionId)}', 'ส่งแก้')" class="gw-btn-soft !py-1 !px-3 text-xs" style="color: var(--gw-danger-ink);">ส่งแก้</button>
-          ${isPrePostKeyCandidate ? `<button type="button" onclick="jumpToAdminKeyEditor('${escHtml(s.subjectCode)}', '${escHtml(s.examRound || 'PRE')}')" class="gw-btn-soft !py-1 !px-2.5 text-xs">🔑 ตั้งค่าผังเฉลยดิจิทัล</button>` : ''}
-        </div>
-      </div>
-    `;
-    }).join('') || '<div class="text-xs" style="color: var(--gw-muted);">ยังไม่มีรายการที่ตรงกับตัวกรองนี้</div>';
+    const pendingInFiltered = filtered.filter(s => (s.reviewStatus || 'รอตรวจ') === 'รอตรวจ');
+    const btnBatchApprove = document.getElementById('btnApproveFilteredSubs');
+    if (btnBatchApprove) {
+      btnBatchApprove.classList.toggle('hidden', pendingInFiltered.length === 0);
+      if (pendingInFiltered.length > 0) {
+        btnBatchApprove.textContent = `✓ อนุมัติ "รอตรวจ" ในหมวดนี้ทั้งหมด (${pendingInFiltered.length} ไฟล์)`;
+      }
+    }
+
+    const summaryEl = document.getElementById('adminRevSummaryStrip');
+    if (summaryEl) {
+      const okCnt = filtered.filter(s => isApprovedSubmissionStatus_(s.reviewStatus)).length;
+      const waitCnt = pendingInFiltered.length;
+      const revCnt = filtered.filter(s => s.reviewStatus === 'ส่งแก้').length;
+      const subTitle = activeSubject === 'ALL' ? 'ครบทั้ง 4 วิชา' : (SUBJECT_NAMES[activeSubject] || activeSubject);
+      summaryEl.innerHTML = `📌 กำลังแสดง: <b>${escHtml(subTitle)}</b> — พบ <b>${filtered.length}</b> ไฟล์ (ผ่านแล้ว ${okCnt} • รอตรวจ ${waitCnt}${revCnt > 0 ? ' • ส่งแก้ ' + revCnt : ''})`;
+    }
+
+    if (!filtered.length) {
+      box.innerHTML = '<div class="gw-subcard text-center py-6" style="color: var(--gw-muted);">ยังไม่มีรายการไฟล์ที่ตรงกับรายวิชาและตัวกรองที่เลือกครับ</div>';
+      return;
+    }
+
+    const sortByStrandAndSub = (a, b) => {
+      const sa = Number(a.strandNo) || 99;
+      const sb = Number(b.strandNo) || 99;
+      if (sa !== sb) return sa - sb;
+      return String(a.subStandard || '').localeCompare(String(b.subStandard || ''), 'th');
+    };
+
+    if (activeSubject === 'ALL') {
+      const subjectGroups = ['61', '64', '65', '63'].map(code => ({
+        code,
+        name: SUBJECT_NAMES[code] || code,
+        items: filtered.filter(s => String(s.subjectCode) === code).sort(sortByStrandAndSub)
+      })).filter(g => g.items.length > 0);
+
+      box.innerHTML = subjectGroups.map(g => {
+        const gWait = g.items.filter(x => (x.reviewStatus || 'รอตรวจ') === 'รอตรวจ').length;
+        const gOk = g.items.filter(x => isApprovedSubmissionStatus_(x.reviewStatus)).length;
+        return `
+          <div class="rounded-2xl border p-3 space-y-2.5" style="background: var(--gw-surface); border-color: var(--gw-line-strong);">
+            <div class="flex flex-wrap items-center justify-between gap-2 pb-1.5 border-b" style="border-color: var(--gw-line);">
+              <div class="font-extrabold text-sm">📚 วิชา${escHtml(g.name)} (รหัส ${escHtml(g.code)}) — รวม ${g.items.length} ไฟล์</div>
+              <div class="flex items-center gap-1.5 text-[11px] font-bold">
+                <span class="px-2 py-0.5 rounded-full gw-badge-success">ผ่านแล้ว ${gOk}</span>
+                ${gWait > 0 ? `<span class="px-2 py-0.5 rounded-full gw-badge-warn">รอตรวจ ${gWait}</span>` : ''}
+                <button type="button" onclick="setAdminRevSubject('${escHtml(g.code)}')" class="gw-btn-soft !py-0.5 !px-2 text-[11px]">เจาะดูเฉพาะวิชานี้ →</button>
+              </div>
+            </div>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-2.5">
+              ${g.items.map(renderSingleAdminSubmissionCardHtml_).join('')}
+            </div>
+          </div>
+        `;
+      }).join('');
+    } else {
+      const bpSub = (STATE.blueprint || []).filter(r => String(r.subjectCode) === String(activeSubject));
+      const strandKeys = Array.from(new Set(filtered.map(s => String(s.strandNo || '1')))).sort((a, b) => (Number(a) || 99) - (Number(b) || 99));
+      box.innerHTML = strandKeys.map(stNo => {
+        const bpHit = bpSub.find(r => String(r.strandNo) === stNo);
+        const stTitle = stNo === 'ทั้งวิชา'
+          ? 'ชุดรวมครบทั้งรายวิชา'
+          : `สาระที่ ${stNo}${bpHit && bpHit.strandName ? ' — ' + bpHit.strandName : ''}`;
+        const itemsInStrand = filtered.filter(s => String(s.strandNo || '1') === stNo).sort(sortByStrandAndSub);
+        return `
+          <div class="rounded-2xl border p-3 space-y-2.5" style="background: var(--gw-surface); border-color: var(--gw-line-strong);">
+            <div class="flex flex-wrap items-center justify-between gap-2 pb-1.5 border-b" style="border-color: var(--gw-line);">
+              <div class="font-extrabold text-sm" style="color: var(--gw-accent);">📂 ${escHtml(stTitle)} (${itemsInStrand.length} ไฟล์)</div>
+            </div>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-2.5">
+              ${itemsInStrand.map(renderSingleAdminSubmissionCardHtml_).join('')}
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+  }
+
+  function approveAllFilteredAdminSubmissions() {
+    const rawSubs = ((STATE.adminData && STATE.adminData.submissions) || []).map(normalizeSubMetaClient_);
+    const activeSubject = STATE.adminRevSubject || 'ALL';
+    const activeDocTab = STATE.adminRevDocTab || 'ALL';
+    const pendingList = rawSubs.filter(s => {
+      if (activeSubject !== 'ALL' && String(s.subjectCode) !== activeSubject) return false;
+      if (!matchesAdminRevDocTab_(s, activeDocTab)) return false;
+      return (s.reviewStatus || 'รอตรวจ') === 'รอตรวจ';
+    });
+    if (!pendingList.length) return;
+    const subLabel = activeSubject === 'ALL' ? 'ครบทั้ง 4 วิชา' : (SUBJECT_NAMES[activeSubject] || activeSubject);
+    openCustomModal({
+      title: 'อนุมัติ "ผ่านพร้อมรวมเล่ม" ทั้งหมวด',
+      subtitle: `${subLabel} • จำนวน ${pendingList.length} ไฟล์ที่รอตรวจ`,
+      bodyHtml: `<div class="text-xs leading-relaxed">ต้องการอนุมัติไฟล์สถานะ <b>"รอตรวจ"</b> ในหมวดนี้ทั้งหมด <b>${pendingList.length} ไฟล์</b> ให้เป็น <b>"ผ่านพร้อมรวมเล่ม"</b> ในคลิกเดียวใช่หรือไม่ครับ?</div>`,
+      confirmText: `ยืนยันอนุมัติทั้ง ${pendingList.length} ไฟล์`,
+      onConfirm: async () => {
+        let okCount = 0;
+        for (const item of pendingList) {
+          const res = await callGas('apiReviewSubmission', {
+            authToken: STATE.authToken || '',
+            adminId: STATE.currentTeacher.teacherId,
+            submissionId: item.submissionId,
+            reviewStatus: 'ผ่านพร้อมรวมเล่ม',
+            adminComment: 'ตรวจผ่านเรียบร้อย พร้อมนำมารวมเล่ม'
+          });
+          if (res && res.ok) okCount++;
+        }
+        showToast(`อนุมัติผ่านพร้อมรวมเล่มสำเร็จ ${okCount}/${pendingList.length} ไฟล์!`, 'success');
+        refreshSuperAdminDashboard();
+      }
+    });
+  }
+
+  function adminDeleteSubmission(submissionId) {
+    const sub = ((STATE.adminData && STATE.adminData.submissions) || []).find(s => s.submissionId === submissionId);
+    const label = sub ? `${sub.fileName} (${sub.teacherName})` : submissionId;
+    openCustomModal({
+      title: 'ยืนยันลบไฟล์ต้นฉบับ (สำหรับแอดมิน)',
+      subtitle: 'ใช้กรณีครูส่งไฟล์ซ้ำหรือส่งผิดรุ่น',
+      bodyHtml: `<div class="text-xs leading-relaxed">ต้องการลบรายการ <b>${escHtml(label)}</b> ออกจากระบบและย้ายไฟล์ใน Drive ลงถังขยะใช่หรือไม่ครับ?</div>`,
+      confirmText: 'ยืนยันลบไฟล์นี้',
+      danger: true,
+      onConfirm: async () => {
+        const res = await callGas('apiDeleteSubmission', {
+          authToken: STATE.authToken || '',
+          submissionId
+        });
+        if (!res || !res.ok) {
+          showToast((res && res.error) || 'ลบไฟล์ไม่สำเร็จ', 'error');
+          return false;
+        }
+        showToast('ลบไฟล์ซ้ำออกจากระบบเรียบร้อยแล้วครับ', 'success');
+        refreshSuperAdminDashboard();
+      }
+    });
   }
 
   async function toggleStudentPrePostVisibility(allow) {
