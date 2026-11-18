@@ -61,7 +61,10 @@
     docxPreviewZoomPx: 19,
     docxPreviewMode: 'RICH',
     previewQueueIds: [],
-    activePreviewSubId: ''
+    activePreviewSubId: '',
+    covSelectedSubject: '61',
+    covViewFilter: 'ALL',
+    deepCoverageCache: {}
   };
 
   const GLASS_STORAGE_KEY = 'SRISAOWAPHAK69_GLASS_V2';
@@ -11943,6 +11946,7 @@
     }
 
     renderAdminReviewList();
+    renderAdminBookCoveragePanel();
     refreshAdminMergeReadiness();
     renderAdminIocOverview();
     const curRound = (document.getElementById('adminIocRound') && document.getElementById('adminIocRound').value) || 'PRE';
@@ -14963,4 +14967,759 @@
         }
       }
     });
+  }
+
+  /* ============================================================================
+     WHOLE-BOOK BLUEPRINT COVERAGE & COMPLETION TRACKER (% PROGRESS PER SUBJECT)
+     ============================================================================ */
+  function extractAllIndicatorsWithSlugs_(text = '') {
+    const norm = normalizeThaiDigits(String(text || ''));
+    const re = /([ทควต])[\s_\-]*(\d+)[\.\-](\d+)[\s_\-]*ป[\.\-_\s]*(\d+)[\/\-_](\d+)/gi;
+    const seen = new Set();
+    const out = [];
+    let m;
+    while ((m = re.exec(norm)) !== null) {
+      const canonical = `${m[1]} ${m[2]}.${m[3]} ป.${m[4]}/${m[5]}`;
+      const nk = normIndCodeKey_(canonical);
+      if (nk && !seen.has(nk)) {
+        seen.add(nk);
+        out.push(canonical);
+      }
+    }
+    return out;
+  }
+
+  function parseExplicitExamItemNosFromScope_(scopeStr = '', maxItemNo = 40) {
+    const stripped = normalizeThaiDigits(String(scopeStr || '')).replace(/\([^)]*\)/g, ' ');
+    const blockRe = /ข้อ(?:ที่)?\s*(\d{1,2}(?:\s*(?:[-–—]|ถึง|,|และ)\s*(?:ข้อ(?:ที่)?\s*)?\d{1,2})*)/gi;
+    const nums = new Set();
+    let m;
+    while ((m = blockRe.exec(stripped)) !== null) {
+      const segs = m[1].split(/\s*(?:,|และ)\s*/);
+      segs.forEach((seg) => {
+        const cleanSeg = seg.replace(/ข้อ(?:ที่)?\s*/gi, '').trim();
+        const rngM = /^(\d{1,2})\s*(?:[-–—]|ถึง)\s*(\d{1,2})$/.exec(cleanSeg);
+        if (rngM) {
+          const a = Math.min(Number(rngM[1]), Number(rngM[2]));
+          const b = Math.max(Number(rngM[1]), Number(rngM[2]));
+          for (let k = a; k <= b; k++) {
+            if (k >= 1 && k <= maxItemNo) nums.add(k);
+          }
+        } else {
+          const singleM = /^(\d{1,2})$/.exec(cleanSeg);
+          if (singleM) {
+            const k = Number(singleM[1]);
+            if (k >= 1 && k <= maxItemNo) nums.add(k);
+          }
+        }
+      });
+    }
+    return Array.from(nums).sort((a, b) => a - b);
+  }
+
+  function resolveTutoringCoveredNormKeysForSub_(sub, bpList = [], bpByNorm = new Map(), deepTutMap = null) {
+    if (deepTutMap && deepTutMap[sub.submissionId]) {
+      const dc = deepTutMap[sub.submissionId];
+      return { normKeys: dc.normKeys || [], isWholeStrand: false, isBlank: Boolean(dc.isBlank), deepVerified: true };
+    }
+
+    const subStd = normalizeThaiDigits(String(sub.subStandard || '')).trim();
+    const isGenericScope = !subStd || /^(?:ALL|ครบทั้งสาระ|ครบทั้งรายวิชา)$/i.test(subStd);
+
+    if (!isGenericScope) {
+      const fromSubStd = extractAllIndicatorsWithSlugs_(subStd)
+        .map(ic => normIndCodeKey_(ic))
+        .filter(nk => bpByNorm.has(nk));
+      if (fromSubStd.length > 0) {
+        return { normKeys: Array.from(new Set(fromSubStd)), isWholeStrand: false, isBlank: false, deepVerified: false };
+      }
+
+      const stdPrefixM = /^([ทควต]\s*\d+\.\d+)$/i.exec(subStd);
+      if (stdPrefixM) {
+        const stdNorm = stdPrefixM[1].replace(/\s+/g, '').toUpperCase();
+        const stdMatches = bpList
+          .filter(b => normalizeThaiDigits(String(b.standardCode || b.indicatorCode || '')).replace(/\s+/g, '').toUpperCase().startsWith(stdNorm))
+          .map(b => b.normKey);
+        if (stdMatches.length > 0) {
+          return { normKeys: stdMatches, isWholeStrand: false, isBlank: false, deepVerified: false };
+        }
+      }
+    }
+
+    const fromFn = extractAllIndicatorsWithSlugs_(sub.fileName || '')
+      .map(ic => normIndCodeKey_(ic))
+      .filter(nk => bpByNorm.has(nk));
+    if (fromFn.length > 0) {
+      return { normKeys: Array.from(new Set(fromFn)), isWholeStrand: false, isBlank: false, deepVerified: false };
+    }
+
+    if (String(sub.strandNo || '') === 'ทั้งวิชา') {
+      return { normKeys: bpList.map(b => b.normKey), isWholeStrand: true, isBlank: false, deepVerified: false };
+    }
+    const strandMatches = bpList.filter(b => String(b.strandNo) === String(sub.strandNo)).map(b => b.normKey);
+    return { normKeys: strandMatches, isWholeStrand: true, isBlank: false, deepVerified: false };
+  }
+
+  function resolveExamCoveredItemNosForSub_(sub, bpExamItems = [], deepExamMap = null) {
+    if (deepExamMap && deepExamMap[sub.submissionId]) {
+      const dc = deepExamMap[sub.submissionId];
+      return { itemNos: dc.itemNos || [], isWholeStrand: false, isBlank: Boolean(dc.isBlank), deepVerified: true };
+    }
+
+    const maxNo = bpExamItems.length || 40;
+    const subStd = normalizeThaiDigits(String(sub.subStandard || '')).trim();
+    const isGenericScope = !subStd || /^(?:ALL|ครบทั้งสาระ|ครบทั้งรายวิชา)$/i.test(subStd);
+
+    if (!isGenericScope) {
+      const explicitNos = parseExplicitExamItemNosFromScope_(subStd, maxNo);
+      if (explicitNos.length > 0) {
+        return { itemNos: explicitNos, isWholeStrand: false, isBlank: false, deepVerified: false };
+      }
+
+      const indNormSet = new Set(extractAllIndicatorsWithSlugs_(subStd).map(ic => normIndCodeKey_(ic)));
+      if (indNormSet.size > 0) {
+        const matched = bpExamItems
+          .filter(it => indNormSet.has(normIndCodeKey_(it.indicatorCode)))
+          .map(it => Number(it.itemNo));
+        if (matched.length > 0) {
+          return { itemNos: matched, isWholeStrand: false, isBlank: false, deepVerified: false };
+        }
+      }
+
+      const stdPrefixM = /^([ทควต]\s*\d+\.\d+)$/i.exec(subStd);
+      if (stdPrefixM) {
+        const stdNorm = stdPrefixM[1].replace(/\s+/g, '').toUpperCase();
+        const matched = bpExamItems
+          .filter(it => normalizeThaiDigits(String(it.indicatorCode || '')).replace(/\s+/g, '').toUpperCase().startsWith(stdNorm))
+          .map(it => Number(it.itemNo));
+        if (matched.length > 0) {
+          return { itemNos: matched, isWholeStrand: false, isBlank: false, deepVerified: false };
+        }
+      }
+    }
+
+    // Extract explicit item numbers from filename (e.g. _ข้อ21_2569.docx) ONLY on generic/ALL scope
+    const fnNos = parseExplicitExamItemNosFromScope_(sub.fileName || '', maxNo);
+    if (fnNos.length > 0) {
+      return { itemNos: fnNos, isWholeStrand: false, isBlank: false, deepVerified: false };
+    }
+    const fnIndNormSet = new Set(extractAllIndicatorsWithSlugs_(sub.fileName || '').map(ic => normIndCodeKey_(ic)));
+    if (fnIndNormSet.size > 0) {
+      const matched = bpExamItems
+        .filter(it => fnIndNormSet.has(normIndCodeKey_(it.indicatorCode)))
+        .map(it => Number(it.itemNo));
+      if (matched.length > 0) {
+        return { itemNos: matched, isWholeStrand: false, isBlank: false, deepVerified: false };
+      }
+    }
+
+    if (String(sub.strandNo || '') === 'ทั้งวิชา') {
+      return { itemNos: bpExamItems.map(it => Number(it.itemNo)), isWholeStrand: true, isBlank: false, deepVerified: false };
+    }
+    const strandNos = bpExamItems
+      .filter(it => String(it.strandNo) === String(sub.strandNo))
+      .map(it => Number(it.itemNo));
+    return { itemNos: strandNos, isWholeStrand: true, isBlank: false, deepVerified: false };
+  }
+
+  function sortCoverageHits_(hits = []) {
+    return hits.slice().sort((a, b) => {
+      if (Boolean(a.isWholeStrand) !== Boolean(b.isWholeStrand)) return a.isWholeStrand ? 1 : -1;
+      const aOk = isApprovedSubmissionStatus_(a.sub.reviewStatus) ? 0 : 1;
+      const bOk = isApprovedSubmissionStatus_(b.sub.reviewStatus) ? 0 : 1;
+      if (aOk !== bOk) return aOk - bOk;
+      return String(b.sub.submittedAt || '').localeCompare(String(a.sub.submittedAt || ''));
+    });
+  }
+
+  function computeSubjectBookCoverage_(subjectCode = '61', examRound = 'PRE') {
+    const subCode = String(subjectCode || '61');
+    const round = String(examRound || 'PRE').toUpperCase() === 'POST' ? 'POST' : 'PRE';
+    const rawAll = ((STATE.adminData && STATE.adminData.submissions) || STATE.cachedSubmissions || []).map(normalizeSubMetaClient_);
+    const subs = rawAll.filter(s => String(s.subjectCode) === subCode && s.docCategory !== 'MERGED_BOOK');
+
+    const bpRows = (STATE.blueprint || []).filter(r => String(r.subjectCode) === subCode);
+    const bpList = [];
+    const bpByNorm = new Map();
+    const seenBp = new Set();
+    bpRows.forEach((r) => {
+      const nk = normIndCodeKey_(r.indicatorCode);
+      if (!nk || seenBp.has(nk)) return;
+      seenBp.add(nk);
+      const item = {
+        strandNo: String(r.strandNo || '1'),
+        strandName: String(r.strandName || ''),
+        standardCode: String(r.standardCode || ''),
+        indicatorCode: String(r.indicatorCode || '').trim(),
+        indicatorDesc: String(r.indicatorDesc || '').trim(),
+        normKey: nk
+      };
+      bpList.push(item);
+      bpByNorm.set(nk, item);
+    });
+
+    const bpExamItems = (NIETS_2569_EXAM_ITEMS[subCode] || []).map(it => ({
+      itemNo: Number(it.itemNo),
+      strandNo: String(it.strandNo || '1'),
+      indicatorCode: String(it.indicatorCode || '').trim(),
+      itemType: String(it.itemType || 'MC4')
+    }));
+
+    const deepEntry = (STATE.deepCoverageCache && STATE.deepCoverageCache[subCode]) || null;
+    const deepTutMap = deepEntry ? deepEntry.tutBySubId : null;
+    const deepExamMap = deepEntry ? deepEntry.examBySubId : null;
+
+    const tutStuMap = new Map();
+    const tutTchMap = new Map();
+    const tutStuRevMap = new Map();
+    const tutTchRevMap = new Map();
+
+    const examStuMap = new Map();
+    const examTchMap = new Map();
+    const examStuRevMap = new Map();
+    const examTchRevMap = new Map();
+
+    const pushMapHit = (m, key, hit) => {
+      if (!m.has(key)) m.set(key, []);
+      const arr = m.get(key);
+      if (!arr.some(x => x.sub.submissionId === hit.sub.submissionId)) {
+        arr.push(hit);
+      }
+    };
+
+    subs.forEach((s) => {
+      const isRev = s.reviewStatus === 'ส่งแก้';
+      const isStu = s.targetAudience === 'STUDENT';
+      if (s.docCategory === 'TUTORING_STRAND') {
+        const res = resolveTutoringCoveredNormKeysForSub_(s, bpList, bpByNorm, deepTutMap);
+        if (res.isBlank) return;
+        const targetMap = isRev ? (isStu ? tutStuRevMap : tutTchRevMap) : (isStu ? tutStuMap : tutTchMap);
+        res.normKeys.forEach((nk) => pushMapHit(targetMap, nk, { sub: s, isWholeStrand: res.isWholeStrand, deepVerified: res.deepVerified }));
+      } else if (s.docCategory === 'PREPOST_EXAM') {
+        if (s.examRound && s.examRound !== round && s.examRound !== 'PRE_POST') return;
+        const res = resolveExamCoveredItemNosForSub_(s, bpExamItems, deepExamMap);
+        if (res.isBlank) return;
+        const targetMap = isRev ? (isStu ? examStuRevMap : examTchRevMap) : (isStu ? examStuMap : examTchMap);
+        res.itemNos.forEach((no) => pushMapHit(targetMap, no, { sub: s, isWholeStrand: res.isWholeStrand, deepVerified: res.deepVerified }));
+      }
+    });
+
+    let tutStuDone = 0;
+    let tutTchDone = 0;
+    let tutBothDone = 0;
+    let approvedSlots = 0;
+    const tutStuMissing = [];
+    const tutTchMissing = [];
+
+    const indicatorRows = bpList.map((bp) => {
+      const stuHits = sortCoverageHits_(tutStuMap.get(bp.normKey) || []);
+      const tchHits = sortCoverageHits_(tutTchMap.get(bp.normKey) || []);
+      const stuRev = sortCoverageHits_(tutStuRevMap.get(bp.normKey) || []);
+      const tchRev = sortCoverageHits_(tutTchRevMap.get(bp.normKey) || []);
+      if (stuHits.length > 0) {
+        tutStuDone++;
+        if (stuHits.some(h => isApprovedSubmissionStatus_(h.sub.reviewStatus))) approvedSlots++;
+      } else {
+        tutStuMissing.push(bp.indicatorCode);
+      }
+      if (tchHits.length > 0) {
+        tutTchDone++;
+        if (tchHits.some(h => isApprovedSubmissionStatus_(h.sub.reviewStatus))) approvedSlots++;
+      } else {
+        tutTchMissing.push(bp.indicatorCode);
+      }
+      if (stuHits.length > 0 && tchHits.length > 0) tutBothDone++;
+      return {
+        strandNo: bp.strandNo,
+        strandName: bp.strandName,
+        indicatorCode: bp.indicatorCode,
+        indicatorDesc: bp.indicatorDesc,
+        stuHits,
+        tchHits,
+        stuRevision: stuRev,
+        tchRevision: tchRev
+      };
+    });
+
+    let examStuDone = 0;
+    let examTchDone = 0;
+    let examBothDone = 0;
+    const examStuMissing = [];
+    const examTchMissing = [];
+
+    const examRows = bpExamItems.map((it) => {
+      const stuHits = sortCoverageHits_(examStuMap.get(it.itemNo) || []);
+      const tchHits = sortCoverageHits_(examTchMap.get(it.itemNo) || []);
+      const stuRev = sortCoverageHits_(examStuRevMap.get(it.itemNo) || []);
+      const tchRev = sortCoverageHits_(examTchRevMap.get(it.itemNo) || []);
+      if (stuHits.length > 0) {
+        examStuDone++;
+        if (stuHits.some(h => isApprovedSubmissionStatus_(h.sub.reviewStatus))) approvedSlots++;
+      } else {
+        examStuMissing.push(it.itemNo);
+      }
+      if (tchHits.length > 0) {
+        examTchDone++;
+        if (tchHits.some(h => isApprovedSubmissionStatus_(h.sub.reviewStatus))) approvedSlots++;
+      } else {
+        examTchMissing.push(it.itemNo);
+      }
+      if (stuHits.length > 0 && tchHits.length > 0) examBothDone++;
+      return {
+        itemNo: it.itemNo,
+        strandNo: it.strandNo,
+        indicatorCode: it.indicatorCode,
+        itemType: it.itemType,
+        stuHits,
+        tchHits,
+        stuRevision: stuRev,
+        tchRevision: tchRev
+      };
+    });
+
+    const tutTotal = bpList.length;
+    const examTotal = bpExamItems.length;
+    const totalTargetSlots = (tutTotal * 2) + (examTotal * 2);
+    const totalDoneSlots = tutStuDone + tutTchDone + examStuDone + examTchDone;
+    const overallPct = totalTargetSlots > 0 ? Math.round((totalDoneSlots / totalTargetSlots) * 100) : 0;
+    const approvedPct = totalTargetSlots > 0 ? Math.round((approvedSlots / totalTargetSlots) * 100) : 0;
+
+    return {
+      subjectCode: subCode,
+      subjectName: SUBJECT_NAMES[subCode] || subCode,
+      examRound: round,
+      deepScannedAt: deepEntry ? deepEntry.scannedAt : '',
+      deepFileCount: deepEntry ? deepEntry.fileCount : 0,
+      tutTotal,
+      tutStuDone,
+      tutTchDone,
+      tutBothDone,
+      examTotal,
+      examStuDone,
+      examTchDone,
+      examBothDone,
+      totalTargetSlots,
+      totalDoneSlots,
+      approvedSlots,
+      overallPct,
+      approvedPct,
+      indicatorRows,
+      examRows,
+      missingSummary: {
+        tutStuMissing,
+        tutTchMissing,
+        examStuMissing,
+        examTchMissing
+      }
+    };
+  }
+
+  function renderCoverageCellHtml_(hits = [], revHits = []) {
+    if (hits && hits.length > 0) {
+      const top = hits[0];
+      const s = top.sub;
+      const isOk = isApprovedSubmissionStatus_(s.reviewStatus);
+      const stBadge = isOk ? 'gw-badge-success' : 'gw-badge-warn';
+      const stLabel = isOk ? '✓ ผ่าน' : (s.reviewStatus || 'รอตรวจ');
+      const wholeTag = top.isWholeStrand ? ' <span class="text-[10px] opacity-75">(ทั้งสาระ)</span>' : '';
+      const deepTag = top.deepVerified ? ' <span title="ตรวจจากเนื้อหาจริงในไฟล์ .docx แล้ว" style="color: var(--gw-accent);">🔬</span>' : '';
+      const extraTag = hits.length > 1 ? ` <span class="text-[10px] font-bold opacity-75">(+${hits.length - 1})</span>` : '';
+      return `
+        <div class="space-y-1">
+          <div class="flex flex-wrap items-center gap-1">
+            <span class="${stBadge}">${escHtml(stLabel)}</span>${deepTag}${wholeTag}${extraTag}
+            <button type="button" onclick="openSubmissionPreviewModal('${escHtml(s.submissionId)}', 'ADMIN')" class="gw-btn-soft !py-0.5 !px-1.5 text-[10px] font-bold" style="color: var(--gw-accent);">👁️ พรีวิว</button>
+          </div>
+          <div class="text-[11px] leading-tight" style="color: var(--gw-muted);">${escHtml(s.teacherName || '-')} (${escHtml(getSchoolShortName(s.schoolId))})</div>
+        </div>
+      `;
+    }
+    if (revHits && revHits.length > 0) {
+      const rs = revHits[0].sub;
+      return `
+        <div class="space-y-1">
+          <div class="flex flex-wrap items-center gap-1">
+            <span class="gw-badge-danger">🛠️ ส่งแก้</span>
+            <button type="button" onclick="openSubmissionPreviewModal('${escHtml(rs.submissionId)}', 'ADMIN')" class="gw-btn-soft !py-0.5 !px-1.5 text-[10px] font-bold">👁️ ดูไฟล์</button>
+          </div>
+          <div class="text-[11px] leading-tight text-rose-700">${escHtml(rs.teacherName || '-')} (${escHtml(getSchoolShortName(rs.schoolId))})</div>
+        </div>
+      `;
+    }
+    return '<span class="px-2 py-0.5 rounded-full text-[11px] font-bold bg-rose-50 text-rose-700 border border-rose-200">❌ ยังไม่ส่ง</span>';
+  }
+
+  function selectBookCoverageSubject(subCode) {
+    STATE.covSelectedSubject = String(subCode || '61');
+    renderAdminBookCoveragePanel();
+  }
+
+  function setBookCoverageViewFilter(filterMode) {
+    STATE.covViewFilter = String(filterMode || 'ALL');
+    renderAdminBookCoveragePanel();
+  }
+
+  function onBookCoverageOptionChange() {
+    renderAdminBookCoveragePanel();
+  }
+
+  function renderAdminBookCoveragePanel() {
+    const cardsEl = document.getElementById('covFourSubjectsGrid');
+    const summaryEl = document.getElementById('covSubjectSummaryBanner');
+    const filterEl = document.getElementById('covViewFilterBar');
+    const tablesEl = document.getElementById('covTablesContainer');
+    if (!cardsEl || !summaryEl || !tablesEl) return;
+
+    const round = (document.getElementById('covExamRound') && document.getElementById('covExamRound').value) || 'PRE';
+    const selectedSub = STATE.covSelectedSubject || '61';
+    const viewFilter = STATE.covViewFilter || 'ALL';
+
+    const subjectDefs = [
+      { code: '61', icon: '📖', short: 'ภาษาไทย' },
+      { code: '64', icon: '📐', short: 'คณิตศาสตร์' },
+      { code: '65', icon: '🔬', short: 'วิทยาศาสตร์ฯ' },
+      { code: '63', icon: '🌐', short: 'ภาษาอังกฤษ' }
+    ];
+
+    const covBySub = {};
+    subjectDefs.forEach((sd) => {
+      covBySub[sd.code] = computeSubjectBookCoverage_(sd.code, round);
+    });
+
+    cardsEl.innerHTML = subjectDefs.map((sd) => {
+      const c = covBySub[sd.code];
+      const isAct = sd.code === selectedSub;
+      const barColor = c.overallPct >= 80 ? '#059669' : (c.overallPct >= 40 ? '#d97706' : '#e11d48');
+      return `
+        <button type="button" onclick="selectBookCoverageSubject('${sd.code}')" class="text-left rounded-2xl p-3 border-2 transition cursor-pointer space-y-1.5" style="background: var(--gw-surface); border-color: ${isAct ? 'var(--gw-accent)' : 'var(--gw-line)'}; box-shadow: ${isAct ? '0 0 0 3px var(--gw-accent-soft)' : 'none'};">
+          <div class="flex items-center justify-between gap-1">
+            <span class="font-extrabold text-xs sm:text-sm">${sd.icon} ${escHtml(sd.short)} (${sd.code})</span>
+            <span class="text-sm font-black gw-tabular" style="color: ${barColor};">${c.overallPct}%</span>
+          </div>
+          <div class="w-full h-2 rounded-full overflow-hidden" style="background: var(--gw-input-bg);">
+            <div class="h-full rounded-full transition-all" style="width: ${c.overallPct}%; background: ${barColor};"></div>
+          </div>
+          <div class="text-[11px] leading-snug" style="color: var(--gw-muted);">
+            <div>📚 ติว: นร. <b>${c.tutStuDone}/${c.tutTotal}</b> | ครู <b>${c.tutTchDone}/${c.tutTotal}</b></div>
+            <div>📝 สอบ ${escHtml(round)}: นร. <b>${c.examStuDone}/${c.examTotal}</b> | ครู <b>${c.examTchDone}/${c.examTotal}</b></div>
+          </div>
+        </button>
+      `;
+    }).join('');
+
+    const cur = covBySub[selectedSub] || covBySub['61'];
+    const tutStuPct = cur.tutTotal ? Math.round((cur.tutStuDone / cur.tutTotal) * 100) : 0;
+    const tutTchPct = cur.tutTotal ? Math.round((cur.tutTchDone / cur.tutTotal) * 100) : 0;
+    const exStuPct = cur.examTotal ? Math.round((cur.examStuDone / cur.examTotal) * 100) : 0;
+    const exTchPct = cur.examTotal ? Math.round((cur.examTchDone / cur.examTotal) * 100) : 0;
+    const ms = cur.missingSummary;
+
+    summaryEl.innerHTML = `
+      <div class="flex flex-wrap items-center justify-between gap-2 pb-2 border-b" style="border-color: var(--gw-line);">
+        <div class="font-extrabold text-sm">
+          📌 ภาพรวมทั้งเล่ม: <b>วิชา${escHtml(cur.subjectName)}</b> — ส่งแล้วรวม <b>${cur.overallPct}%</b> (${cur.totalDoneSlots}/${cur.totalTargetSlots} รายการฉบับ | อนุมัติแล้ว ${cur.approvedPct}%)
+        </div>
+        <span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold ${cur.deepScannedAt ? 'gw-badge-success' : 'gw-badge-warn'}">
+          ${cur.deepScannedAt ? `🔬 สแกนเนื้อหาในไฟล์ .docx จริงแล้ว (${cur.deepFileCount} ไฟล์)` : '⚡ คำนวณจากทะเบียนส่งงาน (กดปุ่ม 🔬 เพื่อสแกนข้างในไฟล์ .docx)'}
+        </span>
+      </div>
+      <div class="grid grid-cols-2 lg:grid-cols-4 gap-2">
+        <div class="rounded-xl p-2.5 border" style="background: var(--gw-surface); border-color: var(--gw-line);">
+          <div class="text-[11px] opacity-75">📘 เอกสารติว (ฉบับที่ 3 นร.)</div>
+          <div class="text-sm font-black gw-tabular">${cur.tutStuDone}/${cur.tutTotal} ตัวชี้วัด (${tutStuPct}%)</div>
+        </div>
+        <div class="rounded-xl p-2.5 border" style="background: var(--gw-surface); border-color: var(--gw-line);">
+          <div class="text-[11px] opacity-75">📕 เอกสารติว (ฉบับที่ 4 ครู)</div>
+          <div class="text-sm font-black gw-tabular">${cur.tutTchDone}/${cur.tutTotal} ตัวชี้วัด (${tutTchPct}%)</div>
+        </div>
+        <div class="rounded-xl p-2.5 border" style="background: var(--gw-surface); border-color: var(--gw-line);">
+          <div class="text-[11px] opacity-75">📘 ข้อสอบ ${escHtml(round)} (ฉบับที่ 1 นร.)</div>
+          <div class="text-sm font-black gw-tabular">${cur.examStuDone}/${cur.examTotal} ข้อ (${exStuPct}%)</div>
+        </div>
+        <div class="rounded-xl p-2.5 border" style="background: var(--gw-surface); border-color: var(--gw-line);">
+          <div class="text-[11px] opacity-75">📕 ข้อสอบ ${escHtml(round)} (ฉบับที่ 2 ครู)</div>
+          <div class="text-sm font-black gw-tabular">${cur.examTchDone}/${cur.examTotal} ข้อ (${exTchPct}%)</div>
+        </div>
+      </div>
+      <div class="rounded-xl p-2.5 border space-y-1 text-[11px]" style="background: var(--gw-surface); border-color: var(--gw-line);">
+        <div><b>📌 สรุปรายการที่ยังขาดในวิชา${escHtml(cur.subjectName)}:</b></div>
+        <div>• <b>เอกสารติว นร. (ฉบับ 3) ยังขาด (${ms.tutStuMissing.length}):</b> <span class="${ms.tutStuMissing.length ? 'text-rose-700 font-bold' : 'text-emerald-700 font-bold'}">${ms.tutStuMissing.length ? escHtml(ms.tutStuMissing.join(', ')) : 'ครบ 100% ทุกตัวชี้วัด ✓'}</span></div>
+        <div>• <b>เอกสารติว ครู (ฉบับ 4) ยังขาด (${ms.tutTchMissing.length}):</b> <span class="${ms.tutTchMissing.length ? 'text-rose-700 font-bold' : 'text-emerald-700 font-bold'}">${ms.tutTchMissing.length ? escHtml(ms.tutTchMissing.join(', ')) : 'ครบ 100% ทุกตัวชี้วัด ✓'}</span></div>
+        <div>• <b>ข้อสอบ ${escHtml(round)} นร. (ฉบับ 1) ยังขาด (${ms.examStuMissing.length}):</b> <span class="${ms.examStuMissing.length ? 'text-rose-700 font-bold' : 'text-emerald-700 font-bold'}">${ms.examStuMissing.length ? 'ข้อ ' + escHtml(ms.examStuMissing.join(', ')) : 'ครบ 100% ทุกข้อ ✓'}</span></div>
+        <div>• <b>ข้อสอบ ${escHtml(round)} ครู (ฉบับ 2) ยังขาด (${ms.examTchMissing.length}):</b> <span class="${ms.examTchMissing.length ? 'text-rose-700 font-bold' : 'text-emerald-700 font-bold'}">${ms.examTchMissing.length ? 'ข้อ ' + escHtml(ms.examTchMissing.join(', ')) : 'ครบ 100% ทุกข้อ ✓'}</span></div>
+      </div>
+    `;
+
+    if (filterEl) {
+      const missTotalCount = cur.indicatorRows.filter(r => !r.stuHits.length || !r.tchHits.length).length +
+        cur.examRows.filter(r => !r.stuHits.length || !r.tchHits.length).length;
+      const pills = [
+        { id: 'ALL', label: 'แสดงครบทั้ง 2 เล่ม (ทั้งตัวชี้วัด + ข้อสอบ)' },
+        { id: 'MISSING_ONLY', label: `เฉพาะรายการที่ยังขาดไม่ครบ (${missTotalCount})` },
+        { id: 'TUTORING_ONLY', label: `เฉพาะเล่มเอกสารติว (${cur.tutTotal} ตัวชี้วัด)` },
+        { id: 'EXAM_ONLY', label: `เฉพาะเล่มข้อสอบ ${round} (${cur.examTotal} ข้อ)` }
+      ];
+      filterEl.innerHTML = `<span class="font-bold opacity-80">มุมมองตาราง:</span>` + pills.map(p =>
+        `<button type="button" onclick="setBookCoverageViewFilter('${p.id}')" class="px-2.5 py-1 rounded-lg text-[11px] font-bold border ${viewFilter === p.id ? 'gw-btn-primary !py-1 !px-2.5' : 'gw-btn-soft !py-1 !px-2.5'}">${escHtml(p.label)}</button>`
+      ).join('');
+    }
+
+    const showTut = viewFilter === 'ALL' || viewFilter === 'MISSING_ONLY' || viewFilter === 'TUTORING_ONLY';
+    const showExam = viewFilter === 'ALL' || viewFilter === 'MISSING_ONLY' || viewFilter === 'EXAM_ONLY';
+
+    let html = '';
+    if (showTut) {
+      const tutRows = viewFilter === 'MISSING_ONLY'
+        ? cur.indicatorRows.filter(r => !r.stuHits.length || !r.tchHits.length)
+        : cur.indicatorRows;
+      html += `
+        <div class="rounded-2xl border p-3 space-y-2" style="background: var(--gw-surface); border-color: var(--gw-line-strong);">
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <div class="font-extrabold text-sm">📚 เล่มที่ 1: เอกสารยกระดับตามสาระฯ (เทียบตัวชี้วัดทั้งหมด ${cur.tutTotal} ตัวชี้วัด)</div>
+            <div class="text-[11px] font-bold" style="color: var(--gw-accent);">ครบทั้ง นร.+ครู แล้ว ${cur.tutBothDone}/${cur.tutTotal} ตัวชี้วัด</div>
+          </div>
+          ${tutRows.length ? `
+            <div class="overflow-x-auto max-h-[380px] overflow-y-auto">
+              <table class="gw-table w-full text-xs">
+                <thead>
+                  <tr>
+                    <th style="width:8%;">สาระ</th>
+                    <th style="width:16%;">ตัวชี้วัด</th>
+                    <th class="text-left" style="width:26%;">สาระการเรียนรู้ย่อ</th>
+                    <th style="width:25%;">📘 ฉบับที่ 3 (นักเรียน)</th>
+                    <th style="width:25%;">📕 ฉบับที่ 4 (ครู+เฉลย)</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${tutRows.map(r => `
+                    <tr>
+                      <td class="text-center font-bold">สาระ ${escHtml(r.strandNo)}</td>
+                      <td class="font-bold whitespace-nowrap">${escHtml(r.indicatorCode)}</td>
+                      <td class="text-[11px]" style="color: var(--gw-muted);">${escHtml(r.indicatorDesc ? (r.indicatorDesc.length > 75 ? r.indicatorDesc.slice(0, 75) + '…' : r.indicatorDesc) : r.strandName)}</td>
+                      <td>${renderCoverageCellHtml_(r.stuHits, r.stuRevision)}</td>
+                      <td>${renderCoverageCellHtml_(r.tchHits, r.tchRevision)}</td>
+                    </tr>
+                  `).join('')}
+                </tbody>
+              </table>
+            </div>
+          ` : '<div class="p-3 text-center font-bold text-emerald-700">🎉 เอกสารติวรายตัวชี้วัดครบทั้งฉบับนักเรียนและฉบับครู 100% แล้วครับ!</div>'}
+        </div>
+      `;
+    }
+
+    if (showExam) {
+      const exRows = viewFilter === 'MISSING_ONLY'
+        ? cur.examRows.filter(r => !r.stuHits.length || !r.tchHits.length)
+        : cur.examRows;
+      html += `
+        <div class="rounded-2xl border p-3 space-y-2" style="background: var(--gw-surface); border-color: var(--gw-line-strong);">
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <div class="font-extrabold text-sm">📝 เล่มที่ 2: ข้อสอบคู่ขนาน ${escHtml(round)} O-NET (เรียงข้อ 1–${cur.examTotal} ตามผัง สทศ.)</div>
+            <div class="text-[11px] font-bold" style="color: var(--gw-accent);">ครบทั้ง นร.+ครู แล้ว ${cur.examBothDone}/${cur.examTotal} ข้อ</div>
+          </div>
+          ${exRows.length ? `
+            <div class="overflow-x-auto max-h-[380px] overflow-y-auto">
+              <table class="gw-table w-full text-xs">
+                <thead>
+                  <tr>
+                    <th style="width:8%;">ข้อที่</th>
+                    <th style="width:10%;">สาระ</th>
+                    <th style="width:18%;">ตัวชี้วัด สทศ.</th>
+                    <th style="width:14%;">รูปแบบข้อสอบ</th>
+                    <th style="width:25%;">📘 ฉบับที่ 1 (นักเรียน)</th>
+                    <th style="width:25%;">📕 ฉบับที่ 2 (ครู+เฉลย)</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${exRows.map(r => `
+                    <tr>
+                      <td class="text-center font-extrabold gw-tabular">${escHtml(r.itemNo)}</td>
+                      <td class="text-center">สาระ ${escHtml(r.strandNo)}</td>
+                      <td class="font-bold whitespace-nowrap">${escHtml(r.indicatorCode)}</td>
+                      <td class="text-center text-[11px]">${escHtml(r.itemType)}</td>
+                      <td>${renderCoverageCellHtml_(r.stuHits, r.stuRevision)}</td>
+                      <td>${renderCoverageCellHtml_(r.tchHits, r.tchRevision)}</td>
+                    </tr>
+                  `).join('')}
+                </tbody>
+              </table>
+            </div>
+          ` : `<div class="p-3 text-center font-bold text-emerald-700">🎉 ข้อสอบ ${escHtml(round)} ครบทั้งฉบับนักเรียนและฉบับครู 100% ทุกข้อแล้วครับ!</div>`}
+        </div>
+      `;
+    }
+
+    tablesEl.innerHTML = html;
+  }
+
+  async function runDeepDocxBookCoverageScan() {
+    const subCode = STATE.covSelectedSubject || '61';
+    const round = (document.getElementById('covExamRound') && document.getElementById('covExamRound').value) || 'PRE';
+    const subLabel = SUBJECT_NAMES[subCode] || subCode;
+    if (typeof JSZip === 'undefined') {
+      showToast('ไลบรารี JSZip ยังไม่พร้อมทำงาน กรุณารีเฟรชหน้าเว็บครับ', 'error');
+      return;
+    }
+
+    return withButtonBusy('btnDeepCoverageScan', 'กำลังสแกนข้างในไฟล์ .docx...', async () => {
+      const rawAll = ((STATE.adminData && STATE.adminData.submissions) || []).map(normalizeSubMetaClient_);
+      const targets = rawAll.filter(s =>
+        String(s.subjectCode) === String(subCode) &&
+        s.docCategory !== 'MERGED_BOOK' &&
+        s.reviewStatus !== 'ส่งแก้' &&
+        (s.docCategory !== 'PREPOST_EXAM' || !s.examRound || s.examRound === round || s.examRound === 'PRE_POST')
+      );
+
+      if (!targets.length) {
+        showToast(`ยังไม่มีไฟล์ส่งเข้ามาในวิชา${subLabel}สำหรับสแกนครับ`, 'info');
+        return;
+      }
+
+      const bpRowsForSub = (STATE.blueprint || []).filter(r => String(r.subjectCode) === String(subCode));
+      const tutBySubId = {};
+      const examBySubId = {};
+      let scannedOk = 0;
+
+      for (const s of targets) {
+        const res = await fetchSubmissionBase64ForPreview_(s.submissionId);
+        if (!res || !res.ok || !res.base64Data) continue;
+        try {
+          const unpacked = await unpackDocxWithMediaInBrowser_(res.base64Data);
+          if (!unpacked || !unpacked.documentXml) continue;
+          const inf = inferPartScopeFromXml_(
+            { fileName: s.fileName, strandNo: s.strandNo, subStandard: s.subStandard, bodyXml: unpacked.documentXml },
+            subCode,
+            s.docCategory,
+            bpRowsForSub
+          );
+          scannedOk++;
+          if (s.docCategory === 'TUTORING_STRAND') {
+            tutBySubId[s.submissionId] = {
+              normKeys: (inf.coveredIndicators || []).map(ic => normIndCodeKey_(ic)),
+              isBlank: !Boolean(inf.hasRealContent)
+            };
+          } else if (s.docCategory === 'PREPOST_EXAM') {
+            examBySubId[s.submissionId] = {
+              itemNos: Array.isArray(inf.authoredItemNos) ? inf.authoredItemNos : [],
+              isBlank: !Boolean(inf.hasRealContent)
+            };
+          }
+        } catch (_parseErr) {}
+      }
+
+      if (!STATE.deepCoverageCache) STATE.deepCoverageCache = {};
+      STATE.deepCoverageCache[subCode] = {
+        tutBySubId,
+        examBySubId,
+        fileCount: scannedOk,
+        scannedAt: new Date().toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' })
+      };
+
+      renderAdminBookCoveragePanel();
+      showToast(`สแกนเนื้อหาจริงข้างใน .docx วิชา${subLabel} สำเร็จ ${scannedOk}/${targets.length} ไฟล์!`, 'success');
+    });
+  }
+
+  async function copyMissingCoverageSummaryText() {
+    const subCode = STATE.covSelectedSubject || '61';
+    const round = (document.getElementById('covExamRound') && document.getElementById('covExamRound').value) || 'PRE';
+    const c = computeSubjectBookCoverage_(subCode, round);
+    const ms = c.missingSummary;
+    const lines = [
+      `📊 สรุปความครบถ้วนต้นฉบับทั้งเล่ม: วิชา${c.subjectName} (เทียบข้อสอบ ${round})`,
+      `• ความก้าวหน้ารวม: ${c.overallPct}% (${c.totalDoneSlots}/${c.totalTargetSlots} รายการ | ผ่านแล้ว ${c.approvedPct}%)`,
+      `• เอกสารติว (ฉบับ 3 นักเรียน): ส่งแล้ว ${c.tutStuDone}/${c.tutTotal} ตัวชี้วัด` + (ms.tutStuMissing.length ? ` | ยังขาด: ${ms.tutStuMissing.join(', ')}` : ' | ครบ 100%'),
+      `• เอกสารติว (ฉบับ 4 ครู): ส่งแล้ว ${c.tutTchDone}/${c.tutTotal} ตัวชี้วัด` + (ms.tutTchMissing.length ? ` | ยังขาด: ${ms.tutTchMissing.join(', ')}` : ' | ครบ 100%'),
+      `• ข้อสอบ ${round} (ฉบับ 1 นักเรียน): ส่งแล้ว ${c.examStuDone}/${c.examTotal} ข้อ` + (ms.examStuMissing.length ? ` | ยังขาดข้อ: ${ms.examStuMissing.join(', ')}` : ' | ครบ 100%'),
+      `• ข้อสอบ ${round} (ฉบับ 2 ครู): ส่งแล้ว ${c.examTchDone}/${c.examTotal} ข้อ` + (ms.examTchMissing.length ? ` | ยังขาดข้อ: ${ms.examTchMissing.join(', ')}` : ' | ครบ 100%')
+    ];
+    const txt = lines.join('\n');
+    try {
+      if (typeof navigator !== 'undefined' && navigator.clipboard && navigator.clipboard.writeText) {
+        await navigator.clipboard.writeText(txt);
+        showToast('คัดลอกสรุปรายการที่ส่งแล้ว/ยังขาดลงคลิปบอร์ดแล้ว (วางส่งในกลุ่ม LINE ได้เลยครับ)!', 'success');
+        return;
+      }
+    } catch (_e) {}
+    if (typeof document !== 'undefined' && document.createElement) {
+      const ta = document.createElement('textarea');
+      ta.value = txt;
+      document.body.appendChild(ta);
+      ta.select();
+      try { document.execCommand('copy'); } catch (_e2) {}
+      document.body.removeChild(ta);
+      showToast('คัดลอกสรุปรายการที่ยังขาดเรียบร้อยแล้วครับ!', 'success');
+    }
+  }
+
+  function printSubjectBookCoverageA4() {
+    const subCode = STATE.covSelectedSubject || '61';
+    const round = (document.getElementById('covExamRound') && document.getElementById('covExamRound').value) || 'PRE';
+    const cur = computeSubjectBookCoverage_(subCode, round);
+    const fmtHit = (hits, rev) => {
+      if (hits && hits.length) {
+        const s = hits[0].sub;
+        return `<span style="color:#047857;font-weight:bold;">ส่งแล้ว (${escHtml(s.reviewStatus || 'รอตรวจ')})</span><br>${escHtml(s.teacherName || '-')} (${escHtml(getSchoolShortName(s.schoolId))})`;
+      }
+      if (rev && rev.length) {
+        return `<span style="color:#b45309;font-weight:bold;">ส่งแก้</span> (${escHtml(rev[0].sub.teacherName || '-')})`;
+      }
+      return '<span style="color:#be123c;font-weight:bold;">❌ ยังไม่ส่ง</span>';
+    };
+
+    const tutTableRows = cur.indicatorRows.map(r => `
+      <tr>
+        <td style="text-align:center;">สาระ ${escHtml(r.strandNo)}</td>
+        <td style="font-weight:bold;">${escHtml(r.indicatorCode)}</td>
+        <td>${fmtHit(r.stuHits, r.stuRevision)}</td>
+        <td>${fmtHit(r.tchHits, r.tchRevision)}</td>
+      </tr>
+    `).join('');
+
+    const examTableRows = cur.examRows.map(r => `
+      <tr>
+        <td style="text-align:center;font-weight:bold;">${escHtml(r.itemNo)}</td>
+        <td style="text-align:center;">สาระ ${escHtml(r.strandNo)}</td>
+        <td style="font-weight:bold;">${escHtml(r.indicatorCode)} (${escHtml(r.itemType)})</td>
+        <td>${fmtHit(r.stuHits, r.stuRevision)}</td>
+        <td>${fmtHit(r.tchHits, r.tchRevision)}</td>
+      </tr>
+    `).join('');
+
+    const w = window.open('', '_blank');
+    if (!w) {
+      showToast('เบราว์เซอร์บล็อกหน้าต่างพิมพ์ กรุณาอนุญาต Pop-up ก่อนครับ', 'error');
+      return;
+    }
+    w.document.write(`<!DOCTYPE html><html lang="th"><head><meta charset="utf-8"><title>ผังเช็กความครบถ้วนต้นฉบับ — ${escHtml(cur.subjectName)}</title>
+      <style>
+        @page { size: A4 portrait; margin: 15mm 14mm; }
+        body { font-family: "TH SarabunPSK", "Sarabun", sans-serif; font-size: 16pt; color: #0f172a; margin: 0; }
+        h1 { font-size: 20pt; margin: 0 0 4px 0; }
+        h2 { font-size: 17pt; margin: 14px 0 6px 0; }
+        table { width: 100%; border-collapse: collapse; font-size: 14.5pt; margin-bottom: 10px; }
+        th, td { border: 1px solid #94a3b8; padding: 5px 7px; vertical-align: top; }
+        th { background: #f1f5f9; text-align: center; }
+        tr { page-break-inside: avoid; }
+        @media print { .no-print { display: none !important; } }
+      </style></head><body>
+      <div class="no-print" style="padding:10px;background:#ecfdf5;border-bottom:1px solid #a7f3d0;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center;">
+        <b>ใบเช็กลิสต์ความครบถ้วนทั้งเล่ม (A4)</b>
+        <button onclick="window.print()" style="padding:6px 16px;font-weight:bold;cursor:pointer;background:#059669;color:#fff;border:none;border-radius:8px;">🖨️ พิมพ์ / บันทึก PDF</button>
+      </div>
+      <h1>แบบติดตามความครบถ้วนต้นฉบับทั้งเล่ม: วิชา${escHtml(cur.subjectName)}</h1>
+      <div><b>ภาพรวม:</b> ส่งแล้ว <b>${cur.overallPct}%</b> (${cur.totalDoneSlots}/${cur.totalTargetSlots} รายการ | ผ่านแล้ว ${cur.approvedPct}%) | เทียบข้อสอบ: ${escHtml(round)} O-NET</div>
+      <h2>1. เล่มเอกสารยกระดับตามสาระฯ (ครบ ${cur.tutTotal} ตัวชี้วัด | นร. ${cur.tutStuDone}/${cur.tutTotal} | ครู ${cur.tutTchDone}/${cur.tutTotal})</h2>
+      <table>
+        <thead><tr><th style="width:12%;">สาระ</th><th style="width:24%;">ตัวชี้วัด</th><th style="width:32%;">ฉบับที่ 3 (นักเรียน)</th><th style="width:32%;">ฉบับที่ 4 (ครู+เฉลย)</th></tr></thead>
+        <tbody>${tutTableRows}</tbody>
+      </table>
+      <h2>2. เล่มข้อสอบคู่ขนาน ${escHtml(round)} O-NET (ครบ ${cur.examTotal} ข้อ | นร. ${cur.examStuDone}/${cur.examTotal} | ครู ${cur.examTchDone}/${cur.examTotal})</h2>
+      <table>
+        <thead><tr><th style="width:8%;">ข้อ</th><th style="width:10%;">สาระ</th><th style="width:26%;">ตัวชี้วัด / รูปแบบ</th><th style="width:28%;">ฉบับที่ 1 (นักเรียน)</th><th style="width:28%;">ฉบับที่ 2 (ครู+เฉลย)</th></tr></thead>
+        <tbody>${examTableRows}</tbody>
+      </table>
+    </body></html>`);
+    w.document.close();
   }
