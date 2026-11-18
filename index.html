@@ -1165,7 +1165,7 @@
     .gw-modal-backdrop {
       position: fixed;
       inset: 0;
-      z-index: 80;
+      z-index: 85;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -1451,6 +1451,87 @@
     border-color: #059669;
     background: rgba(5, 150, 105, 0.12);
     font-weight: 700;
+  }
+
+  /* In-App Submitted .docx / Drive Preview Studio Modal */
+  .docx-preview-backdrop {
+    z-index: 75;
+    padding: 10px;
+  }
+
+  .docx-preview-card {
+    width: min(1040px, calc(100vw - 20px));
+    height: min(92vh, 920px);
+    display: flex;
+    flex-direction: column;
+    border-radius: 22px;
+    background: var(--gw-popover);
+    border: 1px solid var(--gw-line-strong);
+    color: var(--gw-ink);
+    box-shadow: 0 28px 70px rgba(0, 0, 0, 0.32);
+    overflow: hidden;
+  }
+
+  .docx-preview-stage {
+    flex: 1;
+    overflow-y: auto;
+    padding: 18px 14px;
+    background: rgba(15, 23, 42, 0.08);
+    overscroll-behavior: contain;
+  }
+
+  .docx-a4-sheet {
+    max-width: 794px;
+    min-height: 600px;
+    margin: 0 auto;
+    background: #ffffff;
+    color: #0f172a;
+    border-radius: 10px;
+    box-shadow: 0 10px 30px rgba(15, 23, 42, 0.14);
+    padding: 36px 42px;
+    font-family: "TH SarabunPSK", "Sarabun", sans-serif;
+    font-size: var(--docx-zoom-size, 18px);
+    line-height: 1.55;
+    word-break: break-word;
+  }
+
+  .docx-a4-sheet table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 10px 0;
+    font-size: 0.95em;
+  }
+
+  .docx-a4-sheet td,
+  .docx-a4-sheet th {
+    border: 1px solid #94a3b8;
+    padding: 6px 9px;
+    vertical-align: top;
+  }
+
+  .docx-math-frac {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    vertical-align: middle;
+    margin: 0 3px;
+    line-height: 1.05;
+    font-size: 0.92em;
+  }
+
+  .docx-math-frac > .num {
+    border-bottom: 1px solid currentColor;
+    padding: 0 3px;
+  }
+
+  .docx-math-frac > .den {
+    padding: 0 3px;
+  }
+
+  @media (max-width: 640px) {
+    .docx-a4-sheet {
+      padding: 20px 16px;
+    }
   }
 
   @media print {
@@ -3632,6 +3713,53 @@
       </aside>
     </div>
 
+    <!-- In-App Submitted Document Preview Studio Modal -->
+    <div id="docxPreviewModal" class="gw-modal-backdrop docx-preview-backdrop hidden" style="z-index: 75;" role="dialog" aria-modal="true" aria-labelledby="docxPreviewTitle">
+      <div class="docx-preview-card">
+        <!-- Top Header Bar -->
+        <div class="px-4 py-3 border-b flex flex-wrap items-start justify-between gap-2" style="border-color: var(--gw-line); background: var(--gw-surface);">
+          <div class="min-w-0 flex-1 space-y-1">
+            <div class="flex items-center gap-2 flex-wrap">
+              <span class="px-2 py-0.5 rounded-full text-[11px] font-bold" style="background: var(--gw-accent-soft); color: var(--gw-accent);">👁️ พรีวิวเอกสารในเว็บ</span>
+              <h3 id="docxPreviewTitle" class="text-sm sm:text-base font-bold break-all">กำลังเปิดไฟล์…</h3>
+            </div>
+            <div id="docxPreviewMeta" class="text-[11px] flex flex-wrap items-center gap-1.5" style="color: var(--gw-muted);"></div>
+          </div>
+          <div class="flex items-center gap-1.5 shrink-0 flex-wrap">
+            <button type="button" id="btnDocxPrev" onclick="stepDocxPreviewQueue(-1)" class="gw-btn-soft !py-1 !px-2.5 text-xs font-bold">← ก่อนหน้า</button>
+            <span id="docxPreviewCounter" class="text-[11px] font-bold gw-tabular px-1" style="color: var(--gw-muted);">1/1</span>
+            <button type="button" id="btnDocxNext" onclick="stepDocxPreviewQueue(1)" class="gw-btn-soft !py-1 !px-2.5 text-xs font-bold">ถัดไป →</button>
+            <button type="button" onclick="closeSubmissionPreviewModal()" class="gw-btn-soft !py-1 !px-3 text-xs font-bold" aria-label="ปิดหน้าต่างพรีวิว">✕ ปิด</button>
+          </div>
+        </div>
+
+        <!-- Sub-Toolbar: View Mode, Zoom & Links -->
+        <div class="px-4 py-2 border-b flex flex-wrap items-center justify-between gap-2 text-xs" style="border-color: var(--gw-line);">
+          <div class="flex flex-wrap items-center gap-1.5">
+            <button type="button" id="btnDocxModeRich" onclick="setDocxPreviewMode('RICH')" class="gw-btn-primary !py-1 !px-2.5 text-[11px] font-bold">📄 หน้ากระดาษ A4 + ตรวจอัตโนมัติ</button>
+            <button type="button" id="btnDocxModeDrive" onclick="setDocxPreviewMode('DRIVE')" class="gw-btn-soft !py-1 !px-2.5 text-[11px] font-bold">🌐 มุมมอง Google Drive / PDF</button>
+          </div>
+          <div class="flex flex-wrap items-center gap-1.5">
+            <span class="text-[11px] opacity-75">ขนาดอักษร:</span>
+            <button type="button" onclick="setDocxPreviewZoom(16)" class="gw-btn-soft !py-0.5 !px-2 text-[11px] font-bold">A-</button>
+            <button type="button" onclick="setDocxPreviewZoom(19)" class="gw-btn-soft !py-0.5 !px-2 text-[11px] font-bold">ปกติ</button>
+            <button type="button" onclick="setDocxPreviewZoom(22)" class="gw-btn-soft !py-0.5 !px-2 text-[11px] font-bold">A+</button>
+            <a id="docxPreviewPdfLink" href="#" target="_blank" class="hidden gw-btn-soft !py-1 !px-2.5 text-[11px] font-bold" style="color: var(--gw-info-ink);">📄 เปิด PDF</a>
+            <a id="docxPreviewDownloadLink" href="#" target="_blank" class="gw-btn-soft !py-1 !px-2.5 text-[11px] font-bold">📥 โหลด .docx</a>
+          </div>
+        </div>
+
+        <!-- Collapsible Tier-1 Quick Audit Strip -->
+        <div id="docxPreviewAuditBar" class="hidden px-4 py-2 border-b text-xs" style="border-color: var(--gw-line);"></div>
+
+        <!-- Main Scrollable Preview Stage -->
+        <div id="docxPreviewStage" class="docx-preview-stage"></div>
+
+        <!-- Sticky Admin Review Action Footer -->
+        <div id="docxPreviewAdminFooter" class="hidden px-4 py-2.5 border-t flex flex-wrap items-center justify-between gap-2 text-xs" style="border-color: var(--gw-line); background: var(--gw-surface);"></div>
+      </div>
+    </div>
+
     <!-- Reusable Accessible Glass Modal -->
     <div id="customActionModal" class="gw-modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="customModalTitle">
       <div class="gw-modal-card space-y-3.5">
@@ -3657,6 +3785,6 @@
   </div>
 
     <script>window.ONET_GAS_API_URL = 'https://script.google.com/macros/s/AKfycbwG-eaNeRsZ9wmCWvcGfKNpzxHgUFJPckdbfNL3b7MamTFjrWexwkCFYR_ApLfqGtQG/exec';</script>
-  <script src="./app.js?v=20261117_1794973170"></script>
+  <script src="./app.js?v=20261117_1794974774"></script>
 </body>
 </html>
