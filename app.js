@@ -3672,17 +3672,21 @@
   }
 
   function cleanSummaryFrameTableXml_(tblXml) {
-    const hasMedia = /<w:drawing\b|<w:pict\b|<v:imagedata\b|<a:blip\b/i.test(tblXml);
-    return String(tblXml || '').replace(/<w:tc\b([^>]*)>([\s\S]*?)<\/w:tc>/gi, (fullTc, tcAttrs, tcInner) => {
-      const pList = [];
-      const pRe = /<w:p\b[\s\S]*?<\/w:p>/gi;
-      let m;
-      while ((m = pRe.exec(tcInner)) !== null) {
-        pList.push(m[0]);
-      }
-      if (pList.length <= 1) return fullTc;
+    const raw = String(tblXml || '');
+    // Guard: if table contains nested <w:tbl> elements, never apply flat <w:tc> regex
+    // (which would match from outer <w:tc> to inner </w:tc> and produce invalid OOXML).
+    const tblOpenCount = (raw.match(/<w:tbl(?=[\s>])/gi) || []).length;
+    if (tblOpenCount > 1) return raw;
 
-      const kept = pList.filter((pXml) => {
+    const hasMedia = /<w:drawing\b|<w:pict\b|<v:imagedata\b|<a:blip\b/i.test(raw);
+    return raw.replace(/<w:tc\b([^>]*)>([\s\S]*?)<\/w:tc>/gi, (fullTc, tcAttrs, tcInner) => {
+      if (/<w:tbl(?=[\s>])/i.test(tcInner)) return fullTc;
+      const blocks = extractWordTopLevelBlocks_(tcInner);
+      if (blocks.length <= 1) return fullTc;
+
+      const kept = blocks.filter((blk) => {
+        if (blk.tag !== 'w:p') return true;
+        const pXml = blk.xml;
         if (/<w:drawing\b|<w:pict\b|<v:imagedata\b|<a:blip\b/i.test(pXml)) return true;
         const pTxt = normalizeThaiDigits(extractPlainTextFromDocxXml(pXml)).replace(/\s+/g, ' ').trim();
         if (!pTxt) return false;
@@ -3691,12 +3695,12 @@
         if (/^คำแนะนำสำหรับผู้จัดทำ\s*:/i.test(pTxt)) return false;
         if (/^•?\s*(?:พิมพ์สรุปเนื้อหาสำคัญ|จุดเน้นการสอนเพิ่มเติม|สรุปหลักการสำคัญ)/i.test(pTxt) && isUneditedPlaceholderText_(pTxt)) return false;
         return true;
-      });
+      }).map((blk) => blk.xml);
 
       if (kept.length === 0) {
-        return hasMedia ? fullTc : `<w:tc${tcAttrs}>${pList[0]}</w:tc>`;
+        return hasMedia ? fullTc : `<w:tc${tcAttrs}>${blocks[0].xml}</w:tc>`;
       }
-      const tcPrM = /<w:tcPr\b[\s\S]*?<\/w:tcPr>/i.exec(tcInner);
+      const tcPrM = /<w:tcPr\b[\s\S]*?<\/w:tcPr>|<w:tcPr\b[^>]*\/>/i.exec(tcInner);
       const tcPrXml = tcPrM ? tcPrM[0] : '';
       return `<w:tc${tcAttrs}>${tcPrXml}${kept.join('')}</w:tc>`;
     });
