@@ -12162,26 +12162,40 @@
     renderAdminReviewList();
   }
 
-  function renderSingleAdminSubmissionCardHtml_(s) {
+  function formatShortThaiDateTime_(isoStr) {
+    if (!isoStr) return '';
+    const d = new Date(isoStr);
+    if (isNaN(d.getTime())) return '';
+    const dd = String(d.getDate()).padStart(2, '0');
+    const mm = String(d.getMonth() + 1).padStart(2, '0');
+    const hh = String(d.getHours()).padStart(2, '0');
+    const mi = String(d.getMinutes()).padStart(2, '0');
+    return `${dd}/${mm} ${hh}:${mi} น.`;
+  }
+
+  function renderSingleAdminSubmissionCardHtml_(s, dupCount = 1) {
     const isOk = isApprovedSubmissionStatus_(s.reviewStatus);
     const badgeCls = isOk ? 'gw-badge-success' : (s.reviewStatus === 'ส่งแก้' ? 'gw-badge-danger' : 'gw-badge-warn');
     const isPrePostKeyCandidate = s.docCategory === 'PREPOST_EXAM' && s.targetAudience === 'TEACHER';
     const isPrePostExam = s.docCategory === 'PREPOST_EXAM';
     const subTag = s.subStandard && s.subStandard !== 'ALL' ? s.subStandard : 'ครบทั้งสาระ';
+    const timeStr = formatShortThaiDateTime_(s.submittedAt);
+    const isDup = Number(dupCount) > 1 && s.reviewStatus !== 'ส่งแก้';
     return `
-      <div class="gw-subcard space-y-1.5 border" style="border-color: var(--gw-line);">
+      <div class="gw-subcard space-y-1.5 border${isDup ? ' border-2' : ''}" style="border-color: ${isDup ? '#f59e0b' : 'var(--gw-line)'};${isDup ? ' background: rgba(254,243,199,0.28);' : ''}">
         <div class="flex items-start justify-between gap-2 flex-wrap">
           <div class="space-y-0.5 min-w-0 flex-1">
             <div class="flex flex-wrap items-center gap-1.5">
               <span class="px-2 py-0.5 rounded-md text-[11px] font-extrabold border" style="background: var(--gw-accent-soft); color: var(--gw-accent); border-color: rgba(16,185,129,0.28);">สาระที่ ${escHtml(s.strandNo || '-')} • ${escHtml(subTag)}</span>
               ${formatSubmissionCardBadges_(s)}
               <span class="${badgeCls}">${escHtml(s.reviewStatus || 'รอตรวจ')}</span>
+              ${isDup ? `<span class="px-2 py-0.5 rounded-full text-[11px] font-extrabold bg-amber-100 text-amber-900 border border-amber-400">⚠️ ส่งซ้ำ (${dupCount} ไฟล์ในช่องเดียวกัน)</span>` : ''}
             </div>
             <a href="${escHtml(s.driveFileUrl)}" target="_blank" class="font-bold underline break-all inline-block pt-0.5" style="color: var(--gw-accent);">${escHtml(s.fileName)}</a>
           </div>
         </div>
         ${s.pdfFileUrl ? `<div><a href="${escHtml(s.pdfFileUrl)}" target="_blank" class="text-xs font-bold underline" style="color: var(--gw-info-ink);">📄 เปิดไฟล์ PDF ล็อกหน้าคู่ขนาน</a></div>` : ''}
-        <div class="text-xs" style="color: var(--gw-muted);">👤 <b>${escHtml(s.teacherName)}</b> (${escHtml(getSchoolShortName(s.schoolId))}) | ${escHtml(s.preCheckSummary)}</div>
+        <div class="text-xs" style="color: var(--gw-muted);">👤 <b>${escHtml(s.teacherName)}</b> (${escHtml(getSchoolShortName(s.schoolId))})${timeStr ? ` • 🕒 <b>${escHtml(timeStr)}</b>` : ''} | ${escHtml(s.preCheckSummary)}</div>
         ${s.adminComment ? `<div class="text-xs gw-text-danger font-bold">หมายเหตุ: ${escHtml(s.adminComment)}</div>` : ''}
         <div class="flex flex-wrap items-center justify-between gap-1.5 pt-1">
           <div class="flex flex-wrap gap-1.5">
@@ -12191,7 +12205,7 @@
             <button type="button" onclick="reviewSubmissionStatus('${escHtml(s.submissionId)}', 'ส่งแก้')" class="gw-btn-soft !py-1 !px-3 text-xs" style="color: var(--gw-danger-ink);">ส่งแก้</button>
             ${isPrePostKeyCandidate ? `<button type="button" onclick="jumpToAdminKeyEditor('${escHtml(s.subjectCode)}', '${escHtml(s.examRound || 'PRE')}')" class="gw-btn-soft !py-1 !px-2.5 text-xs">🔑 ตั้งค่าผังเฉลยดิจิทัล</button>` : ''}
           </div>
-          <button type="button" onclick="adminDeleteSubmission('${escHtml(s.submissionId)}')" class="gw-btn-soft !py-1 !px-2.5 text-[11px]" style="color: var(--gw-danger-ink);">ลบไฟล์ซ้ำ</button>
+          <button type="button" onclick="adminDeleteSubmission('${escHtml(s.submissionId)}')" class="gw-btn-soft !py-1 !px-2.5 text-[11px]" style="color: var(--gw-danger-ink);">🗑️ ลบไฟล์ซ้ำ</button>
         </div>
       </div>
     `;
@@ -12285,6 +12299,14 @@
       return String(a.subStandard || '').localeCompare(String(b.subStandard || ''), 'th');
     };
 
+    const dupCountMap = new Map();
+    const makeDupKey_ = (x) => [x.subjectCode, x.docCategory, x.targetAudience, x.examRound || '', x.strandNo || '', x.subStandard || 'ALL'].join('|');
+    rawSubs.forEach(x => {
+      if (x.reviewStatus === 'ส่งแก้' || x.docCategory === 'MERGED_BOOK') return;
+      const k = makeDupKey_(x);
+      dupCountMap.set(k, (dupCountMap.get(k) || 0) + 1);
+    });
+
     const visualOrderIds = [];
     if (activeSubject === 'ALL') {
       const subjectGroups = ['61', '64', '65', '63'].map(code => ({
@@ -12308,7 +12330,7 @@
               </div>
             </div>
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-2.5">
-              ${g.items.map(renderSingleAdminSubmissionCardHtml_).join('')}
+              ${g.items.map(it => renderSingleAdminSubmissionCardHtml_(it, dupCountMap.get(makeDupKey_(it)) || 1)).join('')}
             </div>
           </div>
         `;
@@ -12329,7 +12351,7 @@
               <div class="font-extrabold text-sm" style="color: var(--gw-accent);">📂 ${escHtml(stTitle)} (${itemsInStrand.length} ไฟล์)</div>
             </div>
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-2.5">
-              ${itemsInStrand.map(renderSingleAdminSubmissionCardHtml_).join('')}
+              ${itemsInStrand.map(it => renderSingleAdminSubmissionCardHtml_(it, dupCountMap.get(makeDupKey_(it)) || 1)).join('')}
             </div>
           </div>
         `;
@@ -15315,7 +15337,40 @@
   }
 
   function renderCoverageCellHtml_(hits = [], revHits = []) {
-    if (hits && hits.length > 0) {
+    if (hits && hits.length > 1) {
+      const cardsHtml = hits.map((h, idx) => {
+        const s = h.sub;
+        const isOk = isApprovedSubmissionStatus_(s.reviewStatus);
+        const stBadge = isOk ? 'gw-badge-success' : 'gw-badge-warn';
+        const stLabel = isOk ? '✓ ผ่าน' : (s.reviewStatus || 'รอตรวจ');
+        const timeStr = formatShortThaiDateTime_(s.submittedAt);
+        const wholeTag = h.isWholeStrand ? ' (ทั้งสาระ)' : '';
+        const orderBadge = idx === 0
+          ? `<span class="px-1.5 py-0.5 rounded text-[10px] font-extrabold bg-emerald-100 text-emerald-800 border border-emerald-300">ไฟล์ #${idx + 1} (${isOk ? 'ผ่านแล้ว' : 'ล่าสุด'})</span>`
+          : `<span class="px-1.5 py-0.5 rounded text-[10px] font-extrabold bg-amber-100 text-amber-900 border border-amber-300">ไฟล์ #${idx + 1} (ส่งซ้ำ/เก่ากว่า)</span>`;
+        const shortFn = String(s.fileName || '').length > 52 ? String(s.fileName).slice(0, 52) + '…' : String(s.fileName || '');
+        return `
+          <div class="rounded-lg border p-1.5 space-y-1 text-[11px]" style="background: ${idx === 0 ? 'rgba(236,253,245,0.75)' : 'rgba(255,251,235,0.9)'}; border-color: ${idx === 0 ? '#34d399' : '#f59e0b'};">
+            <div class="flex flex-wrap items-center justify-between gap-1">
+              <div class="flex flex-wrap items-center gap-1">${orderBadge} <span class="${stBadge}">${escHtml(stLabel)}</span></div>
+              <div class="flex items-center gap-1">
+                <button type="button" onclick="openSubmissionPreviewModal('${escHtml(s.submissionId)}', 'ADMIN')" class="gw-btn-soft !py-0.5 !px-1.5 text-[10px] font-bold" style="color: var(--gw-accent);">👁️ พรีวิว</button>
+                <button type="button" onclick="adminDeleteSubmission('${escHtml(s.submissionId)}')" class="gw-btn-soft !py-0.5 !px-1.5 text-[10px] font-bold" style="color: var(--gw-danger-ink);">🗑️ ลบ</button>
+              </div>
+            </div>
+            <div class="font-bold break-all leading-snug" title="${escHtml(s.fileName || '')}">${escHtml(shortFn)}</div>
+            <div class="text-[10px] leading-tight" style="color: var(--gw-muted);">👤 ${escHtml(s.teacherName || '-')} (${escHtml(getSchoolShortName(s.schoolId))})${wholeTag}${timeStr ? ` • 🕒 ${escHtml(timeStr)}` : ''}</div>
+          </div>
+        `;
+      }).join('');
+      return `
+        <div class="rounded-xl border-2 p-2 space-y-1.5" style="border-color: #f59e0b; background: rgba(254,243,199,0.45);">
+          <div class="text-[11px] font-extrabold text-amber-900">⚠️ พบส่งซ้ำ ${hits.length} ไฟล์ (กดพรีวิวเทียบแล้วลบไฟล์ที่ไม่ใช้ได้ทันที)</div>
+          ${cardsHtml}
+        </div>
+      `;
+    }
+    if (hits && hits.length === 1) {
       const top = hits[0];
       const s = top.sub;
       const isOk = isApprovedSubmissionStatus_(s.reviewStatus);
@@ -15323,14 +15378,14 @@
       const stLabel = isOk ? '✓ ผ่าน' : (s.reviewStatus || 'รอตรวจ');
       const wholeTag = top.isWholeStrand ? ' <span class="text-[10px] opacity-75">(ทั้งสาระ)</span>' : '';
       const deepTag = top.deepVerified ? ' <span title="ตรวจจากเนื้อหาจริงในไฟล์ .docx แล้ว" style="color: var(--gw-accent);">🔬</span>' : '';
-      const extraTag = hits.length > 1 ? ` <span class="text-[10px] font-bold opacity-75">(+${hits.length - 1})</span>` : '';
+      const timeStr = formatShortThaiDateTime_(s.submittedAt);
       return `
         <div class="space-y-1">
           <div class="flex flex-wrap items-center gap-1">
-            <span class="${stBadge}">${escHtml(stLabel)}</span>${deepTag}${wholeTag}${extraTag}
+            <span class="${stBadge}">${escHtml(stLabel)}</span>${deepTag}${wholeTag}
             <button type="button" onclick="openSubmissionPreviewModal('${escHtml(s.submissionId)}', 'ADMIN')" class="gw-btn-soft !py-0.5 !px-1.5 text-[10px] font-bold" style="color: var(--gw-accent);">👁️ พรีวิว</button>
           </div>
-          <div class="text-[11px] leading-tight" style="color: var(--gw-muted);">${escHtml(s.teacherName || '-')} (${escHtml(getSchoolShortName(s.schoolId))})</div>
+          <div class="text-[11px] leading-tight" style="color: var(--gw-muted);">${escHtml(s.teacherName || '-')} (${escHtml(getSchoolShortName(s.schoolId))})${timeStr ? ` • 🕒 ${escHtml(timeStr)}` : ''}</div>
         </div>
       `;
     }
@@ -15413,6 +15468,9 @@
     const exStuPct = cur.examTotal ? Math.round((cur.examStuDone / cur.examTotal) * 100) : 0;
     const exTchPct = cur.examTotal ? Math.round((cur.examTchDone / cur.examTotal) * 100) : 0;
     const ms = cur.missingSummary;
+    const dupTutRowsCount = cur.indicatorRows.filter(r => r.stuHits.length > 1 || r.tchHits.length > 1).length;
+    const dupExamRowsCount = cur.examRows.filter(r => r.stuHits.length > 1 || r.tchHits.length > 1).length;
+    const dupTotalRowsCount = dupTutRowsCount + dupExamRowsCount;
 
     summaryEl.innerHTML = `
       <div class="flex flex-wrap items-center justify-between gap-2 pb-2 border-b" style="border-color: var(--gw-line);">
@@ -15423,6 +15481,12 @@
           ${cur.deepScannedAt ? `🔬 สแกนเนื้อหาในไฟล์ .docx จริงแล้ว (${cur.deepFileCount} ไฟล์)` : '⚡ คำนวณจากทะเบียนส่งงาน (กดปุ่ม 🔬 เพื่อสแกนข้างในไฟล์ .docx)'}
         </span>
       </div>
+      ${dupTotalRowsCount > 0 ? `
+        <div class="rounded-xl border-2 p-2.5 flex flex-wrap items-center justify-between gap-2 text-xs" style="border-color: #f59e0b; background: rgba(254,243,199,0.55); color: #92400e;">
+          <div class="font-extrabold">⚠️ พบรายการที่มีครูส่งไฟล์ซ้ำ ${dupTotalRowsCount} จุดในวิชานี้ (เอกสารติว ${dupTutRowsCount} ตัวชี้วัด • ข้อสอบ ${dupExamRowsCount} ข้อ) — กดดูเทียบไฟล์และลบไฟล์ซ้ำได้เลย</div>
+          <button type="button" onclick="setBookCoverageViewFilter('DUPLICATES_ONLY')" class="gw-btn-primary !py-1 !px-3 text-xs">🔎 แสดงเฉพาะจุดที่ส่งซ้ำ (${dupTotalRowsCount})</button>
+        </div>
+      ` : ''}
       <div class="grid grid-cols-2 lg:grid-cols-4 gap-2">
         <div class="rounded-xl p-2.5 border" style="background: var(--gw-surface); border-color: var(--gw-line);">
           <div class="text-[11px] opacity-75">📘 เอกสารติว (ฉบับที่ 3 นร.)</div>
@@ -15455,23 +15519,26 @@
         cur.examRows.filter(r => !r.stuHits.length || !r.tchHits.length).length;
       const pills = [
         { id: 'ALL', label: 'แสดงครบทั้ง 2 เล่ม (ทั้งตัวชี้วัด + ข้อสอบ)' },
+        { id: 'DUPLICATES_ONLY', label: `⚠️ เฉพาะจุดที่มีไฟล์ซ้ำ (${dupTotalRowsCount})` },
         { id: 'MISSING_ONLY', label: `เฉพาะรายการที่ยังขาดไม่ครบ (${missTotalCount})` },
         { id: 'TUTORING_ONLY', label: `เฉพาะเล่มเอกสารติว (${cur.tutTotal} ตัวชี้วัด)` },
         { id: 'EXAM_ONLY', label: `เฉพาะเล่มข้อสอบ ${round} (${cur.examTotal} ข้อ)` }
       ];
       filterEl.innerHTML = `<span class="font-bold opacity-80">มุมมองตาราง:</span>` + pills.map(p =>
-        `<button type="button" onclick="setBookCoverageViewFilter('${p.id}')" class="px-2.5 py-1 rounded-lg text-[11px] font-bold border ${viewFilter === p.id ? 'gw-btn-primary !py-1 !px-2.5' : 'gw-btn-soft !py-1 !px-2.5'}">${escHtml(p.label)}</button>`
+        `<button type="button" onclick="setBookCoverageViewFilter('${p.id}')" class="px-2.5 py-1 rounded-lg text-[11px] font-bold border ${viewFilter === p.id ? 'gw-btn-primary !py-1 !px-2.5' : 'gw-btn-soft !py-1 !px-2.5'}"${p.id === 'DUPLICATES_ONLY' && dupTotalRowsCount > 0 && viewFilter !== p.id ? ' style="border-color:#f59e0b;color:#92400e;background:rgba(254,243,199,0.55);"' : ''}>${escHtml(p.label)}</button>`
       ).join('');
     }
 
-    const showTut = viewFilter === 'ALL' || viewFilter === 'MISSING_ONLY' || viewFilter === 'TUTORING_ONLY';
-    const showExam = viewFilter === 'ALL' || viewFilter === 'MISSING_ONLY' || viewFilter === 'EXAM_ONLY';
+    const showTut = viewFilter === 'ALL' || viewFilter === 'MISSING_ONLY' || viewFilter === 'DUPLICATES_ONLY' || viewFilter === 'TUTORING_ONLY';
+    const showExam = viewFilter === 'ALL' || viewFilter === 'MISSING_ONLY' || viewFilter === 'DUPLICATES_ONLY' || viewFilter === 'EXAM_ONLY';
 
     let html = '';
     if (showTut) {
       const tutRows = viewFilter === 'MISSING_ONLY'
         ? cur.indicatorRows.filter(r => !r.stuHits.length || !r.tchHits.length)
-        : cur.indicatorRows;
+        : (viewFilter === 'DUPLICATES_ONLY'
+          ? cur.indicatorRows.filter(r => r.stuHits.length > 1 || r.tchHits.length > 1)
+          : cur.indicatorRows);
       html += `
         <div class="rounded-2xl border p-3 space-y-2" style="background: var(--gw-surface); border-color: var(--gw-line-strong);">
           <div class="flex flex-wrap items-center justify-between gap-2">
@@ -15479,31 +15546,34 @@
             <div class="text-[11px] font-bold" style="color: var(--gw-accent);">ครบทั้ง นร.+ครู แล้ว ${cur.tutBothDone}/${cur.tutTotal} ตัวชี้วัด</div>
           </div>
           ${tutRows.length ? `
-            <div class="overflow-x-auto max-h-[380px] overflow-y-auto">
+            <div class="overflow-x-auto max-h-[420px] overflow-y-auto">
               <table class="gw-table w-full text-xs">
                 <thead>
                   <tr>
                     <th style="width:8%;">สาระ</th>
-                    <th style="width:16%;">ตัวชี้วัด</th>
-                    <th class="text-left" style="width:26%;">สาระการเรียนรู้ย่อ</th>
-                    <th style="width:25%;">📘 ฉบับที่ 3 (นักเรียน)</th>
-                    <th style="width:25%;">📕 ฉบับที่ 4 (ครู+เฉลย)</th>
+                    <th style="width:15%;">ตัวชี้วัด</th>
+                    <th class="text-left" style="width:23%;">สาระการเรียนรู้ย่อ</th>
+                    <th style="width:27%;">📘 ฉบับที่ 3 (นักเรียน)</th>
+                    <th style="width:27%;">📕 ฉบับที่ 4 (ครู+เฉลย)</th>
                   </tr>
                 </thead>
                 <tbody>
-                  ${tutRows.map(r => `
-                    <tr>
+                  ${tutRows.map(r => {
+                    const rowHasDup = r.stuHits.length > 1 || r.tchHits.length > 1;
+                    return `
+                    <tr${rowHasDup ? ' style="background: rgba(254,243,199,0.28);"' : ''}>
                       <td class="text-center font-bold">สาระ ${escHtml(r.strandNo)}</td>
-                      <td class="font-bold whitespace-nowrap">${escHtml(r.indicatorCode)}</td>
+                      <td class="font-bold whitespace-nowrap">${escHtml(r.indicatorCode)}${rowHasDup ? '<div class="text-[10px] font-extrabold text-amber-800">⚠️ มีไฟล์ซ้ำ</div>' : ''}</td>
                       <td class="text-[11px]" style="color: var(--gw-muted);">${escHtml(r.indicatorDesc ? (r.indicatorDesc.length > 75 ? r.indicatorDesc.slice(0, 75) + '…' : r.indicatorDesc) : r.strandName)}</td>
                       <td>${renderCoverageCellHtml_(r.stuHits, r.stuRevision)}</td>
                       <td>${renderCoverageCellHtml_(r.tchHits, r.tchRevision)}</td>
                     </tr>
-                  `).join('')}
+                  `;
+                  }).join('')}
                 </tbody>
               </table>
             </div>
-          ` : '<div class="p-3 text-center font-bold text-emerald-700">🎉 เอกสารติวรายตัวชี้วัดครบทั้งฉบับนักเรียนและฉบับครู 100% แล้วครับ!</div>'}
+          ` : `<div class="p-3 text-center font-bold text-emerald-700">${viewFilter === 'DUPLICATES_ONLY' ? '✓ ไม่มีไฟล์ส่งซ้ำในเล่มเอกสารติวของวิชานี้แล้วครับ!' : '🎉 เอกสารติวรายตัวชี้วัดครบทั้งฉบับนักเรียนและฉบับครู 100% แล้วครับ!'}</div>`}
         </div>
       `;
     }
@@ -15511,7 +15581,9 @@
     if (showExam) {
       const exRows = viewFilter === 'MISSING_ONLY'
         ? cur.examRows.filter(r => !r.stuHits.length || !r.tchHits.length)
-        : cur.examRows;
+        : (viewFilter === 'DUPLICATES_ONLY'
+          ? cur.examRows.filter(r => r.stuHits.length > 1 || r.tchHits.length > 1)
+          : cur.examRows);
       html += `
         <div class="rounded-2xl border p-3 space-y-2" style="background: var(--gw-surface); border-color: var(--gw-line-strong);">
           <div class="flex flex-wrap items-center justify-between gap-2">
@@ -15519,33 +15591,36 @@
             <div class="text-[11px] font-bold" style="color: var(--gw-accent);">ครบทั้ง นร.+ครู แล้ว ${cur.examBothDone}/${cur.examTotal} ข้อ</div>
           </div>
           ${exRows.length ? `
-            <div class="overflow-x-auto max-h-[380px] overflow-y-auto">
+            <div class="overflow-x-auto max-h-[420px] overflow-y-auto">
               <table class="gw-table w-full text-xs">
                 <thead>
                   <tr>
                     <th style="width:8%;">ข้อที่</th>
-                    <th style="width:10%;">สาระ</th>
-                    <th style="width:18%;">ตัวชี้วัด สทศ.</th>
-                    <th style="width:14%;">รูปแบบข้อสอบ</th>
-                    <th style="width:25%;">📘 ฉบับที่ 1 (นักเรียน)</th>
-                    <th style="width:25%;">📕 ฉบับที่ 2 (ครู+เฉลย)</th>
+                    <th style="width:9%;">สาระ</th>
+                    <th style="width:17%;">ตัวชี้วัด สทศ.</th>
+                    <th style="width:12%;">รูปแบบข้อสอบ</th>
+                    <th style="width:27%;">📘 ฉบับที่ 1 (นักเรียน)</th>
+                    <th style="width:27%;">📕 ฉบับที่ 2 (ครู+เฉลย)</th>
                   </tr>
                 </thead>
                 <tbody>
-                  ${exRows.map(r => `
-                    <tr>
-                      <td class="text-center font-extrabold gw-tabular">${escHtml(r.itemNo)}</td>
+                  ${exRows.map(r => {
+                    const rowHasDup = r.stuHits.length > 1 || r.tchHits.length > 1;
+                    return `
+                    <tr${rowHasDup ? ' style="background: rgba(254,243,199,0.28);"' : ''}>
+                      <td class="text-center font-extrabold gw-tabular">${escHtml(r.itemNo)}${rowHasDup ? '<div class="text-[10px] font-extrabold text-amber-800">⚠️ ซ้ำ</div>' : ''}</td>
                       <td class="text-center">สาระ ${escHtml(r.strandNo)}</td>
                       <td class="font-bold whitespace-nowrap">${escHtml(r.indicatorCode)}</td>
                       <td class="text-center text-[11px]">${escHtml(r.itemType)}</td>
                       <td>${renderCoverageCellHtml_(r.stuHits, r.stuRevision)}</td>
                       <td>${renderCoverageCellHtml_(r.tchHits, r.tchRevision)}</td>
                     </tr>
-                  `).join('')}
+                  `;
+                  }).join('')}
                 </tbody>
               </table>
             </div>
-          ` : `<div class="p-3 text-center font-bold text-emerald-700">🎉 ข้อสอบ ${escHtml(round)} ครบทั้งฉบับนักเรียนและฉบับครู 100% ทุกข้อแล้วครับ!</div>`}
+          ` : `<div class="p-3 text-center font-bold text-emerald-700">${viewFilter === 'DUPLICATES_ONLY' ? `✓ ไม่มีไฟล์ส่งซ้ำในเล่มข้อสอบ ${escHtml(round)} ของวิชานี้แล้วครับ!` : `🎉 ข้อสอบ ${escHtml(round)} ครบทั้งฉบับนักเรียนและฉบับครู 100% ทุกข้อแล้วครับ!`}</div>`}
         </div>
       `;
     }
