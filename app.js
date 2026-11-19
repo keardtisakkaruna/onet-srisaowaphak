@@ -470,10 +470,25 @@
       : 'gw-btn-primary text-xs';
 
     _modalConfirmHandler = typeof o.onConfirm === 'function' ? o.onConfirm : null;
+    confirmBtn.disabled = false;
+    if (cancelBtn) cancelBtn.disabled = false;
     confirmBtn.onclick = async () => {
       if (!_modalConfirmHandler) { closeCustomModal(); return; }
-      const keepOpen = await _modalConfirmHandler(modal);
-      if (keepOpen !== false) closeCustomModal();
+      if (confirmBtn.disabled) return;
+      const prevTxt = confirmBtn.textContent;
+      confirmBtn.disabled = true;
+      if (cancelBtn) cancelBtn.disabled = true;
+      confirmBtn.textContent = '⏳ กำลังดำเนินการ...';
+      try {
+        const keepOpen = await _modalConfirmHandler(modal);
+        if (keepOpen !== false) closeCustomModal();
+      } catch (err) {
+        showToast('เกิดข้อผิดพลาด: ' + (err && err.message ? err.message : String(err)), 'error');
+      } finally {
+        confirmBtn.disabled = false;
+        if (cancelBtn) cancelBtn.disabled = false;
+        if (confirmBtn.textContent === '⏳ กำลังดำเนินการ...') confirmBtn.textContent = prevTxt;
+      }
     };
     modal.classList.remove('hidden');
     refreshIcons();
@@ -12374,22 +12389,65 @@
     openCustomModal({
       title: 'อนุมัติ "ผ่านพร้อมรวมเล่ม" ทั้งหมวด',
       subtitle: `${subLabel} • จำนวน ${pendingList.length} ไฟล์ที่รอตรวจ`,
-      bodyHtml: `<div class="text-xs leading-relaxed">ต้องการอนุมัติไฟล์สถานะ <b>"รอตรวจ"</b> ในหมวดนี้ทั้งหมด <b>${pendingList.length} ไฟล์</b> ให้เป็น <b>"ผ่านพร้อมรวมเล่ม"</b> ในคลิกเดียวใช่หรือไม่ครับ?</div>`,
+      bodyHtml: `
+        <div class="text-xs leading-relaxed">ต้องการอนุมัติไฟล์สถานะ <b>"รอตรวจ"</b> ในหมวดนี้ทั้งหมด <b>${pendingList.length} ไฟล์</b> ให้เป็น <b>"ผ่านพร้อมรวมเล่ม"</b> ในคลิกเดียวใช่หรือไม่ครับ?</div>
+        <div id="batchApproveProgressWrap" class="hidden space-y-1.5 pt-2">
+          <div class="flex items-center justify-between text-xs font-bold" style="color: var(--gw-accent);">
+            <span id="batchApproveProgressText">⏳ กำลังอนุมัติ 0/${pendingList.length} ไฟล์...</span>
+            <span id="batchApproveProgressPct" class="gw-tabular">0%</span>
+          </div>
+          <div class="w-full h-2.5 rounded-full overflow-hidden" style="background: var(--gw-input-bg);">
+            <div id="batchApproveProgressBar" class="h-full rounded-full transition-all" style="width: 0%; background: var(--gw-accent);"></div>
+          </div>
+        </div>
+      `,
       confirmText: `ยืนยันอนุมัติทั้ง ${pendingList.length} ไฟล์`,
       onConfirm: async () => {
+        const total = pendingList.length;
+        const wrap = document.getElementById('batchApproveProgressWrap');
+        const txtEl = document.getElementById('batchApproveProgressText');
+        const pctEl = document.getElementById('batchApproveProgressPct');
+        const barEl = document.getElementById('batchApproveProgressBar');
+        const btnConfirm = document.getElementById('customModalConfirmBtn');
+        if (wrap) wrap.classList.remove('hidden');
+
+        let doneCount = 0;
         let okCount = 0;
-        for (const item of pendingList) {
-          const res = await callGas('apiReviewSubmission', {
-            authToken: STATE.authToken || '',
-            adminId: STATE.currentTeacher.teacherId,
-            submissionId: item.submissionId,
-            reviewStatus: 'ผ่านพร้อมรวมเล่ม',
-            adminComment: 'ตรวจผ่านเรียบร้อย พร้อมนำมารวมเล่ม'
-          });
-          if (res && res.ok) okCount++;
-        }
-        showToast(`อนุมัติผ่านพร้อมรวมเล่มสำเร็จ ${okCount}/${pendingList.length} ไฟล์!`, 'success');
-        refreshSuperAdminDashboard();
+        const updateUi = () => {
+          const pct = total > 0 ? Math.round((doneCount / total) * 100) : 100;
+          if (txtEl) txtEl.textContent = `⏳ กำลังอนุมัติ ${doneCount}/${total} ไฟล์ (สำเร็จ ${okCount} ไฟล์)...`;
+          if (pctEl) pctEl.textContent = `${pct}%`;
+          if (barEl) barEl.style.width = `${pct}%`;
+          if (btnConfirm) btnConfirm.textContent = `⏳ กำลังอนุมัติ ${doneCount}/${total}...`;
+        };
+        updateUi();
+
+        let nextIdx = 0;
+        const worker = async () => {
+          while (nextIdx < total) {
+            const curIdx = nextIdx++;
+            const item = pendingList[curIdx];
+            try {
+              const res = await callGas('apiReviewSubmission', {
+                authToken: STATE.authToken || '',
+                adminId: STATE.currentTeacher.teacherId,
+                submissionId: item.submissionId,
+                reviewStatus: 'ผ่านพร้อมรวมเล่ม',
+                adminComment: 'ตรวจผ่านเรียบร้อย พร้อมนำมารวมเล่ม'
+              });
+              if (res && res.ok) okCount++;
+            } catch (_err) {}
+            doneCount++;
+            updateUi();
+          }
+        };
+
+        const poolSize = Math.min(4, total);
+        await Promise.all(Array.from({ length: poolSize }, () => worker()));
+
+        if (txtEl) txtEl.textContent = `✓ เสร็จสิ้น! กำลังรีเฟรชตารางหน้าผู้ดูแล...`;
+        showToast(`อนุมัติผ่านพร้อมรวมเล่มสำเร็จ ${okCount}/${total} ไฟล์!`, okCount > 0 ? 'success' : 'error');
+        await refreshSuperAdminDashboard();
       }
     });
   }
